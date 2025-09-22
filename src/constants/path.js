@@ -1,0 +1,21 @@
+const publicPaths = {
+    HOME: '/',
+    LOGIN: '/login',
+    REGISTER: '/register',
+    RESET_PASSWORD: '/reset-password',
+};
+
+const adminPaths = {
+    DASHBOARD: '/admin',
+    EXAM_SESSIONS: '/admin/exam-sessions',
+    COURSES: '/admin/courses',
+    ROOMS: '/admin/rooms',
+    STUDENTS: '/admin/students',
+    IMPORT_REGISTRATIONS: '/admin/import-registrations',
+    EXAM_GROUPS: '/admin/exam-groups',
+    SCHEDULE: '/admin/schedule',
+    AUTO_SCHEDULE: '/admin/auto-schedule',
+    VIEW_SCHEDULE: '/admin/view-schedule',
+};
+
+export { publicPaths, adminPaths };
