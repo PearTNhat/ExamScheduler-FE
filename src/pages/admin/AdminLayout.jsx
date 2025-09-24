@@ -24,6 +24,7 @@ const AdminLayout = () => {
     { name: "Môn học", href: adminPaths.COURSES, icon: BookOpen },
     { name: "Phòng thi", href: adminPaths.ROOMS, icon: MapPin },
     { name: "Sinh viên", href: adminPaths.STUDENTS, icon: Users },
+    { name: "Giảng viên", href: adminPaths.TEACHERS, icon: Users },
     {
       name: "Import đăng ký",
       href: adminPaths.IMPORT_REGISTRATIONS,

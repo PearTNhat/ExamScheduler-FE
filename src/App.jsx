@@ -9,6 +9,8 @@ import Dashboard from "./pages/admin/dashboard/Dashboard";
 import ExamSessions from "./pages/admin/exam-sessions/ExamSessions";
 import Courses from "./pages/admin/courses/Courses";
 import Rooms from "./pages/admin/rooms/Rooms";
+import StudentManager from "./pages/admin/student/StudentManager";
+import TeacherManager from "./pages/admin/teacher/TeacherManager";
 import ImportRegistrations from "./pages/admin/import-registrations/ImportRegistrations";
 import ExamGroups from "./pages/admin/exam-groups/ExamGroups";
 import AutoSchedule from "./pages/admin/auto-schedule/AutoSchedule";
@@ -29,6 +31,8 @@ function App() {
           <Route path="exam-sessions" element={<ExamSessions />} />
           <Route path="courses" element={<Courses />} />
           <Route path="rooms" element={<Rooms />} />
+          <Route path="students" element={<StudentManager />} />
+          <Route path="teachers" element={<TeacherManager />} />
           <Route
             path="import-registrations"
             element={<ImportRegistrations />}

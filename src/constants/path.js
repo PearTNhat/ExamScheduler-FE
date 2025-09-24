@@ -11,6 +11,7 @@ const adminPaths = {
     COURSES: '/admin/courses',
     ROOMS: '/admin/rooms',
     STUDENTS: '/admin/students',
+    TEACHERS: '/admin/teachers',
     IMPORT_REGISTRATIONS: '/admin/import-registrations',
     EXAM_GROUPS: '/admin/exam-groups',
     SCHEDULE: '/admin/schedule',
