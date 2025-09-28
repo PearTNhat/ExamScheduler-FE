@@ -603,9 +603,7 @@ const StudentManager = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Liên hệ
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Học tập
-              </th>
+
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Trạng thái
               </th>
@@ -656,15 +654,6 @@ const StudentManager = () => {
                         {student.phone}
                       </div>
                     )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    <div>
-                      GPA: <span className="font-medium">{student.gpa}</span>
-                    </div>
-                    <div>Tín chỉ: {student.totalCredits}</div>
-                    <div>Môn học: {student.registeredCourses}</div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

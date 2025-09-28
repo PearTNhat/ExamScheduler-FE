@@ -12,6 +12,7 @@ import Rooms from "./pages/admin/rooms/Rooms";
 import StudentManager from "./pages/admin/student/StudentManager";
 import TeacherManager from "./pages/admin/teacher/TeacherManager";
 import ImportRegistrations from "./pages/admin/import-registrations/ImportRegistrations";
+import StudentCourseRegistrations from "./pages/admin/student-course-registrations/StudentCourseRegistrationsNew";
 import ExamGroups from "./pages/admin/exam-groups/ExamGroups";
 import AutoSchedule from "./pages/admin/auto-schedule/AutoSchedule";
 import ViewSchedule from "./pages/admin/view-schedule/ViewSchedule";
@@ -36,6 +37,10 @@ function App() {
           <Route
             path="import-registrations"
             element={<ImportRegistrations />}
+          />
+          <Route
+            path="student-course-registrations"
+            element={<StudentCourseRegistrations />}
           />
           <Route path="exam-groups" element={<ExamGroups />} />
           <Route path="auto-schedule" element={<AutoSchedule />} />

@@ -707,61 +707,6 @@ const TeacherManager = () => {
         )}
       </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-          <div className="flex items-center">
-            <Users className="h-8 w-8 text-blue-500 mr-3" />
-            <div>
-              <div className="text-2xl font-bold text-gray-900">
-                {teachers.length}
-              </div>
-              <div className="text-sm text-gray-500">Tổng giảng viên</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
-          <div className="flex items-center">
-            <UserCheck className="h-8 w-8 text-green-500 mr-3" />
-            <div>
-              <div className="text-2xl font-bold text-gray-900">
-                {teachers.filter((t) => t.status === "active").length}
-              </div>
-              <div className="text-sm text-gray-500">Đang làm việc</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-purple-500">
-          <div className="flex items-center">
-            <Award className="h-8 w-8 text-purple-500 mr-3" />
-            <div>
-              <div className="text-2xl font-bold text-gray-900">
-                {
-                  teachers.filter((t) =>
-                    ["Giáo sư", "Phó giáo sư"].includes(t.position)
-                  ).length
-                }
-              </div>
-              <div className="text-sm text-gray-500">GS & PGS</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
-          <div className="flex items-center">
-            <BookOpen className="h-8 w-8 text-yellow-500 mr-3" />
-            <div>
-              <div className="text-2xl font-bold text-gray-900">
-                {teachers.reduce((sum, t) => sum + t.currentCourses, 0)}
-              </div>
-              <div className="text-sm text-gray-500">Môn đang dạy</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">

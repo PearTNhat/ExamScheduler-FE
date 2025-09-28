@@ -2,15 +2,10 @@
 @import "./global.css";
 @import "./theme.css";
 @import "./admin.css";
-/* About */
-@keyframes infinite-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 .animate-infinite-marquee {
   display: flex;
