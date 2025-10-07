@@ -7,7 +7,7 @@ export const apiFetchMyInfo = async ({ accessToken }) => {
                 Authorization: `Bearer ${accessToken}`,
             },
         }
-        const { data } = await http.get("users/fetchInfo", config);
+        const { data } = await http.get("users/profile", config);
         return data;
     } catch (error) {
         if (error.response && error.response.data) {

@@ -26,6 +26,16 @@ const navItems = [
   },
   {
     icon: <BookOpen size={20} className="text-purple-500" />,
+    name: "Địa điểm",
+    path: adminPaths.LOCATIONS,
+  },
+  {
+    icon: <BookOpen size={20} className="text-purple-500" />,
+    name: "Phòng ban",
+    path: adminPaths.DEPARTMENTS,
+  },
+  {
+    icon: <BookOpen size={20} className="text-purple-500" />,
     name: "Môn học",
     path: adminPaths.COURSES,
   },
@@ -42,7 +52,7 @@ const navItems = [
   {
     icon: <Users size={20} className="text-teal-500" />,
     name: "Giảng viên",
-    path: adminPaths.TEACHERS,
+    path: adminPaths.LECTURES,
   },
   {
     icon: <Upload size={20} className="text-orange-500" />,
