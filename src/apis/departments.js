@@ -1,8 +1,12 @@
 import { http } from "~/utils/http";
 
-const apiGetDepartments = async () => {
+const apiGetDepartments = async ({ accessToken }) => {
     try {
-        const { data } = await http.get("/departments");
+        const { data } = await http.get("/departments", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
         return data;
     } catch (error) {
         if (error.response && error.response.data) {

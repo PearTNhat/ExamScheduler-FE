@@ -49,6 +49,7 @@ const RoomFormModal = ({
   const roomType = watch("type");
 
   useEffect(() => {
+    console.log("e", editingRoom);
     if (editingRoom) {
       reset({
         code: editingRoom.code || "",
@@ -269,21 +270,6 @@ const RoomFormModal = ({
               onCheckedChange={(checked) => setValue("is_active", checked)}
               className="data-[state=checked]:bg-blue-600"
             />
-          </div>
-
-          {/* Thông tin hướng dẫn */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex gap-3">
-              <div className="text-amber-600 text-xl">💡</div>
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-amber-900">Lưu ý:</p>
-                <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
-                  <li>Mã phòng phải là duy nhất và không trùng lặp</li>
-                  <li>Sức chứa nên phù hợp với diện tích thực tế của phòng</li>
-                  <li>Mã cơ sở phải tồn tại trong hệ thống</li>
-                </ul>
-              </div>
-            </div>
           </div>
         </div>
 

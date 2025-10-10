@@ -180,21 +180,6 @@ const LocationFormModal = ({
               </p>
             )}
           </div>
-
-          {/* Thông tin hướng dẫn */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex gap-3">
-              <div className="text-amber-600 text-xl">💡</div>
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-amber-900">Lưu ý:</p>
-                <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
-                  <li>Mã cơ sở phải là duy nhất và không trùng lặp</li>
-                  <li>Tên cơ sở nên rõ ràng và dễ hiểu</li>
-                  <li>Địa chỉ phải chính xác để dễ dàng tìm kiếm</li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">

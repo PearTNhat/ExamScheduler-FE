@@ -50,6 +50,8 @@ const userSlice = createSlice({
         builder.addCase(fetchCurrentUser.rejected, (state) => {
             state.isLoading = false
             state.accessToken = null
+            state.isLoggedIn = false
+            state.userData = {}
             state.isError = true
         })
     }

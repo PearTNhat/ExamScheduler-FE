@@ -4,6 +4,10 @@ import {
   Calendar,
   BookOpen,
   MapPin,
+  MapPinned,
+  Building,
+  Building2,
+  Briefcase,
   Users,
   Upload,
   Settings,
@@ -12,12 +16,11 @@ import {
 } from "lucide-react";
 import { adminPaths } from "./path";
 
-// Tên biến được đổi từ 'navigation' thành 'navItems' theo mẫu
 const navItems = [
   {
     icon: <BarChart3 size={20} className="text-blue-500" />,
     name: "Tổng quan",
-    path: adminPaths.DASHBOARD, // 'href' đổi thành 'path'
+    path: adminPaths.DASHBOARD,
   },
   {
     icon: <Calendar size={20} className="text-green-500" />,
@@ -25,12 +28,12 @@ const navItems = [
     path: adminPaths.EXAM_SESSIONS,
   },
   {
-    icon: <BookOpen size={20} className="text-purple-500" />,
+    icon: <MapPinned size={20} className="text-purple-500" />, // ✅ Địa điểm
     name: "Địa điểm",
     path: adminPaths.LOCATIONS,
   },
   {
-    icon: <BookOpen size={20} className="text-purple-500" />,
+    icon: <Briefcase size={20} className="text-rose-500" />, // ✅ Phòng ban
     name: "Phòng ban",
     path: adminPaths.DEPARTMENTS,
   },
@@ -81,5 +84,4 @@ const navItems = [
   },
 ];
 
-// Thêm dòng export ở cuối theo mẫu
 export { navItems };

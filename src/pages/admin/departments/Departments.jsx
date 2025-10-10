@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Search, Building2, Users } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Search,
+  Building2,
+  Users,
+  Fingerprint,
+  Hash,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -34,19 +43,18 @@ const Departments = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { accessToken } = useSelector((state) => state.user);
-
   // Fetch departments
-  const fetchDepartments = async () => {
+  const fetchDepartments = async ({ accessToken }) => {
     try {
       setLoading(true);
-      const response = await apiGetDepartments();
+      const response = await apiGetDepartments({ accessToken });
       if (response.code === 200) {
         setDepartments(response.data || []);
       } else {
-        showToastError(response.message || "Lỗi khi tải danh sách khoa/viện");
+        showToastError(response.message || "Lỗi khi tải danh sách khoa");
       }
     } catch (error) {
-      showToastError("Lỗi khi tải danh sách khoa/viện");
+      showToastError("Lỗi khi tải danh sách khoa");
       console.error(error);
     } finally {
       setLoading(false);
@@ -54,8 +62,10 @@ const Departments = () => {
   };
 
   useEffect(() => {
-    fetchDepartments();
-  }, []);
+    if (accessToken) {
+      fetchDepartments({ accessToken });
+    }
+  }, [accessToken]);
 
   // Filter departments
   const filteredDepartments = departments.filter((department) => {
@@ -83,16 +93,13 @@ const Departments = () => {
     try {
       setIsSubmitting(true);
       let response;
-
       if (editingDepartment) {
-        // Update
         response = await apiUpdateDepartment({
           id: editingDepartment.id,
           body: data,
           accessToken,
         });
       } else {
-        // Create
         response = await apiCreateDepartment({
           body: data,
           accessToken,
@@ -102,17 +109,16 @@ const Departments = () => {
       if (response.code === 200) {
         showToastSuccess(
           editingDepartment
-            ? "Cập nhật khoa/viện thành công"
-            : "Thêm khoa/viện thành công"
+            ? "Cập nhật khoa thành công"
+            : "Thêm khoa thành công"
         );
         setShowModal(false);
-        fetchDepartments();
+        fetchDepartments({ accessToken });
       } else {
         showToastError(response.message || "Có lỗi xảy ra");
       }
     } catch (error) {
-      showToastError("Có lỗi xảy ra khi lưu khoa/viện");
-      console.error(error);
+      showToastError(error.message || "Có lỗi xảy ra khi lưu khoa");
     } finally {
       setIsSubmitting(false);
     }
@@ -121,7 +127,7 @@ const Departments = () => {
   // Handle delete
   const handleDeleteDepartment = async (department) => {
     const confirmed = await showToastConfirm(
-      `Bạn có chắc chắn muốn xóa khoa/viện "${department.departmentName}"?`
+      `Bạn có chắc chắn muốn xóa khoa "${department.departmentName}"?`
     );
 
     if (confirmed) {
@@ -133,14 +139,13 @@ const Departments = () => {
         });
 
         if (response.code === 200) {
-          showToastSuccess("Xóa khoa/viện thành công");
-          fetchDepartments();
+          showToastSuccess("Xóa khoa thành công");
+          fetchDepartments({ accessToken });
         } else {
-          showToastError(response.message || "Có lỗi xảy ra khi xóa khoa/viện");
+          showToastError(response.message || "Có lỗi xảy ra khi xóa khoa");
         }
       } catch (error) {
-        showToastError("Có lỗi xảy ra khi xóa khoa/viện");
-        console.error(error);
+        showToastError(error.message || "Có lỗi xảy ra khi xóa khoa");
       } finally {
         setLoading(false);
       }
@@ -156,42 +161,10 @@ const Departments = () => {
             <Building2 className="h-8 w-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Quản lý khoa/viện
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý khoa</h1>
             <p className="text-sm text-gray-600 mt-1">
-              Quản lý và theo dõi các khoa/viện trong hệ thống
+              Quản lý và theo dõi các khoa trong hệ thống
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Tổng khoa/viện</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {departments.length}
-              </p>
-            </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <Building2 className="h-6 w-6 text-orange-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Đang hoạt động</p>
-              <p className="text-2xl font-bold text-green-600">
-                {departments.length}
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Users className="h-6 w-6 text-green-600" />
-            </div>
           </div>
         </div>
       </div>
@@ -203,7 +176,7 @@ const Departments = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo mã, tên khoa/viện..."
+              placeholder="Tìm kiếm theo mã, tên khoa..."
               className="pl-10 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -214,7 +187,7 @@ const Departments = () => {
             className="gap-2 h-11 px-6 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 shadow-md hover:shadow-lg transition-all"
           >
             <Plus className="h-5 w-5" />
-            Thêm khoa/viện
+            Thêm khoa
           </Button>
         </div>
       </div>
@@ -224,8 +197,9 @@ const Departments = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
-              <TableHead className="font-semibold">Mã khoa/viện</TableHead>
-              <TableHead className="font-semibold">Tên khoa/viện</TableHead>
+              <TableHead className="font-semibold">Id</TableHead>
+              <TableHead className="font-semibold">Mã khoa</TableHead>
+              <TableHead className="font-semibold">Tên khoa</TableHead>
               <TableHead className="font-semibold">Ngày tạo</TableHead>
               <TableHead className="text-right font-semibold">
                 Thao tác
@@ -252,12 +226,12 @@ const Departments = () => {
                     <Building2 className="h-12 w-12 text-gray-300" />
                     <p className="font-medium">
                       {searchTerm
-                        ? "Không tìm thấy khoa/viện phù hợp"
-                        : "Chưa có khoa/viện nào"}
+                        ? "Không tìm thấy khoa phù hợp"
+                        : "Chưa có khoa nào"}
                     </p>
                     {!searchTerm && (
                       <p className="text-sm">
-                        Nhấn "Thêm khoa/viện" để tạo khoa/viện mới
+                        Nhấn "Thêm khoa" để tạo khoa mới
                       </p>
                     )}
                   </div>
@@ -266,6 +240,14 @@ const Departments = () => {
             ) : (
               filteredDepartments.map((department) => (
                 <TableRow key={department.id} className="hover:bg-gray-50">
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-orange-100 rounded">
+                        <Hash className="h-4 w-4 text-orange-600" />
+                      </div>
+                      {department.id}
+                    </div>
+                  </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-orange-100 rounded">

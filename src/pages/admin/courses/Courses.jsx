@@ -7,6 +7,7 @@ import {
   BookOpen,
   Users,
   Star,
+  Hash,
 } from "lucide-react";
 import {
   Table,
@@ -44,10 +45,10 @@ const Courses = () => {
   const { accessToken } = useSelector((state) => state.user);
 
   // Fetch courses
-  const fetchCourses = async () => {
+  const fetchCourses = async ({ accessToken }) => {
     try {
       setLoading(true);
-      const response = await apiGetCourses();
+      const response = await apiGetCourses({ accessToken });
       if (response.code === 200) {
         setCourses(response.data || []);
       } else {
@@ -62,8 +63,10 @@ const Courses = () => {
   };
 
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    if (accessToken) {
+      fetchCourses({ accessToken });
+    }
+  }, [accessToken]);
 
   // Filter courses
   const filteredCourses = courses.filter((course) => {
@@ -74,19 +77,6 @@ const Courses = () => {
       course.description?.toLowerCase().includes(searchLower)
     );
   });
-
-  // Calculate stats
-  const activeCoursesCount = courses.filter(
-    (course) => course.is_active
-  ).length;
-  const totalCredits = courses.reduce(
-    (sum, course) => sum + (course.credits || 0),
-    0
-  );
-  const totalExpectedStudents = courses.reduce(
-    (sum, course) => sum + (course.expected_students || 0),
-    0
-  );
 
   // Handle add course
   const handleAddCourse = () => {
@@ -128,13 +118,12 @@ const Courses = () => {
             : "Thêm môn học thành công"
         );
         setShowModal(false);
-        fetchCourses();
+        fetchCourses({ accessToken });
       } else {
         showToastError(response.message || "Có lỗi xảy ra");
       }
     } catch (error) {
-      showToastError("Có lỗi xảy ra khi lưu môn học");
-      console.error(error);
+      showToastError(error.message || "Có lỗi xảy ra");
     } finally {
       setIsSubmitting(false);
     }
@@ -156,7 +145,7 @@ const Courses = () => {
 
         if (response.code === 200) {
           showToastSuccess("Xóa môn học thành công");
-          fetchCourses();
+          fetchCourses({ accessToken });
         } else {
           showToastError(response.message || "Có lỗi xảy ra khi xóa môn học");
         }
@@ -184,60 +173,6 @@ const Courses = () => {
             <p className="text-sm text-gray-600 mt-1">
               Quản lý và theo dõi các môn học trong hệ thống
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Tổng môn học</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {courses.length}
-              </p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <BookOpen className="h-6 w-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Đang hoạt động</p>
-              <p className="text-2xl font-bold text-green-600">
-                {activeCoursesCount}
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <BookOpen className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Tổng tín chỉ</p>
-              <p className="text-2xl font-bold text-blue-600">{totalCredits}</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Star className="h-6 w-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Sinh viên dự kiến</p>
-              <p className="text-2xl font-bold text-orange-600">
-                {totalExpectedStudents}
-              </p>
-            </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <Users className="h-6 w-6 text-orange-600" />
-            </div>
           </div>
         </div>
       </div>
@@ -270,6 +205,7 @@ const Courses = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold">Id</TableHead>
               <TableHead className="font-semibold">Mã môn học</TableHead>
               <TableHead className="font-semibold">Tên môn học</TableHead>
               <TableHead className="font-semibold">Tín chỉ</TableHead>
@@ -315,6 +251,14 @@ const Courses = () => {
             ) : (
               filteredCourses.map((course) => (
                 <TableRow key={course.id} className="hover:bg-gray-50">
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-purple-100 rounded">
+                        <Hash className="h-4 w-4 text-purple-600" />
+                      </div>
+                      {course.id}
+                    </div>
+                  </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-purple-100 rounded">

@@ -5,12 +5,10 @@ import {
   Trash2,
   Search,
   Users,
-  UserCheck,
   Download,
   User,
   Mail,
   Phone,
-  MapPin,
 } from "lucide-react";
 import {
   Table,
@@ -24,7 +22,12 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
-import { apiGetStudents, apiDeleteStudent } from "~/apis/studentsApi";
+import {
+  apiGetStudents,
+  apiDeleteStudent,
+  apiUpdateStudent,
+  apiCreateStudent,
+} from "~/apis/studentsApi";
 import {
   showToastSuccess,
   showToastError,
@@ -32,17 +35,21 @@ import {
 } from "~/utils/alert";
 import { useSelector } from "react-redux";
 import { formatDate } from "~/utils/date";
+import StudentFormModal from "./components/StudentModal";
 
 const StudentManager = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStudents, setSelectedStudents] = useState([]);
   const { accessToken } = useSelector((state) => state.user);
+
+  // State for modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchStudents = useCallback(async () => {
     if (!accessToken) return;
-
     try {
       setLoading(true);
       const res = await apiGetStudents({ accessToken });
@@ -74,76 +81,70 @@ const StudentManager = () => {
       );
     });
   }, [students, searchTerm]);
-
-  // Handle delete single student
+  // Modal handlers
+  const handleOpenAddModal = () => {
+    setEditingStudent(null);
+    setIsModalOpen(true);
+  };
+  const handleOpenEditModal = (student) => {
+    setEditingStudent(student);
+    setIsModalOpen(true);
+  };
+  const handleFormSubmit = async (data) => {
+    setIsSubmitting(true);
+    try {
+      let response;
+      if (editingStudent) {
+        // Update existing student
+        response = await apiUpdateStudent({
+          id: editingStudent.id,
+          data,
+          accessToken,
+        });
+        if (response.code === 200) {
+          showToastSuccess("Cập nhật sinh viên thành công!");
+        }
+      } else {
+        // Create new student
+        response = await apiCreateStudent({ data, accessToken });
+        if (response.code === 200) {
+          showToastSuccess("Thêm sinh viên mới thành công!");
+        }
+      }
+      if (response.code !== 200) {
+        showToastError(response.message || "Có lỗi xảy ra");
+      } else {
+        setIsModalOpen(false);
+        setEditingStudent(null);
+        fetchStudents({ accessToken });
+      }
+    } catch (error) {
+      showToastError(error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const handleDelete = async (student) => {
     const confirmed = await showToastConfirm(
-      `Bạn có chắc chắn muốn xóa sinh viên "${student.studentCode}"?`
+      `Bạn có chắc chắn muốn xóa sinh viên "${student.firstName} ${student.lastName}"?`
     );
-
     if (confirmed) {
       try {
         const response = await apiDeleteStudent({
           id: student.id,
           accessToken,
         });
-
         if (response.code === 200) {
           showToastSuccess("Xóa sinh viên thành công");
           fetchStudents();
-          setSelectedStudents(
-            selectedStudents.filter((id) => id !== student.id)
-          );
         } else {
-          showToastError(response.message || "Có lỗi xảy ra khi xóa sinh viên");
+          showToastError(response.message || "Lỗi khi xóa sinh viên");
         }
       } catch (error) {
-        showToastError("Có lỗi xảy ra khi xóa sinh viên");
-        console.error(error);
+        showToastError(error.message || "Có lỗi xảy ra khi xóa sinh viên");
       }
     }
   };
-
-  // Handle bulk delete
-  const handleBulkDelete = async () => {
-    if (selectedStudents.length === 0) return;
-
-    const confirmed = await showToastConfirm(
-      `Bạn có chắc chắn muốn xóa ${selectedStudents.length} sinh viên đã chọn?`
-    );
-
-    if (confirmed) {
-      try {
-        await Promise.all(
-          selectedStudents.map((id) => apiDeleteStudent({ id, accessToken }))
-        );
-        showToastSuccess("Đã xóa các sinh viên đã chọn!");
-        fetchStudents();
-        setSelectedStudents([]);
-      } catch (err) {
-        showToastError("Xảy ra lỗi trong quá trình xóa");
-        console.error(err);
-      }
-    }
-  };
-
-  // Selection handlers
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedStudents(filteredStudents.map((s) => s.id));
-    } else {
-      setSelectedStudents([]);
-    }
-  };
-
-  const handleSelectStudent = (studentId, checked) => {
-    if (checked) {
-      setSelectedStudents([...selectedStudents, studentId]);
-    } else {
-      setSelectedStudents(selectedStudents.filter((id) => id !== studentId));
-    }
-  };
-
   // Export data
   const exportData = () => {
     const csvContent = [
@@ -198,50 +199,6 @@ const StudentManager = () => {
           </div>
         </div>
       </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Tổng sinh viên</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {students.length}
-              </p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Users className="h-6 w-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Nam</p>
-              <p className="text-2xl font-bold text-green-600">
-                {students.filter((s) => s.gender === "male").length}
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <UserCheck className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Nữ</p>
-              <p className="text-2xl font-bold text-pink-600">
-                {students.filter((s) => s.gender === "female").length}
-              </p>
-            </div>
-            <div className="p-3 bg-pink-100 rounded-lg">
-              <User className="h-6 w-6 text-pink-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Actions */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-100">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -256,16 +213,6 @@ const StudentManager = () => {
             />
           </div>
           <div className="flex gap-2">
-            {selectedStudents.length > 0 && (
-              <Button
-                onClick={handleBulkDelete}
-                variant="destructive"
-                className="gap-2 h-11"
-              >
-                <Trash2 className="h-4 w-4" />
-                Xóa {selectedStudents.length} SV
-              </Button>
-            )}
             <Button
               onClick={exportData}
               variant="outline"
@@ -274,7 +221,10 @@ const StudentManager = () => {
               <Download className="h-4 w-4" />
               Xuất Excel
             </Button>
-            <Button className="gap-2 h-11 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all">
+            <Button
+              onClick={handleOpenAddModal}
+              className="gap-2 h-11 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all"
+            >
               <Plus className="h-5 w-5" />
               Thêm sinh viên
             </Button>
@@ -287,15 +237,6 @@ const StudentManager = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
-              <TableHead className="w-12">
-                <Checkbox
-                  checked={
-                    selectedStudents.length === filteredStudents.length &&
-                    filteredStudents.length > 0
-                  }
-                  onCheckedChange={handleSelectAll}
-                />
-              </TableHead>
               <TableHead className="font-semibold">Mã SV</TableHead>
               <TableHead className="font-semibold">Họ tên</TableHead>
               <TableHead className="font-semibold">Email</TableHead>
@@ -341,14 +282,6 @@ const StudentManager = () => {
             ) : (
               filteredStudents.map((student) => (
                 <TableRow key={student.id} className="hover:bg-gray-50">
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedStudents.includes(student.id)}
-                      onCheckedChange={(checked) =>
-                        handleSelectStudent(student.id, checked)
-                      }
-                    />
-                  </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-blue-100 rounded">
@@ -392,6 +325,7 @@ const StudentManager = () => {
                         variant="ghost"
                         size="icon"
                         title="Chỉnh sửa"
+                        onClick={() => handleOpenEditModal(student)}
                         className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                       >
                         <Pencil className="h-4 w-4" />
@@ -413,6 +347,13 @@ const StudentManager = () => {
           </TableBody>
         </Table>
       </div>
+      <StudentFormModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        editingStudent={editingStudent}
+        onSubmit={handleFormSubmit}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 };

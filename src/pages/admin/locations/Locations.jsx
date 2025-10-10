@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Search, MapPin, Building } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Search,
+  MapPin,
+  Building,
+  Hash,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,7 +18,6 @@ import {
 } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Badge } from "~/components/ui/badge";
 import LocationFormModal from "./components/LocationModal";
 import {
   apiGetLocations,
@@ -84,9 +91,7 @@ const Locations = () => {
     try {
       setIsSubmitting(true);
       let response;
-
       if (editingLocation) {
-        // Update
         response = await apiUpdateLocation({
           id: editingLocation.id,
           body: data,
@@ -164,37 +169,6 @@ const Locations = () => {
           </div>
         </div>
       </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Tổng số cơ sở</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {locations.length}
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <MapPin className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Cơ sở hoạt động</p>
-              <p className="text-2xl font-bold text-green-600">
-                {locations.length}
-              </p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Building className="h-6 w-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Actions */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-100">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -223,6 +197,7 @@ const Locations = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold">Id</TableHead>
               <TableHead className="font-semibold">Mã cơ sở</TableHead>
               <TableHead className="font-semibold">Tên cơ sở</TableHead>
               <TableHead className="font-semibold">Địa chỉ</TableHead>
@@ -266,6 +241,14 @@ const Locations = () => {
             ) : (
               filteredLocations.map((location) => (
                 <TableRow key={location.id} className="hover:bg-gray-50">
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-green-100 rounded">
+                        <Hash className="h-4 w-4 text-green-600" />
+                      </div>
+                      {location.id}
+                    </div>
+                  </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-green-100 rounded">

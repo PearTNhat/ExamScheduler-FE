@@ -115,18 +115,6 @@ const CourseFormModal = ({
                 }`}
                 {...register("codeCourse", {
                   required: "Vui lòng nhập mã môn học",
-                  minLength: {
-                    value: 2,
-                    message: "Mã môn học phải có ít nhất 2 ký tự",
-                  },
-                  maxLength: {
-                    value: 20,
-                    message: "Mã môn học không được quá 20 ký tự",
-                  },
-                  pattern: {
-                    value: /^[A-Za-z0-9]+$/,
-                    message: "Mã môn học chỉ được chứa chữ và số",
-                  },
                 })}
               />
               {errors.codeCourse && (
@@ -298,21 +286,6 @@ const CourseFormModal = ({
               onCheckedChange={(checked) => setValue("is_active", checked)}
               className="data-[state=checked]:bg-purple-600"
             />
-          </div>
-
-          {/* Thông tin hướng dẫn */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex gap-3">
-              <div className="text-amber-600 text-xl">💡</div>
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-amber-900">Lưu ý:</p>
-                <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
-                  <li>Mã môn học phải là duy nhất và không trùng lặp</li>
-                  <li>Số tín chỉ thường từ 1-6 tín chỉ</li>
-                  <li>Số sinh viên dự kiến giúp sắp xếp phòng thi phù hợp</li>
-                </ul>
-              </div>
-            </div>
           </div>
         </div>
 

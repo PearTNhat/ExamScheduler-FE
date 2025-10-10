@@ -45,8 +45,7 @@ const Rooms = () => {
         showToastError(response.message || "Lỗi khi tải danh sách phòng thi");
       }
     } catch (error) {
-      showToastError("Lỗi khi tải danh sách phòng thi");
-      console.error(error);
+      showToastError(error.message || "Lỗi khi tải danh sách phòng thi");
     } finally {
       setLoading(false);
     }
@@ -111,8 +110,7 @@ const Rooms = () => {
         showToastError(response.message || "Có lỗi xảy ra");
       }
     } catch (error) {
-      showToastError("Có lỗi xảy ra khi lưu phòng thi");
-      console.error(error);
+      showToastError(error.message || "Có lỗi xảy ra khi lưu phòng thi");
     } finally {
       setIsSubmitting(false);
     }
@@ -178,47 +176,6 @@ const Rooms = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Tổng số phòng</p>
-              <p className="text-2xl font-bold text-gray-900">{rooms.length}</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Building2 className="h-6 w-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Đang hoạt động</p>
-              <p className="text-2xl font-bold text-green-600">
-                {rooms.filter((r) => r.is_active).length}
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Building2 className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Ngừng hoạt động</p>
-              <p className="text-2xl font-bold text-red-600">
-                {rooms.filter((r) => !r.is_active).length}
-              </p>
-            </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <Building2 className="h-6 w-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Actions */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-100">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -247,6 +204,7 @@ const Rooms = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold">Id</TableHead>
               <TableHead className="font-semibold">Mã phòng</TableHead>
               <TableHead className="font-semibold">Sức chứa</TableHead>
               <TableHead className="font-semibold">Cơ sở</TableHead>
@@ -292,6 +250,14 @@ const Rooms = () => {
             ) : (
               filteredRooms.map((room) => (
                 <TableRow key={room.id} className="hover:bg-gray-50">
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-blue-100 rounded">
+                        <Building2 className="h-4 w-4 text-blue-600" />
+                      </div>
+                      {room.id}
+                    </div>
+                  </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-blue-100 rounded">
