@@ -1,8 +1,16 @@
 import { http } from "~/utils/http";
 
-const apiGetLocations = async () => {
+const apiGetLocations = async ({ page, limit, code, name }) => {
     try {
-        const { data } = await http.get("/locations");
+        const config = {
+            params: {
+                page,
+                limit,
+                code,
+                name
+            }
+        };
+        const { data } = await http.get("/locations", config);
         return data;
     } catch (error) {
         if (error.response && error.response.data) {

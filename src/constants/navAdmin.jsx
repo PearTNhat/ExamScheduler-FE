@@ -58,6 +58,11 @@ const navItems = [
     path: adminPaths.LECTURES,
   },
   {
+    icon: <Users size={20} className="text-teal-500" />,
+    name: "Xếp lịch",
+    path: adminPaths.SCHEDULE,
+  },
+  {
     icon: <Upload size={20} className="text-orange-500" />,
     name: "Import đăng ký",
     path: adminPaths.IMPORT_REGISTRATIONS,

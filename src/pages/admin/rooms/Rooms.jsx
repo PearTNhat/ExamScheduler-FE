@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus, Pencil, Trash2, Search, Building2, MapPin } from "lucide-react";
 import {
   Table,
@@ -24,23 +24,41 @@ import {
   showToastConfirm,
 } from "../../../utils/alert";
 import { useSelector } from "react-redux";
-
+import { formatDate } from "~/utils/date";
+import { useSearchParams } from "react-router-dom";
+import Pagination from "~/components/pagination/Pagination";
 const Rooms = () => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingRoom, setEditingRoom] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { accessToken } = useSelector((state) => state.user);
-
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
+  const currentParams = useMemo(
+    () => Object.fromEntries([...searchParams]),
+    [searchParams]
+  );
   // Fetch rooms
   const fetchRooms = async () => {
     try {
       setLoading(true);
-      const response = await apiGetRooms();
-      if (response.code === 200) {
-        setRooms(response.data || []);
+      const response = await apiGetRooms({
+        page: currentParams.page,
+        limit: 10,
+        code: currentParams.code,
+      });
+      if (response.code == 200) {
+        setRooms(response.data.data || []);
+        setPagination({
+          currentPage: response.data.meta.page,
+          totalPages: response.data.meta.totalPages,
+        });
       } else {
         showToastError(response.message || "Lỗi khi tải danh sách phòng thi");
       }
@@ -50,21 +68,10 @@ const Rooms = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchRooms();
   }, []);
-
-  // Filter rooms
-  const filteredRooms = rooms.filter((room) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      room.code?.toLowerCase().includes(searchLower) ||
-      room.name?.toLowerCase().includes(searchLower) ||
-      room.address?.toLowerCase().includes(searchLower)
-    );
-  });
-
+  console.log(pagination);
   // Handle add room
   const handleAddRoom = () => {
     setEditingRoom(null);
@@ -115,7 +122,6 @@ const Rooms = () => {
       setIsSubmitting(false);
     }
   };
-
   // Handle delete
   const handleDeleteRoom = async (room) => {
     const confirmed = await showToastConfirm(
@@ -144,19 +150,22 @@ const Rooms = () => {
       }
     }
   };
-
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setSearchParams((prev) => {
+        if (searchTerm.trim()) {
+          prev.set("code", searchTerm.trim());
+          prev.set("page", "1"); // Quay về trang 1 khi tìm kiếm
+        } else {
+          prev.delete("code");
+        }
+        return prev;
+      });
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, setSearchParams]);
+  const handlePageChange = (page) =>
+    setSearchParams((prev) => ({ ...Object.fromEntries(prev), page }));
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       {/* Header */}
@@ -226,7 +235,7 @@ const Rooms = () => {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : filteredRooms.length === 0 ? (
+            ) : rooms.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={7}
@@ -248,7 +257,7 @@ const Rooms = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredRooms.map((room) => (
+              rooms?.map((room) => (
                 <TableRow key={room.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -338,6 +347,11 @@ const Rooms = () => {
             )}
           </TableBody>
         </Table>
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPageCount={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       {/* Modal Add/Edit */}

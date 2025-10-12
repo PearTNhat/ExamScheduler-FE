@@ -14,10 +14,10 @@ const adminPaths = {
     ROOMS: '/admin/rooms',
     STUDENTS: '/admin/students',
     LECTURES: '/admin/lectures',
+    SCHEDULE: '/admin/schedule',
     IMPORT_REGISTRATIONS: '/admin/import-registrations',
     STUDENT_COURSE_REGISTRATIONS: '/admin/student-course-registrations',
     EXAM_GROUPS: '/admin/exam-groups',
-    SCHEDULE: '/admin/schedule',
     AUTO_SCHEDULE: '/admin/auto-schedule',
     VIEW_SCHEDULE: '/admin/view-schedule',
 };

@@ -27,6 +27,7 @@ import Departments from "./pages/admin/departments/Departments";
 import Locations from "./pages/admin/locations/Locations";
 import LecturesManager from "./pages/admin/lectures/LecturesManager";
 import NotFound from "./components/NotFound";
+import { ScheduleGenerator } from "./pages/admin/schedule/ScheduleGenerator";
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
           <Route path="exam-groups" element={<ExamGroups />} />
           <Route path="auto-schedule" element={<AutoSchedule />} />
           <Route path="view-schedule" element={<ViewSchedule />} />
+          <Route path="schedule" element={<ScheduleGenerator />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

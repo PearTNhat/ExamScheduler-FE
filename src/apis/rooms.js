@@ -1,8 +1,15 @@
 import { http } from "~/utils/http";
 
-const apiGetRooms = async () => {
+const apiGetRooms = async ({ page, limit, code }) => {
     try {
-        const { data } = await http.get("/rooms");
+        const config = {
+            params: {
+                page,
+                limit,
+                code,
+            }
+        };
+        const { data } = await http.get("/rooms", config);
         return data;
     } catch (error) {
         if (error.response && error.response.data) {
