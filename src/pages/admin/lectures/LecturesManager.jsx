@@ -26,7 +26,7 @@ import {
   apiCreateLecturer,
   apiUpdateLecturer,
   apiDeleteLecturer,
-} from "~/apis/lectures";
+} from "~/apis/lecturesApi";
 import {
   showToastSuccess,
   showToastError,

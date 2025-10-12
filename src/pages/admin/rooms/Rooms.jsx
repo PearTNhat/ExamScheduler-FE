@@ -7,22 +7,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../../components/ui/table";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { Badge } from "../../../components/ui/badge";
+} from "~/components/ui/table";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Badge } from "~/components/ui/badge";
 import RoomFormModal from "./components/RoomModal";
 import {
   apiGetRooms,
   apiCreateRoom,
   apiUpdateRoom,
   apiDeleteRoom,
-} from "../../../apis/rooms";
+} from "~/apis/roomsApi";
 import {
   showToastSuccess,
   showToastError,
   showToastConfirm,
-} from "../../../utils/alert";
+} from "~/utils/alert";
 import { useSelector } from "react-redux";
 import { formatDate } from "~/utils/date";
 import { useSearchParams } from "react-router-dom";
@@ -32,10 +32,10 @@ const Rooms = () => {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingRoom, setEditingRoom] = useState(null);
-  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { accessToken } = useSelector((state) => state.user);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -71,7 +71,6 @@ const Rooms = () => {
   useEffect(() => {
     fetchRooms();
   }, []);
-  console.log(pagination);
   // Handle add room
   const handleAddRoom = () => {
     setEditingRoom(null);

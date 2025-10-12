@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Plus,
   Pencil,
@@ -24,14 +24,16 @@ import {
   apiCreateLocation,
   apiUpdateLocation,
   apiDeleteLocation,
-} from "../../../apis/locations";
+} from "~/apis/locationsApi";
 import {
   showToastSuccess,
   showToastError,
   showToastConfirm,
-} from "../../../utils/alert";
+} from "~/utils/alert";
 import { useSelector } from "react-redux";
 import { formatDate } from "~/utils/date";
+import { useSearchParams } from "react-router-dom";
+import Pagination from "~/components/pagination/Pagination";
 
 const Locations = () => {
   const [locations, setLocations] = useState([]);
@@ -41,14 +43,31 @@ const Locations = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { accessToken } = useSelector((state) => state.user);
+  const [searchParams, setSearchParams] = useSearchParams();
 
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
+  const currentParams = useMemo(
+    () => Object.fromEntries([...searchParams]),
+    [searchParams]
+  );
   // Fetch locations
   const fetchLocations = async () => {
     try {
       setLoading(true);
-      const response = await apiGetLocations();
+      const response = await apiGetLocations({
+        page: currentParams.page,
+        limit: 10,
+        name: currentParams.name,
+      });
       if (response.code === 200) {
-        setLocations(response.data || []);
+        setLocations(response.data.data || []);
+        setPagination({
+          currentPage: response.data.meta.page,
+          totalPages: response.data.meta.totalPages,
+        });
       } else {
         showToastError(response.message || "Lỗi khi tải danh sách cơ sở");
       }
@@ -63,23 +82,28 @@ const Locations = () => {
   useEffect(() => {
     fetchLocations();
   }, []);
-
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setSearchParams((prev) => {
+        if (searchTerm.trim()) {
+          prev.set("code", searchTerm.trim());
+          prev.set("page", "1"); // Quay về trang 1 khi tìm kiếm
+        } else {
+          prev.delete("code");
+        }
+        return prev;
+      });
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, setSearchParams]);
+  const handlePageChange = (page) =>
+    setSearchParams((prev) => ({ ...Object.fromEntries(prev), page }));
   // Filter locations
-  const filteredLocations = locations.filter((location) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      location.code?.toLowerCase().includes(searchLower) ||
-      location.name?.toLowerCase().includes(searchLower) ||
-      location.address?.toLowerCase().includes(searchLower)
-    );
-  });
-
   // Handle add location
   const handleAddLocation = () => {
     setEditingLocation(null);
     setShowModal(true);
   };
-
   // Handle edit location
   const handleEditLocation = (location) => {
     setEditingLocation(location);
@@ -217,7 +241,7 @@ const Locations = () => {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : filteredLocations.length === 0 ? (
+            ) : locations.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={5}
@@ -239,7 +263,7 @@ const Locations = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLocations.map((location) => (
+              locations.map((location) => (
                 <TableRow key={location.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -294,6 +318,11 @@ const Locations = () => {
             )}
           </TableBody>
         </Table>
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPageCount={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       {/* Modal Add/Edit */}

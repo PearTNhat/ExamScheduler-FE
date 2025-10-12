@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "~/components/ui/table"; // Điều chỉnh đường dẫn
 import { Search } from "lucide-react";
-import { apiGetLocations } from "~/apis/locations"; // Điều chỉnh đường dẫn
+import { apiGetLocations } from "~/apis/locationsApi"; // Điều chỉnh đường dẫn
 import { showToastError } from "~/utils/alert"; // Điều chỉnh đường dẫn
 import { useSearchParams } from "react-router-dom";
 import Pagination from "~/components/pagination/Pagination";

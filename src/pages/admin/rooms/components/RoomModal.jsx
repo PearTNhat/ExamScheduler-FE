@@ -7,20 +7,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../../components/ui/dialog";
-import { Button } from "../../../../components/ui/button";
-import { Label } from "../../../../components/ui/label";
-import { Input } from "../../../../components/ui/input";
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../../components/ui/select";
-import { Switch } from "../../../../components/ui/switch";
+} from "~/components/ui/select";
+import { Switch } from "~/components/ui/switch";
 import { Building2, Users, MapPin, Hash, Search } from "lucide-react";
-import { apiGetLocations } from "~/apis/locations";
+import { apiGetLocations } from "~/apis/locationsApi";
 import LocationSelectionModal from "./LocationSelectionModal";
 
 const RoomFormModal = ({

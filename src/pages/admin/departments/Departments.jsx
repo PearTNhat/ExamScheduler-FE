@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Plus,
   Pencil,
@@ -19,21 +19,22 @@ import {
 } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Badge } from "~/components/ui/badge";
 import DepartmentFormModal from "./components/DepartmentModal";
 import {
   apiGetDepartments,
   apiCreateDepartment,
   apiUpdateDepartment,
   apiDeleteDepartment,
-} from "../../../apis/departments";
+} from "~/apis/departmentsApi";
 import {
   showToastSuccess,
   showToastError,
   showToastConfirm,
-} from "../../../utils/alert";
+} from "~/utils/alert";
 import { useSelector } from "react-redux";
 import { formatDate } from "~/utils/date";
+import { useSearchParams } from "react-router-dom";
+import Pagination from "~/components/pagination/Pagination";
 
 const Departments = () => {
   const [departments, setDepartments] = useState([]);
@@ -43,13 +44,31 @@ const Departments = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { accessToken } = useSelector((state) => state.user);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
+  const currentParams = useMemo(
+    () => Object.fromEntries([...searchParams]),
+    [searchParams]
+  );
   // Fetch departments
   const fetchDepartments = async ({ accessToken }) => {
     try {
       setLoading(true);
-      const response = await apiGetDepartments({ accessToken });
+      const params = {
+        page: currentParams.page,
+        limit: 10,
+        name: currentParams.name,
+      };
+      const response = await apiGetDepartments({ accessToken, params });
       if (response.code === 200) {
-        setDepartments(response.data || []);
+        setDepartments(response.data.data || []);
+        setPagination({
+          currentPage: response.data.meta.page,
+          totalPages: response.data.meta.totalPages,
+        });
       } else {
         showToastError(response.message || "Lỗi khi tải danh sách khoa");
       }
@@ -66,16 +85,6 @@ const Departments = () => {
       fetchDepartments({ accessToken });
     }
   }, [accessToken]);
-
-  // Filter departments
-  const filteredDepartments = departments.filter((department) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      department.departmentCode?.toLowerCase().includes(searchLower) ||
-      department.departmentName?.toLowerCase().includes(searchLower)
-    );
-  });
-
   // Handle add department
   const handleAddDepartment = () => {
     setEditingDepartment(null);
@@ -151,7 +160,22 @@ const Departments = () => {
       }
     }
   };
-
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setSearchParams((prev) => {
+        if (searchTerm.trim()) {
+          prev.set("code", searchTerm.trim());
+          prev.set("page", "1"); // Quay về trang 1 khi tìm kiếm
+        } else {
+          prev.delete("code");
+        }
+        return prev;
+      });
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, setSearchParams]);
+  const handlePageChange = (page) =>
+    setSearchParams((prev) => ({ ...Object.fromEntries(prev), page }));
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       {/* Header */}
@@ -216,7 +240,7 @@ const Departments = () => {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : filteredDepartments.length === 0 ? (
+            ) : departments.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={4}
@@ -238,7 +262,7 @@ const Departments = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredDepartments.map((department) => (
+              departments.map((department) => (
                 <TableRow key={department.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -289,6 +313,11 @@ const Departments = () => {
             )}
           </TableBody>
         </Table>
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPageCount={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       {/* Modal Add/Edit */}

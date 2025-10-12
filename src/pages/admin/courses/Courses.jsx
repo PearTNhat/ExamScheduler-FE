@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Plus,
   Pencil,
@@ -34,6 +34,8 @@ import {
 } from "../../../utils/alert";
 import { useSelector } from "react-redux";
 import { formatDate } from "~/utils/date";
+import { useSearchParams } from "react-router-dom";
+import Pagination from "~/components/pagination/Pagination";
 
 const Courses = () => {
   const [courses, setCourses] = useState([]);
@@ -43,14 +45,31 @@ const Courses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { accessToken } = useSelector((state) => state.user);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
+  const currentParams = useMemo(
+    () => Object.fromEntries([...searchParams]),
+    [searchParams]
+  );
   // Fetch courses
   const fetchCourses = async ({ accessToken }) => {
     try {
       setLoading(true);
-      const response = await apiGetCourses({ accessToken });
+      const params = {
+        page: currentParams.page,
+        limit: 10,
+        name: currentParams.name,
+      };
+      const response = await apiGetCourses({ accessToken, params });
       if (response.code === 200) {
-        setCourses(response.data || []);
+        setCourses(response.data.data || []);
+        setPagination({
+          currentPage: response.data.meta.page,
+          totalPages: response.data.meta.totalPages,
+        });
       } else {
         showToastError(response.message || "Lỗi khi tải danh sách môn học");
       }
@@ -67,16 +86,6 @@ const Courses = () => {
       fetchCourses({ accessToken });
     }
   }, [accessToken]);
-
-  // Filter courses
-  const filteredCourses = courses.filter((course) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      course.codeCourse?.toLowerCase().includes(searchLower) ||
-      course.nameCourse?.toLowerCase().includes(searchLower) ||
-      course.description?.toLowerCase().includes(searchLower)
-    );
-  });
 
   // Handle add course
   const handleAddCourse = () => {
@@ -128,7 +137,22 @@ const Courses = () => {
       setIsSubmitting(false);
     }
   };
-
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setSearchParams((prev) => {
+        if (searchTerm.trim()) {
+          prev.set("code", searchTerm.trim());
+          prev.set("page", "1"); // Quay về trang 1 khi tìm kiếm
+        } else {
+          prev.delete("code");
+        }
+        return prev;
+      });
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, setSearchParams]);
+  const handlePageChange = (page) =>
+    setSearchParams((prev) => ({ ...Object.fromEntries(prev), page }));
   // Handle delete
   const handleDeleteCourse = async (course) => {
     const confirmed = await showToastConfirm(
@@ -227,7 +251,7 @@ const Courses = () => {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : filteredCourses.length === 0 ? (
+            ) : courses.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={7}
@@ -249,7 +273,7 @@ const Courses = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCourses.map((course) => (
+              courses.map((course) => (
                 <TableRow key={course.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -332,6 +356,11 @@ const Courses = () => {
             )}
           </TableBody>
         </Table>
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPageCount={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       {/* Modal Add/Edit */}
