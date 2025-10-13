@@ -1,6 +1,15 @@
 import { useState } from "react";
-// Import Accordion từ Radix UI
-import { Loader2, AlertCircle, CheckCircle2, Badge } from "lucide-react";
+import {
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Calendar,
+  Clock,
+  Users,
+  MapPin,
+  FileText,
+  Sparkles,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,9 +19,10 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
 import ExamCard from "./components/ExamCard";
 
-// Dữ liệu JSON mẫu giữ nguyên
+// Dữ liệu JSON mẫu với tên đẹp hơn
 const initialJsonData = `{
   "students": [
     { "studentId": "SV001", "subjects": ["CS101", "MA101", "EN101"] },
@@ -183,151 +193,291 @@ export function ScheduleGenerator() {
     }
   };
   const allRooms = scheduleData ? JSON.parse(jsonData).rooms : [];
+  const allSubjects = scheduleData ? JSON.parse(jsonData).subjects : [];
+
   return (
-    <div className="container mx-auto p-4 md:p-8 space-y-8">
-      {/* Thay thế Card bằng div với style của Tailwind */}
-      <div className="bg-white rounded-xl border bg-card text-card-foreground shadow">
-        <div className="flex flex-col space-y-1.5 p-6">
-          <h3 className="font-semibold leading-none tracking-tight text-2xl">
-            Trình tạo Lịch thi Nâng cao
-          </h3>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+            <Calendar className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Xếp Lịch Thi Tự Động
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Hệ thống xếp lịch thi thông minh với thuật toán tối ưu
+            </p>
+          </div>
         </div>
-        <div className="p-6 pt-0 space-y-4">
+      </div>
+
+      {/* Input Card */}
+      <Card className="mb-6 shadow-lg border-0">
+        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <FileText className="h-5 w-5 text-purple-600" />
+            Dữ liệu đầu vào
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
           <div>
             <label
               htmlFor="jsonData"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3"
             >
-              Dữ liệu đầu vào (JSON)
+              <Sparkles className="h-4 w-4 text-purple-500" />
+              Nhập dữ liệu JSON (Sinh viên, Môn học, Phòng thi, Giám thị)
             </label>
-            {/* Thay thế Textarea bằng thẻ textarea với style */}
             <textarea
               id="jsonData"
               rows={15}
               value={jsonData}
               onChange={(e) => setJsonData(e.target.value)}
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm font-mono
+                focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                transition-all duration-200 shadow-sm hover:shadow-md"
               placeholder="Dán dữ liệu JSON của bạn vào đây..."
             />
           </div>
-          {/* Thay thế Button bằng thẻ button với style */}
           <button
             onClick={handleGenerateSchedule}
             disabled={isLoading}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+            className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 
+              hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg
+              shadow-lg hover:shadow-xl transition-all duration-200 
+              disabled:opacity-50 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2"
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isLoading ? "Đang xử lý..." : "Tạo Lịch Thi"}
+            {isLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Đang xử lý thuật toán...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-5 w-5" />
+                <span>Tạo Lịch Thi Tự Động</span>
+              </>
+            )}
           </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {error && (
-        // Thay thế Alert bằng div với style
-        <div className="relative w-full rounded-lg border px-4 py-3 text-sm border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive">
-          <AlertCircle className="h-4 w-4 absolute left-4 top-4" />
-          <h5 className="mb-1 font-medium leading-none tracking-tight ml-6">
-            Lỗi!
-          </h5>
-          <div className="text-sm [&_p]:leading-relaxed ml-6">{error}</div>
+        <div className="relative w-full rounded-lg border-2 border-red-200 bg-red-50 px-5 py-4 text-sm mb-6 shadow-md">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h5 className="font-semibold text-red-900 mb-1">
+                Có lỗi xảy ra!
+              </h5>
+              <div className="text-red-700">{error}</div>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* PHẦN HIỂN THỊ KẾT QUẢ SẼ ĐƯỢC THAY ĐỔI */}
+      {/* Result Section */}
       {scheduleData && scheduleData.timetable && (
-        <Card>
-          <CardHeader>
-            {/* Phần CardHeader với Fitness và status giữ nguyên */}
-            <CardTitle className="flex items-center justify-between">
-              <span>Kết quả Lịch thi</span>
+        <Card className="shadow-xl border-0">
+          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
+            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-6 w-6 text-green-600" />
+                <span className="text-xl">Kết quả Lịch thi</span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
                 <Badge
                   variant={scheduleData.isOptimal ? "default" : "secondary"}
+                  className="px-3 py-1 text-sm bg-blue-100 text-blue-800 border-blue-200"
                 >
+                  <Sparkles className="mr-1 h-3 w-3" />
                   Fitness: {scheduleData.fitness}
                 </Badge>
                 {scheduleData.isOptimal ? (
-                  <Badge
-                    variant="success"
-                    className="bg-green-100 text-green-800"
-                  >
-                    <CheckCircle2 className="mr-1 h-3 w-3" /> Tối ưu
+                  <Badge className="px-3 py-1 text-sm bg-green-100 text-green-800 border-green-200">
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                    Tối ưu
                   </Badge>
                 ) : (
-                  <Badge variant="destructive">Chưa tối ưu</Badge>
+                  <Badge variant="destructive" className="px-3 py-1 text-sm">
+                    Chưa tối ưu
+                  </Badge>
                 )}
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Table className="border">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[120px] font-bold border-r">
-                    Ngày
-                  </TableHead>
-                  <TableHead className="w-[80px] font-bold border-r">
-                    Ca
-                  </TableHead>
-                  {allRooms.map((room) => (
-                    <TableHead
-                      key={room.roomId}
-                      className="font-bold border-r text-center"
-                    >
-                      {room.roomId} ({room.location})
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {scheduleData.timetable.map((dayData, dayIndex) => (
-                  <>
-                    {/* Hàng cho ca SÁNG */}
-                    <TableRow key={`${dayData.day}-sang`}>
-                      {dayIndex % 2 === 0 && ( // Chỉ hiển thị tên ngày ở ca sáng để gộp ô
-                        <TableCell
-                          rowSpan={2}
-                          className="font-semibold border-r align-middle text-center"
-                        >
-                          {dayData.day}
-                        </TableCell>
-                      )}
-                      <TableCell className="font-semibold border-r">
-                        Sáng
-                      </TableCell>
-                      {allRooms.map((room) => (
-                        <TableCell
-                          key={room.roomId}
-                          className="border-r p-1 align-top"
-                        >
-                          {dayData.morning[room.roomId]?.map((exam) => (
-                            <ExamCard key={exam.subject} exam={exam} />
-                          ))}
-                        </TableCell>
-                      ))}
-                    </TableRow>
+          <CardContent className="p-6">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-blue-700 font-medium mb-1">
+                      Số ngày thi
+                    </p>
+                    <p className="text-2xl font-bold text-blue-900">
+                      {scheduleData.timetable.length}
+                    </p>
+                  </div>
+                  <Calendar className="h-8 w-8 text-blue-600 opacity-80" />
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-purple-700 font-medium mb-1">
+                      Số phòng thi
+                    </p>
+                    <p className="text-2xl font-bold text-purple-900">
+                      {allRooms.length}
+                    </p>
+                  </div>
+                  <MapPin className="h-8 w-8 text-purple-600 opacity-80" />
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-green-700 font-medium mb-1">
+                      Tổng ca thi
+                    </p>
+                    <p className="text-2xl font-bold text-green-900">
+                      {scheduleData.timetable.length * 2}
+                    </p>
+                  </div>
+                  <Clock className="h-8 w-8 text-green-600 opacity-80" />
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-orange-700 font-medium mb-1">
+                      Môn thi
+                    </p>
+                    <p className="text-2xl font-bold text-orange-900">
+                      {allSubjects.length}
+                    </p>
+                  </div>
+                  <FileText className="h-8 w-8 text-orange-600 opacity-80" />
+                </div>
+              </div>
+            </div>
 
-                    {/* Hàng cho ca CHIỀU */}
-                    <TableRow key={`${dayData.day}-chieu`}>
-                      {/* Tên ngày đã được render và gộp ở trên */}
-                      <TableCell className="font-semibold border-r">
-                        Chiều
-                      </TableCell>
-                      {allRooms.map((room) => (
-                        <TableCell
-                          key={room.roomId}
-                          className="border-r p-1 align-top"
-                        >
-                          {dayData.afternoon[room.roomId]?.map((exam) => (
-                            <ExamCard key={exam.subject} exam={exam} />
-                          ))}
+            {/* Timetable */}
+            <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gradient-to-r from-gray-100 to-gray-50">
+                    <TableHead className="w-[100px] font-bold border-r bg-gray-100 sticky left-0 z-10">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        Ngày
+                      </div>
+                    </TableHead>
+                    <TableHead className="w-[80px] font-bold border-r bg-gray-100">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        Ca
+                      </div>
+                    </TableHead>
+                    {allRooms.map((room) => (
+                      <TableHead
+                        key={room.roomId}
+                        className="font-bold border-r text-center min-w-[200px]"
+                      >
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="flex items-center gap-1 font-semibold text-gray-900">
+                            <MapPin className="h-4 w-4" />
+                            {room.roomId}
+                          </div>
+                          <span className="text-xs font-normal text-gray-600">
+                            {room.location}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            <Users className="h-3 w-3 mr-1" />
+                            {room.capacity} chỗ
+                          </Badge>
+                        </div>
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {scheduleData.timetable.map((dayData, dayIndex) => (
+                    <>
+                      {/* Morning Session */}
+                      <TableRow
+                        key={`${dayData.day}-morning`}
+                        className="hover:bg-gray-50"
+                      >
+                        {dayIndex % 2 === 0 && (
+                          <TableCell
+                            rowSpan={2}
+                            className="font-bold border-r align-middle text-center bg-blue-50 sticky left-0 z-10"
+                          >
+                            <div className="flex flex-col items-center gap-1">
+                              <Calendar className="h-5 w-5 text-blue-600" />
+                              <span className="text-sm">{dayData.day}</span>
+                            </div>
+                          </TableCell>
+                        )}
+                        <TableCell className="font-semibold border-r bg-yellow-50 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <Clock className="h-4 w-4 text-orange-600" />
+                            <span className="text-sm">Sáng</span>
+                          </div>
                         </TableCell>
-                      ))}
-                    </TableRow>
-                  </>
-                ))}
-              </TableBody>
-            </Table>
+                        {allRooms.map((room) => (
+                          <TableCell
+                            key={room.roomId}
+                            className="border-r p-2 align-top bg-white"
+                          >
+                            {dayData.morning[room.roomId]?.map((exam) => (
+                              <ExamCard
+                                key={exam.subject}
+                                exam={exam}
+                                allSubjects={allSubjects}
+                              />
+                            ))}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+
+                      {/* Afternoon Session */}
+                      <TableRow
+                        key={`${dayData.day}-afternoon`}
+                        className="hover:bg-gray-50"
+                      >
+                        <TableCell className="font-semibold border-r bg-indigo-50 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <Clock className="h-4 w-4 text-indigo-600" />
+                            <span className="text-sm">Chiều</span>
+                          </div>
+                        </TableCell>
+                        {allRooms.map((room) => (
+                          <TableCell
+                            key={room.roomId}
+                            className="border-r p-2 align-top bg-white"
+                          >
+                            {dayData.afternoon[room.roomId]?.map((exam) => (
+                              <ExamCard
+                                key={exam.subject}
+                                exam={exam}
+                                allSubjects={allSubjects}
+                              />
+                            ))}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    </>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}

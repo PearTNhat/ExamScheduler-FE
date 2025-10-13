@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Plus,
   Pencil,
@@ -35,13 +35,23 @@ import {
 import { useSelector } from "react-redux";
 import { formatDate } from "~/utils/date";
 import LecturerFormModal from "./components/LecturerFormModal";
+import { useSearchParams } from "react-router-dom";
+import Pagination from "~/components/pagination/Pagination";
 
 const LecturesManager = () => {
   const [lecturers, setLecturers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const { accessToken } = useSelector((state) => state.user);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
+  const currentParams = useMemo(
+    () => Object.fromEntries([...searchParams]),
+    [searchParams]
+  );
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLecturer, setEditingLecturer] = useState(null);
@@ -52,9 +62,18 @@ const LecturesManager = () => {
   const fetchLecturers = useCallback(async ({ accessToken }) => {
     try {
       setLoading(true);
-      const response = await apiGetLecturers({ accessToken });
-      if (response.success) {
-        setLecturers(response.data || []);
+      const params = {
+        page: currentParams.page,
+        limit: 10,
+        name: currentParams.name,
+      };
+      const response = await apiGetLecturers({ accessToken, params });
+      if (response.code === 200) {
+        setLecturers(response.data.data || []);
+        setPagination({
+          currentPage: response.data.meta.page,
+          totalPages: response.data.meta.totalPages,
+        });
       } else {
         showToastError(response.message || "Lỗi khi tải danh sách giảng viên");
       }
@@ -68,20 +87,6 @@ const LecturesManager = () => {
   useEffect(() => {
     fetchLecturers({ accessToken });
   }, [accessToken]);
-
-  // Filter lecturers
-  const filteredLecturers = lecturers.filter((lecturer) => {
-    const searchLower = searchTerm.toLowerCase();
-    const fullName = `${lecturer.user?.firstName || ""} ${
-      lecturer.user?.lastName || ""
-    }`.trim();
-    return (
-      lecturer.code?.toLowerCase().includes(searchLower) ||
-      fullName.toLowerCase().includes(searchLower) ||
-      lecturer.user?.email?.toLowerCase().includes(searchLower) ||
-      lecturer.department?.departmentName?.toLowerCase().includes(searchLower)
-    );
-  });
 
   // Modal handlers
   const handleOpenAddModal = () => {
@@ -149,7 +154,22 @@ const LecturesManager = () => {
       }
     }
   };
-
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setSearchParams((prev) => {
+        if (searchTerm.trim()) {
+          prev.set("code", searchTerm.trim());
+          prev.set("page", "1"); // Quay về trang 1 khi tìm kiếm
+        } else {
+          prev.delete("code");
+        }
+        return prev;
+      });
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, setSearchParams]);
+  const handlePageChange = (page) =>
+    setSearchParams((prev) => ({ ...Object.fromEntries(prev), page }));
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       {/* Header */}
@@ -217,7 +237,7 @@ const LecturesManager = () => {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : filteredLecturers.length === 0 ? (
+            ) : lecturers.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={7}
@@ -239,7 +259,7 @@ const LecturesManager = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLecturers.map((lecturer) => (
+              lecturers.map((lecturer) => (
                 <TableRow key={lecturer.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium">{lecturer.code}</TableCell>
                   <TableCell>
@@ -292,6 +312,11 @@ const LecturesManager = () => {
             )}
           </TableBody>
         </Table>
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPageCount={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       <LecturerFormModal

@@ -9,6 +9,7 @@ import {
   User,
   Mail,
   Phone,
+  Upload,
 } from "lucide-react";
 import {
   Table,
@@ -36,15 +37,27 @@ import {
 import { useSelector } from "react-redux";
 import { formatDate } from "~/utils/date";
 import StudentFormModal from "./components/StudentModal";
+import StudentUploadModal from "./components/StudentUploadModal";
+import { useSearchParams } from "react-router-dom";
+import Pagination from "~/components/pagination/Pagination";
 
 const StudentManager = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const { accessToken } = useSelector((state) => state.user);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
+  const currentParams = useMemo(
+    () => Object.fromEntries([...searchParams]),
+    [searchParams]
+  );
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,9 +65,18 @@ const StudentManager = () => {
     if (!accessToken) return;
     try {
       setLoading(true);
-      const res = await apiGetStudents({ accessToken });
+      const params = {
+        page: currentParams.page,
+        limit: 10,
+        name: currentParams.name,
+      };
+      const res = await apiGetStudents({ accessToken, params });
       if (res.code === 200) {
-        setStudents(res.data || []);
+        setStudents(res.data.data || []);
+        setPagination({
+          currentPage: res.data.meta.page,
+          totalPages: res.data.meta.totalPages,
+        });
       } else {
         showToastError(res.message || "Lỗi khi tải danh sách sinh viên");
       }
@@ -64,23 +86,11 @@ const StudentManager = () => {
     } finally {
       setLoading(false);
     }
-  }, [accessToken]);
+  }, [accessToken, currentParams.page, currentParams.name]);
 
   useEffect(() => {
     fetchStudents();
   }, [fetchStudents]);
-
-  const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
-      const fullName = `${student.firstName} ${student.lastName}`;
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        fullName.toLowerCase().includes(searchLower) ||
-        student.studentCode.toLowerCase().includes(searchLower) ||
-        student.email.toLowerCase().includes(searchLower)
-      );
-    });
-  }, [students, searchTerm]);
   // Modal handlers
   const handleOpenAddModal = () => {
     setEditingStudent(null);
@@ -124,6 +134,22 @@ const StudentManager = () => {
       setIsSubmitting(false);
     }
   };
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setSearchParams((prev) => {
+        if (searchTerm.trim()) {
+          prev.set("code", searchTerm.trim());
+          prev.set("page", "1"); // Quay về trang 1 khi tìm kiếm
+        } else {
+          prev.delete("code");
+        }
+        return prev;
+      });
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, setSearchParams]);
+  const handlePageChange = (page) =>
+    setSearchParams((prev) => ({ ...Object.fromEntries(prev), page }));
   const handleDelete = async (student) => {
     const confirmed = await showToastConfirm(
       `Bạn có chắc chắn muốn xóa sinh viên "${student.firstName} ${student.lastName}"?`
@@ -158,7 +184,7 @@ const StudentManager = () => {
         "Giới tính",
         "Địa chỉ",
       ].join(","),
-      ...filteredStudents.map((s) =>
+      ...students.map((s) =>
         [
           s.studentCode,
           s.firstName,
@@ -214,6 +240,14 @@ const StudentManager = () => {
           </div>
           <div className="flex gap-2">
             <Button
+              onClick={() => setIsUploadModalOpen(true)}
+              variant="outline"
+              className="gap-2 h-11 border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400"
+            >
+              <Upload className="h-4 w-4" />
+              Upload Excel
+            </Button>
+            <Button
               onClick={exportData}
               variant="outline"
               className="gap-2 h-11"
@@ -258,7 +292,7 @@ const StudentManager = () => {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : filteredStudents.length === 0 ? (
+            ) : students.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={8}
@@ -280,7 +314,7 @@ const StudentManager = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredStudents.map((student) => (
+              students.map((student) => (
                 <TableRow key={student.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -346,6 +380,11 @@ const StudentManager = () => {
             )}
           </TableBody>
         </Table>
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPageCount={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
       <StudentFormModal
         open={isModalOpen}
@@ -353,6 +392,11 @@ const StudentManager = () => {
         editingStudent={editingStudent}
         onSubmit={handleFormSubmit}
         isSubmitting={isSubmitting}
+      />
+      <StudentUploadModal
+        open={isUploadModalOpen}
+        onOpenChange={setIsUploadModalOpen}
+        onUploadSuccess={fetchStudents}
       />
     </div>
   );

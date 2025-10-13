@@ -1,11 +1,12 @@
 import { http } from "~/utils/http";
 
-const apiGetLecturers = async ({ accessToken }) => {
+const apiGetLecturers = async ({ accessToken, params }) => {
     try {
         const { data } = await http.get("/lecturers", {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
+            params,
         });
         return data;
     } catch (error) {

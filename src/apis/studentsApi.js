@@ -1,11 +1,12 @@
 import { http } from "~/utils/http";
 
-const apiGetStudents = async ({ accessToken }) => {
+const apiGetStudents = async ({ accessToken, params }) => {
     try {
         const config = {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
+            params,
         };
         const { data } = await http.get("/students", config);
         return data;
