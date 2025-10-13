@@ -5,10 +5,8 @@ import {
   Trash2,
   Search,
   UserCheck,
-  Users,
   GraduationCap,
-  Mail,
-  Building2,
+  Upload,
 } from "lucide-react";
 import {
   Table,
@@ -35,6 +33,7 @@ import {
 import { useSelector } from "react-redux";
 import { formatDate } from "~/utils/date";
 import LecturerFormModal from "./components/LecturerFormModal";
+import { LecturerUploadModal } from "./components/LecturerUploadModal";
 import { useSearchParams } from "react-router-dom";
 import Pagination from "~/components/pagination/Pagination";
 
@@ -54,6 +53,7 @@ const LecturesManager = () => {
   );
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingLecturer, setEditingLecturer] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -201,13 +201,22 @@ const LecturesManager = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button
-            onClick={handleOpenAddModal}
-            className="gap-2 h-11 px-6 bg-indigo-600 hover:bg-indigo-700"
-          >
-            <Plus className="h-5 w-5" />
-            Thêm giảng viên
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="gap-2 h-11 px-6 bg-green-600 hover:bg-green-700"
+            >
+              <Upload className="h-5 w-5" />
+              Upload Excel
+            </Button>
+            <Button
+              onClick={handleOpenAddModal}
+              className="gap-2 h-11 px-6 bg-indigo-600 hover:bg-indigo-700"
+            >
+              <Plus className="h-5 w-5" />
+              Thêm giảng viên
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -325,6 +334,12 @@ const LecturesManager = () => {
         editingLecturer={editingLecturer}
         onSubmit={handleFormSubmit}
         isSubmitting={isSubmitting}
+      />
+
+      <LecturerUploadModal
+        open={isUploadModalOpen}
+        onOpenChange={setIsUploadModalOpen}
+        onUploadSuccess={() => fetchLecturers({ accessToken })}
       />
     </div>
   );
