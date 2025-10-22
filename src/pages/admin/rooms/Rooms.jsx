@@ -283,7 +283,7 @@ const Rooms = () => {
                   <TableCell>
                     <div className="flex items-center gap-1.5">
                       <MapPin className="h-4 w-4 text-gray-400" />
-                      <span>Cơ sở {room.location_id}</span>
+                      <span> {room?.location.name}</span>
                     </div>
                   </TableCell>
                   <TableCell>

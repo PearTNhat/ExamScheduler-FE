@@ -3,7 +3,7 @@ import {
   CalendarDays,
   MapPinned,
   Building2,
-  BookText,
+  BookOpen,
   DoorOpen,
   GraduationCap,
   UserSquare,
@@ -13,7 +13,7 @@ import {
   UsersRound,
   Bot,
   CalendarRange,
-  Settings, // có thể vẫn giữ nếu dùng cho config
+  Users, // dùng cho "Lớp học"
 } from "lucide-react";
 import { adminPaths } from "./path";
 
@@ -39,14 +39,29 @@ const navItems = [
     path: adminPaths.DEPARTMENTS,
   },
   {
-    icon: <BookText size={20} className="text-indigo-500" />,
+    icon: <BookOpen size={20} className="text-indigo-500" />,
     name: "Môn học",
     path: adminPaths.COURSES,
+  },
+  {
+    icon: <Users size={20} className="text-indigo-500" />,
+    name: "Lớp học",
+    path: adminPaths.CLASSES,
   },
   {
     icon: <DoorOpen size={20} className="text-red-500" />,
     name: "Phòng thi",
     path: adminPaths.ROOMS,
+  },
+  {
+    icon: <DoorOpen size={20} className="text-red-500" />,
+    name: "Ca thi",
+    path: adminPaths.EXAM_SLOTS,
+  },
+  {
+    icon: <UsersRound size={20} className="text-gray-500" />,
+    name: "Nhóm thi",
+    path: adminPaths.EXAM_GROUPS,
   },
   {
     icon: <GraduationCap size={20} className="text-sky-500" />,
@@ -64,20 +79,11 @@ const navItems = [
     path: adminPaths.SCHEDULE,
   },
   {
-    icon: <UploadCloud size={20} className="text-orange-500" />,
-    name: "Import đăng ký",
-    path: adminPaths.IMPORT_REGISTRATIONS,
-  },
-  {
     icon: <Notebook size={20} className="text-pink-500" />,
     name: "ĐK học phần",
     path: adminPaths.STUDENT_COURSE_REGISTRATIONS,
   },
-  {
-    icon: <UsersRound size={20} className="text-gray-500" />,
-    name: "Nhóm thi",
-    path: adminPaths.EXAM_GROUPS,
-  },
+
   {
     icon: <Bot size={20} className="text-amber-500" />,
     name: "Xếp lịch tự động",

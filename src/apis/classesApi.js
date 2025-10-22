@@ -1,8 +1,14 @@
 import { http } from "~/utils/http";
 
-const apiGetClasses = async () => {
+const apiGetClasses = async ({ accessToken, params }) => {
     try {
-        const { data } = await http.get("/classes");
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            params,
+        };
+        const { data } = await http.get("/classes", config);
         return data;
     } catch (error) {
         if (error.response && error.response.data) {

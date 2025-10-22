@@ -16,6 +16,21 @@ const apiGetLecturers = async ({ accessToken, params }) => {
         throw new Error(error.message);
     }
 };
+const apiGetLecturerById = async ({ accessToken, id }) => {
+    try {
+        const { data } = await http.get(`/lecturers/${id}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+        return data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
 
 const apiCreateLecturer = async ({ body, accessToken }) => {
     try {
@@ -71,4 +86,4 @@ const apiDeleteLecturer = async ({ accessToken, id }) => {
     }
 };
 
-export { apiGetLecturers, apiCreateLecturer, apiUpdateLecturer, apiDeleteLecturer };
+export { apiGetLecturers, apiCreateLecturer, apiUpdateLecturer, apiDeleteLecturer, apiGetLecturerById };

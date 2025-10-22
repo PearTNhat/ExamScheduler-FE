@@ -1,5 +1,5 @@
 // src/components/StudentManager/StudentFormModal.js
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Dialog,
@@ -19,7 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select"; // Điều chỉnh đường dẫn nếu cần
-import { User, Hash, Mail, Phone, Calendar, MapPin, Users } from "lucide-react";
+import {
+  User,
+  Hash,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
+  Users,
+  Search,
+} from "lucide-react";
+import ClassPickerModal from "./ClassPickerModal";
 
 const StudentFormModal = ({
   open,
@@ -28,6 +38,9 @@ const StudentFormModal = ({
   onSubmit,
   isSubmitting,
 }) => {
+  const [showClassPicker, setShowClassPicker] = useState(false);
+  const [className, setClassName] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -40,15 +53,16 @@ const StudentFormModal = ({
       studentCode: "",
       firstName: "",
       lastName: "",
-      email: "",
       dateOfBirth: "",
       gender: "male",
       address: "",
       phoneNumber: "",
+      classId: null,
     },
   });
 
   const gender = watch("gender");
+  const classId = watch("classId");
 
   useEffect(() => {
     if (editingStudent) {
@@ -60,25 +74,33 @@ const StudentFormModal = ({
         studentCode: editingStudent.studentCode || "",
         firstName: editingStudent.firstName || "",
         lastName: editingStudent.lastName || "",
-        email: editingStudent.email || "",
         dateOfBirth: formattedDate,
         gender: editingStudent.gender || "male",
         address: editingStudent.address || "",
         phoneNumber: editingStudent.phoneNumber || "",
+        classId: editingStudent.classId || null,
       });
+      setClassName(editingStudent.class?.name || "");
     } else {
       reset({
         studentCode: "",
         firstName: "",
         lastName: "",
-        email: "",
         dateOfBirth: "",
         gender: "male",
         address: "",
         phoneNumber: "",
+        classId: null,
       });
+      setClassName("");
     }
   }, [editingStudent, reset, open]);
+
+  const handleClassSelect = (classItem) => {
+    setValue("classId", classItem.id);
+    setClassName(classItem.name);
+    setShowClassPicker(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -121,30 +143,6 @@ const StudentFormModal = ({
                 <p className="text-sm text-red-500">
                   {errors.studentCode.message}
                 </p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-gray-500" />
-                Email <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="VD: student@example.com"
-                {...register("email", {
-                  required: "Vui lòng nhập email",
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: "Email không hợp lệ",
-                  },
-                })}
-                className={errors.email ? "border-red-500" : ""}
-              />
-              {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
               )}
             </div>
 
@@ -233,6 +231,36 @@ const StudentFormModal = ({
               </Select>
             </div>
 
+            {/* Class - Class Picker */}
+            <div className="space-y-2">
+              <Label htmlFor="class" className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-gray-500" />
+                Lớp học
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="class"
+                  placeholder="Chọn lớp học..."
+                  value={className}
+                  readOnly
+                  onClick={() => setShowClassPicker(true)}
+                  className="flex-1 cursor-pointer"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setShowClassPicker(true)}
+                  className="shrink-0"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+              {classId && (
+                <p className="text-xs text-gray-500">ID: {classId}</p>
+              )}
+            </div>
+
             {/* Address */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="address" className="flex items-center gap-2">
@@ -279,6 +307,13 @@ const StudentFormModal = ({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Class Picker Modal */}
+      <ClassPickerModal
+        open={showClassPicker}
+        onOpenChange={setShowClassPicker}
+        onSelect={handleClassSelect}
+      />
     </Dialog>
   );
 };

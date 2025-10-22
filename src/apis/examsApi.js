@@ -1,8 +1,26 @@
+// src/api/exams.js
 import { http } from "~/utils/http";
 
-const apiGetStudentExamGroups = async ({ accessToken }) => {
+const apiGetExams = async ({ accessToken, params }) => {
     try {
-        const { data } = await http.get("/student-exam-groups", {
+        const { data } = await http.get("/exams", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            params,
+        });
+        return data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
+
+const apiGetExamById = async ({ accessToken, id }) => {
+    try {
+        const { data } = await http.get(`/exams/${id}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
@@ -16,25 +34,7 @@ const apiGetStudentExamGroups = async ({ accessToken }) => {
     }
 };
 
-const apiGetStudentExamGroupById = async ({ accessToken, id }) => {
-    try {
-        const { data } = await http.get(`/student-exam-groups/${id}`, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
-        return data;
-    } catch (error) {
-        if (error.response && error.response.data) {
-            return error.response.data;
-        }
-        throw new Error(error.message);
-    }
-};
-
-
-
-const apiCreateStudentExamGroup = async ({ body, accessToken }) => {
+const apiCreateExam = async ({ body, accessToken }) => {
     try {
         const config = {
             headers: {
@@ -42,7 +42,7 @@ const apiCreateStudentExamGroup = async ({ body, accessToken }) => {
             },
         };
 
-        const response = await http.post("/student-exam-groups", body, config);
+        const response = await http.post("/exams", body, config);
         return response.data;
     } catch (error) {
         if (error.response && error.response.data) {
@@ -52,7 +52,7 @@ const apiCreateStudentExamGroup = async ({ body, accessToken }) => {
     }
 };
 
-const apiUpdateStudentExamGroup = async ({ id, body, accessToken }) => {
+const apiUpdateExam = async ({ id, body, accessToken }) => {
     try {
         const config = {
             headers: {
@@ -60,7 +60,7 @@ const apiUpdateStudentExamGroup = async ({ id, body, accessToken }) => {
             },
         };
 
-        const response = await http.put(`/student-exam-groups/${id}`, body, config);
+        const response = await http.put(`/exams/${id}`, body, config);
         return response.data;
     } catch (error) {
         if (error.response && error.response.data) {
@@ -70,7 +70,7 @@ const apiUpdateStudentExamGroup = async ({ id, body, accessToken }) => {
     }
 };
 
-const apiDeleteStudentExamGroup = async ({ accessToken, id }) => {
+const apiDeleteExam = async ({ accessToken, id }) => {
     try {
         const config = {
             headers: {
@@ -78,7 +78,7 @@ const apiDeleteStudentExamGroup = async ({ accessToken, id }) => {
             },
         };
 
-        const res = await http.delete(`/student-exam-groups/${id}`, config);
+        const res = await http.delete(`/exams/${id}`, config);
         return res.data;
     } catch (error) {
         if (error.response && error.response.data) {
@@ -89,9 +89,9 @@ const apiDeleteStudentExamGroup = async ({ accessToken, id }) => {
 };
 
 export {
-    apiGetStudentExamGroups,
-    apiCreateStudentExamGroup,
-    apiUpdateStudentExamGroup,
-    apiDeleteStudentExamGroup,
-    apiGetStudentExamGroupById,
+    apiGetExams,
+    apiGetExamById,
+    apiCreateExam,
+    apiUpdateExam,
+    apiDeleteExam,
 };

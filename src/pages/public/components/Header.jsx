@@ -83,7 +83,7 @@ function Header() {
           {/* Desktop Auth Buttons or User Avatar */}
           <div className="hidden md:flex items-center space-x-4">
             {isLoggedIn ? (
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
                     <Avatar className="h-8 w-8">
@@ -106,7 +106,11 @@ function Header() {
                     </div>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
+                <DropdownMenuContent
+                  className="w-56"
+                  align="end"
+                  sideOffset={8}
+                >
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
@@ -165,7 +169,77 @@ function Header() {
             )}
           </div>
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            {isLoggedIn && (
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
+                      <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold">
+                        {mockUser.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-56"
+                  align="end"
+                  sideOffset={8}
+                >
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {mockUser.name}
+                      </p>
+                      <p className="text-xs leading-none text-gray-500">
+                        {mockUser.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/user"
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
+                      <User className="h-4 w-4" />
+                      <span>Thông tin cá nhân</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/admin"
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Admin</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/user/change-password"
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Đổi mật khẩu</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => dispatch(userActions.logout())}
+                    className="text-red-600 focus:text-red-600 cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    <span>Đăng xuất</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-700 hover:text-blue-600 p-2 rounded-md"
@@ -194,79 +268,26 @@ function Header() {
                   <span>{item.name}</span>
                 </a>
               ))}
-              <div className="border-t border-gray-200 pt-4">
-                {isLoggedIn ? (
-                  <>
-                    <div className="flex items-center space-x-3 px-3 py-2 mb-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={mockUser.avatar}
-                          alt={mockUser.name}
-                        />
-                        <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold">
-                          {mockUser.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {mockUser.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {mockUser.studentId}
-                        </p>
-                      </div>
-                    </div>
-                    <Link
-                      to="/user"
-                      className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md text-base font-medium transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <User className="h-4 w-4" />
-                      <span>Thông tin cá nhân</span>
-                    </Link>
-                    <Link
-                      to="/user/change-password"
-                      className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md text-base font-medium transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Settings className="h-4 w-4" />
-                      <span>Đổi mật khẩu</span>
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex items-center space-x-2 text-red-600 hover:bg-red-50 px-3 py-2 rounded-md text-base font-medium w-full text-left transition-colors"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Đăng xuất</span>
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/login"
-                      className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md text-base font-medium transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <LogIn className="h-4 w-4" />
-                      <span>Đăng nhập</span>
-                    </Link>
-                    <Link
-                      to="/admin"
-                      className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-base font-medium mt-2 transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <LogIn className="h-4 w-4" />
-                      <span>Admin Panel</span>
-                    </Link>
-                  </>
-                )}
-              </div>
+              {!isLoggedIn && (
+                <div className="border-t border-gray-200 pt-4">
+                  <Link
+                    to="/login"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md text-base font-medium transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Đăng nhập</span>
+                  </Link>
+                  <Link
+                    to="/admin"
+                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-base font-medium mt-2 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Admin Panel</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

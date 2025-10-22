@@ -14,6 +14,7 @@ const SideBar = () => {
   const { isExpanded, isMobileOpen, isHovered } = useSelector(
     (state) => state.sideBar
   );
+  const { accessToken } = useSelector((state) => state.user);
   const location = useLocation();
   const dispatch = useDispatch();
   const [openSubmenu, setOpenSubmenu] = useState(null);
@@ -61,7 +62,12 @@ const SideBar = () => {
       dispatch(sideBarActions.resetSubmenu());
     }
   }, [isExpanded, isHovered, isMobileOpen, dispatch]);
-
+  useEffect(() => {
+    if (!accessToken) {
+      dispatch(userActions.logout());
+      navigate("/login");
+    }
+  }, [accessToken]);
   useEffect(() => {
     if (openSubmenu !== null) {
       const key = `${openSubmenu.type}-${openSubmenu.index}`;

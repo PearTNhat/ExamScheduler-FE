@@ -1,8 +1,13 @@
 import { http } from "~/utils/http";
 
-const apiGetExamSessions = async () => {
+const apiGetExamSessions = async ({ accessToken }) => {
+    console.log("sessionToken", accessToken)
     try {
-        const { data } = await http.get("/exam-sessions");
+        const { data } = await http.get("/exam-sessions", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
         return data;
     } catch (error) {
         if (error.response && error.response.data) {
@@ -21,10 +26,10 @@ const apiCreateExamSession = async ({ body, accessToken }) => {
         };
 
         const response = await http.post("/exam-sessions", body, config);
-        return response.data;
+        return { code: 201, data: response.data };
     } catch (error) {
         if (error.response && error.response.data) {
-            return error.response.data;
+            return { code: error.response.status, ...error.response.data };
         }
         throw new Error(error.message);
     }
@@ -39,10 +44,10 @@ const apiUpdateExamSession = async ({ id, body, accessToken }) => {
         };
 
         const response = await http.put(`/exam-sessions/${id}`, body, config);
-        return response.data;
+        return { code: 200, data: response.data };
     } catch (error) {
         if (error.response && error.response.data) {
-            return error.response.data;
+            return { code: error.response.status, ...error.response.data };
         }
         throw new Error(error.message);
     }
@@ -57,13 +62,18 @@ const apiDeleteExamSession = async ({ accessToken, id }) => {
         };
 
         const res = await http.delete(`/exam-sessions/${id}`, config);
-        return res.data;
+        return { code: 200, data: res.data };
     } catch (error) {
         if (error.response && error.response.data) {
-            return error.response.data;
+            return { code: error.response.status, ...error.response.data };
         }
         throw new Error(error.message);
     }
 };
 
-export { apiGetExamSessions, apiCreateExamSession, apiUpdateExamSession, apiDeleteExamSession };
+export {
+    apiGetExamSessions,
+    apiCreateExamSession,
+    apiUpdateExamSession,
+    apiDeleteExamSession,
+};

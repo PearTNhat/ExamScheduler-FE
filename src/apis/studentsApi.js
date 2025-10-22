@@ -25,7 +25,7 @@ const apiCreateStudent = async ({ body, accessToken }) => {
                 Authorization: `Bearer ${accessToken}`,
             },
         };
-
+        console.log(body)
         const response = await http.post("/students", body, config);
         return response.data;
     } catch (error) {

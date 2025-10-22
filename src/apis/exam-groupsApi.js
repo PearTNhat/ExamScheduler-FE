@@ -1,8 +1,13 @@
 import { http } from "~/utils/http";
 
-const apiGetExamGroups = async () => {
+const apiGetExamGroups = async ({ accessToken, params }) => {
     try {
-        const { data } = await http.get("/exam-groups");
+        const { data } = await http.get("/exam-groups", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            params,
+        });
         return data;
     } catch (error) {
         if (error.response && error.response.data) {
@@ -11,6 +16,24 @@ const apiGetExamGroups = async () => {
         throw new Error(error.message);
     }
 };
+
+const apiGetExamGroupById = async ({ accessToken, id }) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
+        const { data } = await http.get(`/exam-groups/${id}`, config);
+        return data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
+
 
 const apiCreateExamGroup = async ({ body, accessToken }) => {
     try {
@@ -66,4 +89,4 @@ const apiDeleteExamGroup = async ({ accessToken, id }) => {
     }
 };
 
-export { apiGetExamGroups, apiCreateExamGroup, apiUpdateExamGroup, apiDeleteExamGroup };
+export { apiGetExamGroups, apiCreateExamGroup, apiUpdateExamGroup, apiDeleteExamGroup, apiGetExamGroupById };

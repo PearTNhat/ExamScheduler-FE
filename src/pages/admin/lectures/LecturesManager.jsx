@@ -7,6 +7,7 @@ import {
   UserCheck,
   GraduationCap,
   Upload,
+  Eye,
 } from "lucide-react";
 import {
   Table,
@@ -18,12 +19,12 @@ import {
 } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Badge } from "~/components/ui/badge";
 import {
   apiGetLecturers,
   apiCreateLecturer,
   apiUpdateLecturer,
   apiDeleteLecturer,
+  apiGetLecturerById,
 } from "~/apis/lecturesApi";
 import {
   showToastSuccess,
@@ -33,6 +34,7 @@ import {
 import { useSelector } from "react-redux";
 import { formatDate } from "~/utils/date";
 import LecturerFormModal from "./components/LecturerFormModal";
+import LecturerDetailModal from "./components/LecturerDetailModal";
 import { LecturerUploadModal } from "./components/LecturerUploadModal";
 import { useSearchParams } from "react-router-dom";
 import Pagination from "~/components/pagination/Pagination";
@@ -54,8 +56,11 @@ const LecturesManager = () => {
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editingLecturer, setEditingLecturer] = useState(null);
+  const [selectedLecturer, setSelectedLecturer] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   // Fetch lecturers
 
@@ -97,6 +102,31 @@ const LecturesManager = () => {
   const handleOpenEditModal = (lecturer) => {
     setEditingLecturer(lecturer);
     setIsModalOpen(true);
+  };
+
+  // View detail handler
+  const handleViewDetail = async (lecturer) => {
+    try {
+      setLoadingDetail(true);
+      setIsDetailModalOpen(true);
+
+      const response = await apiGetLecturerById({
+        id: lecturer.id,
+        accessToken,
+      });
+
+      if (response.code === 200) {
+        setSelectedLecturer(response.data);
+      } else {
+        showToastError(response.message || "Lỗi khi tải thông tin giảng viên");
+        setIsDetailModalOpen(false);
+      }
+    } catch (error) {
+      showToastError(error.message || "Lỗi khi tải thông tin giảng viên");
+      setIsDetailModalOpen(false);
+    } finally {
+      setLoadingDetail(false);
+    }
   };
 
   // Form submission handler
@@ -228,8 +258,6 @@ const LecturesManager = () => {
               <TableHead className="font-semibold">Mã GV</TableHead>
               <TableHead className="font-semibold">Họ tên</TableHead>
               <TableHead className="font-semibold">Email</TableHead>
-              <TableHead className="font-semibold">Khoa/Viện</TableHead>
-              <TableHead className="font-semibold">Vai trò</TableHead>
               <TableHead className="font-semibold">Ngày tạo</TableHead>
               <TableHead className="text-right font-semibold">
                 Thao tác
@@ -270,29 +298,15 @@ const LecturesManager = () => {
             ) : (
               lecturers.map((lecturer) => (
                 <TableRow key={lecturer.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium">{lecturer.code}</TableCell>
+                  <TableCell className="font-medium">
+                    {lecturer.lecturerCode}
+                  </TableCell>
                   <TableCell>
-                    {`${lecturer.user?.firstName || ""} ${
-                      lecturer.user?.lastName || ""
+                    {`${lecturer?.firstName || ""} ${
+                      lecturer?.lastName || ""
                     }`.trim() || "N/A"}
                   </TableCell>
-                  <TableCell>{lecturer.user?.email || "N/A"}</TableCell>
-                  <TableCell>
-                    {lecturer.department?.departmentName || "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    {lecturer.isSupervisor ? (
-                      <Badge
-                        variant="outline"
-                        className="text-green-600 border-green-300 gap-1.5"
-                      >
-                        <UserCheck className="h-3 w-3" />
-                        Giám thị
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">Giảng viên</Badge>
-                    )}
-                  </TableCell>
+                  <TableCell>{lecturer?.email || "N/A"}</TableCell>
                   <TableCell className="text-gray-500 text-sm">
                     {formatDate(lecturer.createdAt || lecturer.createAt)}
                   </TableCell>
@@ -301,8 +315,18 @@ const LecturesManager = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleViewDetail(lecturer)}
+                        className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                        title="Xem chi tiết"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleOpenEditModal(lecturer)}
                         className="h-8 w-8 text-indigo-600 hover:bg-indigo-50"
+                        title="Chỉnh sửa"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -311,6 +335,7 @@ const LecturesManager = () => {
                         size="icon"
                         onClick={() => handleDeleteLecturer(lecturer)}
                         className="h-8 w-8 text-red-600 hover:bg-red-50"
+                        title="Xóa"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -334,6 +359,18 @@ const LecturesManager = () => {
         editingLecturer={editingLecturer}
         onSubmit={handleFormSubmit}
         isSubmitting={isSubmitting}
+      />
+
+      <LecturerDetailModal
+        open={isDetailModalOpen}
+        onOpenChange={(open) => {
+          setIsDetailModalOpen(open);
+          if (!open) {
+            setSelectedLecturer(null);
+          }
+        }}
+        lecturer={selectedLecturer}
+        loading={loadingDetail}
       />
 
       <LecturerUploadModal

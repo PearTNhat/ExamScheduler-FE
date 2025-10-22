@@ -314,7 +314,7 @@ const Courses = () => {
                     </div>
                   </TableCell>
                   <TableCell className="text-gray-500 text-sm">
-                    {formatDate(course.createAt)}
+                    {formatDate(course.createdAt)}
                   </TableCell>
                   <TableCell>
                     {course.is_active ? (

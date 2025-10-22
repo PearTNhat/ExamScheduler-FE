@@ -10,9 +10,7 @@ import ExamSessions from "./pages/admin/exam-sessions/ExamSessions";
 import Courses from "./pages/admin/courses/Courses";
 import Rooms from "./pages/admin/rooms/Rooms";
 import StudentManager from "./pages/admin/student/StudentManager";
-import ImportRegistrations from "./pages/admin/import-registrations/ImportRegistrations";
 import StudentCourseRegistrations from "./pages/admin/student-course-registrations/StudentCourseRegistrationsNew";
-import ExamGroups from "./pages/admin/exam-groups/ExamGroups";
 import AutoSchedule from "./pages/admin/auto-schedule/AutoSchedule";
 import ViewSchedule from "./pages/admin/view-schedule/ViewSchedule";
 import UserLayout from "./pages/public/user/UserLayout";
@@ -28,6 +26,9 @@ import Locations from "./pages/admin/locations/Locations";
 import LecturesManager from "./pages/admin/lectures/LecturesManager";
 import NotFound from "./components/NotFound";
 import { ScheduleGenerator } from "./pages/admin/schedule/ScheduleGenerator";
+import ClassesManager from "./pages/admin/classes/ClassesManager";
+import ExamSlotsManager from "./pages/admin/exam-slots/ExamSlotsManager";
+import ExamGroupsManager from "./pages/admin/exam-groups/ExamGroupsManager";
 
 function App() {
   return (
@@ -57,17 +58,15 @@ function App() {
           <Route path="departments" element={<Departments />} />
           <Route path="locations" element={<Locations />} />
           <Route
-            path="import-registrations"
-            element={<ImportRegistrations />}
-          />
-          <Route
             path="student-course-registrations"
             element={<StudentCourseRegistrations />}
           />
-          <Route path="exam-groups" element={<ExamGroups />} />
           <Route path="auto-schedule" element={<AutoSchedule />} />
           <Route path="view-schedule" element={<ViewSchedule />} />
           <Route path="schedule" element={<ScheduleGenerator />} />
+          <Route path="classes" element={<ClassesManager />} />
+          <Route path="exam-slots" element={<ExamSlotsManager />} />
+          <Route path="exam-groups" element={<ExamGroupsManager />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

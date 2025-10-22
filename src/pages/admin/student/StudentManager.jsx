@@ -104,8 +104,8 @@ const StudentManager = () => {
     setIsSubmitting(true);
     try {
       let response;
+      console.log(data);
       if (editingStudent) {
-        // Update existing student
         response = await apiUpdateStudent({
           id: editingStudent.id,
           data,
@@ -115,8 +115,7 @@ const StudentManager = () => {
           showToastSuccess("Cập nhật sinh viên thành công!");
         }
       } else {
-        // Create new student
-        response = await apiCreateStudent({ data, accessToken });
+        response = await apiCreateStudent({ body: data, accessToken });
         if (response.code === 200) {
           showToastSuccess("Thêm sinh viên mới thành công!");
         }
