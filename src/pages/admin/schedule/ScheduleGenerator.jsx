@@ -1,4 +1,7 @@
 import { useState } from "react";
+// Thêm import cho date-fns và các icon mới
+import { startOfWeek, addDays, format, subDays, isSameDay } from "date-fns";
+import { vi } from "date-fns/locale"; // Thêm tiếng Việt
 import {
   Loader2,
   AlertCircle,
@@ -9,141 +12,59 @@ import {
   MapPin,
   FileText,
   Sparkles,
+  ChevronLeft, // Icon mới
+  ChevronRight, // Icon mới
 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
+// Bỏ import Table...
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import ExamCard from "./components/ExamCard";
+import ExamCard from "./components/ExamCard"; // Component con (cũng được cập nhật)
+import { Button } from "~/components/ui/button"; // Dùng cho nút Next/Prev
+import { Textarea } from "~/components/ui/textarea"; // Dùng cho ô nhập JSON
 
-// Dữ liệu JSON mẫu với tên đẹp hơn
+// Dữ liệu JSON mẫu với cấu trúc mới (để demo)
 const initialJsonData = `{
-  "students": [
-    { "studentId": "SV001", "subjects": ["CS101", "MA101", "EN101"] },
-    { "studentId": "SV002", "subjects": ["CS101", "PH102", "MA101"] },
-    { "studentId": "SV003", "subjects": ["EC201", "HI101", "EN101"] },
-    { "studentId": "SV004", "subjects": ["CS202", "CS205L", "MA201"] },
-    { "studentId": "SV005", "subjects": ["PH102", "PH103L", "MA101"] },
-    { "studentId": "SV006", "subjects": ["CS101", "CS202", "EN101"] },
-    { "studentId": "SV007", "subjects": ["HI101", "EC201", "SO101"] },
-    { "studentId": "SV008", "subjects": ["MA201", "CS205L", "PH102"] },
-    { "studentId": "SV009", "subjects": ["CS101", "EN101"] },
-    { "studentId": "SV010", "subjects": ["PH102", "MA101"] },
-    { "studentId": "SV011", "subjects": ["EC201", "MA101", "HI101"] },
-    { "studentId": "SV012", "subjects": ["CS101", "CS202", "CS205L"] },
-    { "studentId": "SV013", "subjects": ["SO101", "EN101", "HI101"] },
-    { "studentId": "SV014", "subjects": ["PH102", "PH103L"] },
-    { "studentId": "SV015", "subjects": ["CS101", "EC201"] },
-    { "studentId": "SV016", "subjects": ["CS301", "CS305", "MA201"] },
-    { "studentId": "SV017", "subjects": ["HI101", "EN101", "SO101"] },
-    { "studentId": "SV018", "subjects": ["PH102", "CS101"] },
-    { "studentId": "SV019", "subjects": ["MA201", "EC201", "CS202"] },
-    { "studentId": "SV020", "subjects": ["CS101", "MA101", "PH102", "EN101"] },
-    { "studentId": "SV021", "subjects": ["CS101", "MA101"] },
-    { "studentId": "SV022", "subjects": ["PH102", "PH103L"] },
-    { "studentId": "SV023", "subjects": ["EC201", "HI101"] },
-    { "studentId": "SV024", "subjects": ["CS202", "CS205L"] },
-    { "studentId": "SV025", "subjects": ["SO101", "EN101"] },
-    { "studentId": "SV026", "subjects": ["CS101", "MA201"] },
-    { "studentId": "SV027", "subjects": ["HI101", "EC201"] },
-    { "studentId": "SV028", "subjects": ["CS301", "CS305"] },
-    { "studentId": "SV029", "subjects": ["MA101", "PH102"] },
-    { "studentId": "SV030", "subjects": ["CS101", "HI101"] },
-    { "studentId": "SV031", "subjects": ["EC201", "EN101"] },
-    { "studentId": "SV032", "subjects": ["CS202", "MA201"] },
-    { "studentId": "SV033", "subjects": ["PH103L", "MA101"] },
-    { "studentId": "SV034", "subjects": ["SO101", "HI101"] },
-    { "studentId": "SV035", "subjects": ["CS101", "CS301"] },
-    { "studentId": "SV036", "subjects": ["MA101", "EC201"] },
-    { "studentId": "SV037", "subjects": ["EN101", "HI101"] },
-    { "studentId": "SV038", "subjects": ["CS205L", "PH102"] },
-    { "studentId": "SV039", "subjects": ["CS305", "MA201"] },
-    { "studentId": "SV040", "subjects": ["CS101", "MA101", "EN101"] },
-    { "studentId": "SV041", "subjects": ["PH102", "CS101"] },
-    { "studentId": "SV042", "subjects": ["EC201", "SO101"] },
-    { "studentId": "SV043", "subjects": ["CS202", "HI101"] },
-    { "studentId": "SV044", "subjects": ["PH103L", "CS205L"] },
-    { "studentId": "SV045", "subjects": ["MA101", "EN101"] },
-    { "studentId": "SV046", "subjects": ["CS101", "CS202"] },
-    { "studentId": "SV047", "subjects": ["HI101", "PH102"] },
-    { "studentId": "SV048", "subjects": ["MA201", "CS301"] },
-    { "studentId": "SV049", "subjects": ["EC201", "CS101"] },
-    { "studentId": "SV050", "subjects": ["SO101", "MA101"] },
-    { "studentId": "SV051", "subjects": ["EN101", "PH102"] },
-    { "studentId": "SV052", "subjects": ["CS205L", "MA201"] },
-    { "studentId": "SV053", "subjects": ["CS305", "HI101"] },
-    { "studentId": "SV054", "subjects": ["CS101", "PH103L"] },
-    { "studentId": "SV055", "subjects": ["MA101", "CS202"] },
-    { "studentId": "SV056", "subjects": ["EC201", "CS301"] },
-    { "studentId": "SV057", "subjects": ["HI101", "MA201"] },
-    { "studentId": "SV058", "subjects": ["SO101", "CS101"] },
-    { "studentId": "SV059", "subjects": ["EN101", "CS205L"] },
-    { "studentId": "SV060", "subjects": ["PH102", "CS305"] },
-    { "studentId": "SV061", "subjects": ["CS101", "MA101"] },
-    { "studentId": "SV062", "subjects": ["EC201", "EN101"] },
-    { "studentId": "SV063", "subjects": ["HI101", "PH102"] },
-    { "studentId": "SV064", "subjects": ["MA201", "CS202"] },
-    { "studentId": "SV065", "subjects": ["CS205L", "SO101"] },
-    { "studentId": "SV066", "subjects": ["CS301", "CS101"] },
-    { "studentId": "SV067", "subjects": ["CS305", "MA101"] },
-    { "studentId": "SV068", "subjects": ["PH103L", "EC201"] },
-    { "studentId": "SV069", "subjects": ["EN101", "HI101"] },
-    { "studentId": "SV070", "subjects": ["CS101", "PH102"] },
-    { "studentId": "SV071", "subjects": ["MA101", "HI101"] },
-    { "studentId": "SV072", "subjects": ["EC201", "CS202"] },
-    { "studentId": "SV073", "subjects": ["SO101", "MA201"] },
-    { "studentId": "SV074", "subjects": ["CS205L", "EN101"] },
-    { "studentId": "SV075", "subjects": ["CS301", "PH102"] },
-    { "studentId": "SV076", "subjects": ["CS305", "EC201"] },
-    { "studentId": "SV077", "subjects": ["PH103L", "HI101"] },
-    { "studentId": "SV078", "subjects": ["MA101", "SO101"] },
-    { "studentId": "SV079", "subjects": ["CS101", "EN101"] },
-    { "studentId": "SV080", "subjects": ["PH102", "EC201", "CS202", "MA101"] }
+  "startDate": "2025-05-01",
+  "endDate": "2025-05-31",
+  "holidays": [
+    "2025-05-01",
+    "2025-05-15"
   ],
-  "subjects": [
-    { "subjectId": "CS101", "duration": 90 },
-    { "subjectId": "MA101", "duration": 90 },
-    { "subjectId": "PH102", "duration": 90 },
-    { "subjectId": "EN101", "duration": 60 },
-    { "subjectId": "HI101", "duration": 60 },
-    { "subjectId": "EC201", "duration": 120 },
-    { "subjectId": "SO101", "duration": 60 },
-    { "subjectId": "CS202", "duration": 90 },
-    { "subjectId": "MA201", "duration": 120 },
-    { "subjectId": "PH103L", "duration": 180 },
-    { "subjectId": "CS205L", "duration": 180 },
-    { "subjectId": "CS301", "duration": 90 },
-    { "subjectId": "CS305", "duration": 120 },
-    { "subjectId": "CH101", "duration": 90 },
-    { "subjectId": "BI101", "duration": 90 }
+  "examGroups": [
+    {
+      "examGroupId": "GT1-G1",
+      "courseCode": "GT1",
+      "studentCount": 100,
+      "duration": 90
+    },
+    {
+      "examGroupId": "GT1-G2",
+      "courseCode": "GT1",
+      "studentCount": 80,
+      "duration": 90
+    },
+    {
+      "examGroupId": "VL1-G1",
+      "courseCode": "VL1",
+      "studentCount": 50,
+      "duration": 60
+    }
   ],
   "rooms": [
-    { "roomId": "A101", "capacity": 80, "location": "Khu A" },
-    { "roomId": "A102", "capacity": 80, "location": "Khu A" },
-    { "roomId": "B201", "capacity": 40, "location": "Khu B" },
-    { "roomId": "B202", "capacity": 40, "location": "Khu B" },
-    { "roomId": "C301", "capacity": 25, "location": "Khu C" },
-    { "roomId": "C302", "capacity": 25, "location": "Khu C" },
-    { "roomId": "D401", "capacity": 100, "location": "Khu D (Hội trường)" },
-    { "roomId": "LAB-B1", "capacity": 30, "location": "Khu B" }
+    { "roomId": "P101", "capacity": 100, "location": "D9" },
+    { "roomId": "P102", "capacity": 80, "location": "D9" },
+    { "roomId": "P201", "capacity": 50, "location": "D7" }
   ],
   "proctors": [
-    { "proctorId": "GV01" },
-    { "proctorId": "GV02" },
-    { "proctorId": "GV03" },
-    { "proctorId": "GV04" },
-    { "proctorId": "GV05" },
-    { "proctorId": "GV06" },
-    { "proctorId": "GV07" },
-    { "proctorId": "GV08" },
-    { "proctorId": "GV09" },
-    { "proctorId": "GV10" }
+    { "proctorId": "GV001" },
+    { "proctorId": "GV002" },
+    { "proctorId": "GV003" }
+  ],
+  "students": [
+    { "studentId": "SV001", "examGroups": ["GT1-G1", "VL1-G1"] },
+    { "studentId": "SV002", "examGroups": ["GT1-G1"] },
+    { "studentId": "SV003", "examGroups": ["GT1-G2", "VL1-G1"] },
+    { "studentId": "SV004", "examGroups": ["GT1-G2"] }
   ],
   "constraints": {
     "maxExamsPerStudentPerDay": 2,
@@ -157,13 +78,26 @@ export function ScheduleGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // State mới để quản lý tuần hiện tại
+  // `weekStartsOn: 1` nghĩa là tuần bắt đầu vào Thứ 2
+  const [currentWeekStart, setCurrentWeekStart] = useState(
+    startOfWeek(new Date(), { weekStartsOn: 1 })
+  );
+
   const handleGenerateSchedule = async () => {
-    // Logic xử lý không thay đổi
     setIsLoading(true);
     setError(null);
     setScheduleData(null);
     try {
       const parsedData = JSON.parse(jsonData);
+
+      // Tự động nhảy đến tuần đầu tiên của kỳ thi
+      if (parsedData.startDate) {
+        setCurrentWeekStart(
+          startOfWeek(new Date(parsedData.startDate), { weekStartsOn: 1 })
+        );
+      }
+
       const response = await fetch(
         "http://localhost:3000/scheduling/generate-advanced",
         {
@@ -172,14 +106,23 @@ export function ScheduleGenerator() {
           body: JSON.stringify(parsedData),
         }
       );
+
+      const result = await response.json(); // API mới trả về { data: {...} }
+
       if (!response.ok) {
         throw new Error(
-          `Lỗi từ server: ${response.status} ${response.statusText}`
+          result.message ||
+            `Lỗi từ server: ${response.status} ${response.statusText}`
         );
       }
-      const result = await response.json();
-      console.log(result);
-      setScheduleData(result.data);
+
+      const data = result.data ? result.data : result; // Hỗ trợ cả 2 kiểu response
+
+      if (!data.timetable) {
+        throw new Error("Định dạng dữ liệu trả về không hợp lệ.");
+      }
+
+      setScheduleData(data);
     } catch (err) {
       if (err instanceof SyntaxError) {
         setError("Dữ liệu JSON đầu vào không hợp lệ. Vui lòng kiểm tra lại.");
@@ -192,8 +135,23 @@ export function ScheduleGenerator() {
       setIsLoading(false);
     }
   };
+
+  // Hàm điều hướng tuần
+  const handleNextWeek = () => {
+    setCurrentWeekStart((prev) => addDays(prev, 7));
+  };
+  const handlePrevWeek = () => {
+    setCurrentWeekStart((prev) => subDays(prev, 7));
+  };
+
+  // Tạo mảng 6 ngày (T2-T7) cho tuần hiện tại
+  const weekDays = Array.from({ length: 6 }).map((_, i) =>
+    addDays(currentWeekStart, i)
+  );
+
+  // Lấy thông tin từ JSON đầu vào (để hiển thị stats)
+  const allExamGroups = scheduleData ? JSON.parse(jsonData).examGroups : [];
   const allRooms = scheduleData ? JSON.parse(jsonData).rooms : [];
-  const allSubjects = scheduleData ? JSON.parse(jsonData).subjects : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
@@ -229,9 +187,9 @@ export function ScheduleGenerator() {
               className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3"
             >
               <Sparkles className="h-4 w-4 text-purple-500" />
-              Nhập dữ liệu JSON (Sinh viên, Môn học, Phòng thi, Giám thị)
+              Nhập dữ liệu JSON (Ngày thi, Nhóm thi, Phòng, Giám thị...)
             </label>
-            <textarea
+            <Textarea
               id="jsonData"
               rows={15}
               value={jsonData}
@@ -242,7 +200,7 @@ export function ScheduleGenerator() {
               placeholder="Dán dữ liệu JSON của bạn vào đây..."
             />
           </div>
-          <button
+          <Button
             onClick={handleGenerateSchedule}
             disabled={isLoading}
             className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 
@@ -262,10 +220,11 @@ export function ScheduleGenerator() {
                 <span>Tạo Lịch Thi Tự Động</span>
               </>
             )}
-          </button>
+          </Button>
         </CardContent>
       </Card>
 
+      {/* Thông báo lỗi */}
       {error && (
         <div className="relative w-full rounded-lg border-2 border-red-200 bg-red-50 px-5 py-4 text-sm mb-6 shadow-md">
           <div className="flex items-start gap-3">
@@ -280,7 +239,7 @@ export function ScheduleGenerator() {
         </div>
       )}
 
-      {/* Result Section */}
+      {/* --- Phần Kết Quả --- */}
       {scheduleData && scheduleData.timetable && (
         <Card className="shadow-xl border-0">
           <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
@@ -314,169 +273,136 @@ export function ScheduleGenerator() {
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-blue-700 font-medium mb-1">
-                      Số ngày thi
-                    </p>
-                    <p className="text-2xl font-bold text-blue-900">
-                      {scheduleData.timetable.length}
-                    </p>
-                  </div>
-                  <Calendar className="h-8 w-8 text-blue-600 opacity-80" />
-                </div>
+                <p className="text-sm text-blue-700 font-medium mb-1">
+                  Số ngày có thi
+                </p>
+                <p className="text-2xl font-bold text-blue-900">
+                  {scheduleData.timetable.length}
+                </p>
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-purple-700 font-medium mb-1">
-                      Số phòng thi
-                    </p>
-                    <p className="text-2xl font-bold text-purple-900">
-                      {allRooms.length}
-                    </p>
-                  </div>
-                  <MapPin className="h-8 w-8 text-purple-600 opacity-80" />
-                </div>
+                <p className="text-sm text-purple-700 font-medium mb-1">
+                  Số phòng thi
+                </p>
+                <p className="text-2xl font-bold text-purple-900">
+                  {allRooms.length}
+                </p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-green-700 font-medium mb-1">
-                      Tổng ca thi
-                    </p>
-                    <p className="text-2xl font-bold text-green-900">
-                      {scheduleData.timetable.length * 2}
-                    </p>
-                  </div>
-                  <Clock className="h-8 w-8 text-green-600 opacity-80" />
-                </div>
+                <p className="text-sm text-green-700 font-medium mb-1">
+                  Tổng số lịch thi
+                </p>
+                <p className="text-2xl font-bold text-green-900">
+                  {scheduleData.timetable.reduce(
+                    (acc, day) =>
+                      acc + day.morning.length + day.afternoon.length,
+                    0
+                  )}
+                </p>
               </div>
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-orange-700 font-medium mb-1">
-                      Môn thi
-                    </p>
-                    <p className="text-2xl font-bold text-orange-900">
-                      {allSubjects.length}
-                    </p>
-                  </div>
-                  <FileText className="h-8 w-8 text-orange-600 opacity-80" />
-                </div>
+                <p className="text-sm text-orange-700 font-medium mb-1">
+                  Nhóm thi
+                </p>
+                <p className="text-2xl font-bold text-orange-900">
+                  {allExamGroups.length}
+                </p>
               </div>
             </div>
 
-            {/* Timetable */}
-            <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-gray-100 to-gray-50">
-                    <TableHead className="w-[100px] font-bold border-r bg-gray-100 sticky left-0 z-10">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        Ngày
-                      </div>
-                    </TableHead>
-                    <TableHead className="w-[80px] font-bold border-r bg-gray-100">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        Ca
-                      </div>
-                    </TableHead>
-                    {allRooms.map((room) => (
-                      <TableHead
-                        key={room.roomId}
-                        className="font-bold border-r text-center min-w-[200px]"
-                      >
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="flex items-center gap-1 font-semibold text-gray-900">
-                            <MapPin className="h-4 w-4" />
-                            {room.roomId}
-                          </div>
-                          <span className="text-xs font-normal text-gray-600">
-                            {room.location}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            <Users className="h-3 w-3 mr-1" />
-                            {room.capacity} chỗ
-                          </Badge>
-                        </div>
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {scheduleData.timetable.map((dayData, dayIndex) => (
-                    <>
-                      {/* Morning Session */}
-                      <TableRow
-                        key={`${dayData.day}-morning`}
-                        className="hover:bg-gray-50"
-                      >
-                        {dayIndex % 2 === 0 && (
-                          <TableCell
-                            rowSpan={2}
-                            className="font-bold border-r align-middle text-center bg-blue-50 sticky left-0 z-10"
-                          >
-                            <div className="flex flex-col items-center gap-1">
-                              <Calendar className="h-5 w-5 text-blue-600" />
-                              <span className="text-sm">{dayData.day}</span>
-                            </div>
-                          </TableCell>
-                        )}
-                        <TableCell className="font-semibold border-r bg-yellow-50 text-center">
-                          <div className="flex flex-col items-center gap-1">
-                            <Clock className="h-4 w-4 text-orange-600" />
-                            <span className="text-sm">Sáng</span>
-                          </div>
-                        </TableCell>
-                        {allRooms.map((room) => (
-                          <TableCell
-                            key={room.roomId}
-                            className="border-r p-2 align-top bg-white"
-                          >
-                            {dayData.morning[room.roomId]?.map((exam) => (
-                              <ExamCard
-                                key={exam.subject}
-                                exam={exam}
-                                allSubjects={allSubjects}
-                              />
-                            ))}
-                          </TableCell>
-                        ))}
-                      </TableRow>
+            {/* Thanh điều hướng tuần */}
+            <div className="flex items-center justify-between mb-4 p-4 bg-gray-50 rounded-lg border">
+              <Button variant="outline" onClick={handlePrevWeek}>
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Tuần trước
+              </Button>
+              <h3 className="text-lg font-semibold text-gray-800 text-center">
+                Tuần: {format(weekDays[0], "dd/MM")} -{" "}
+                {format(weekDays[5], "dd/MM/yyyy")}
+              </h3>
+              <Button variant="outline" onClick={handleNextWeek}>
+                Tuần sau
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
 
-                      {/* Afternoon Session */}
-                      <TableRow
-                        key={`${dayData.day}-afternoon`}
-                        className="hover:bg-gray-50"
+            {/* Giao diện Lịch Tuần */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 lg:gap-4">
+              {weekDays.map((date) => {
+                // Tìm dữ liệu lịch thi cho ngày này
+                const dateString = format(date, "yyyy-MM-dd");
+                const dayData = scheduleData.timetable.find(
+                  (d) => d.date === dateString
+                );
+
+                const isToday = isSameDay(date, new Date());
+
+                return (
+                  <div
+                    key={date.toISOString()}
+                    className={`rounded-lg bg-white border border-gray-200 min-h-[300px] shadow-sm ${
+                      isToday ? "border-2 border-blue-500" : ""
+                    }`}
+                  >
+                    {/* Header của cột ngày */}
+                    <div
+                      className={`p-3 text-center border-b ${
+                        isToday ? "bg-blue-50" : "bg-gray-50"
+                      }`}
+                    >
+                      <p
+                        className={`font-bold ${
+                          isToday ? "text-blue-700" : "text-gray-800"
+                        }`}
                       >
-                        <TableCell className="font-semibold border-r bg-indigo-50 text-center">
-                          <div className="flex flex-col items-center gap-1">
-                            <Clock className="h-4 w-4 text-indigo-600" />
-                            <span className="text-sm">Chiều</span>
-                          </div>
-                        </TableCell>
-                        {allRooms.map((room) => (
-                          <TableCell
-                            key={room.roomId}
-                            className="border-r p-2 align-top bg-white"
-                          >
-                            {dayData.afternoon[room.roomId]?.map((exam) => (
-                              <ExamCard
-                                key={exam.subject}
-                                exam={exam}
-                                allSubjects={allSubjects}
-                              />
-                            ))}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </>
-                  ))}
-                </TableBody>
-              </Table>
+                        {format(date, "EEEE", { locale: vi })}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {format(date, "dd/MM")}
+                      </p>
+                    </div>
+
+                    {/* Nội dung các ca thi */}
+                    <div className="p-2 space-y-3">
+                      {/* Ca Sáng */}
+                      <div>
+                        <h4 className="text-xs font-semibold text-orange-600 mb-2 pl-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> SÁNG
+                        </h4>
+                        <div className="space-y-2">
+                          {dayData && dayData.morning.length > 0 ? (
+                            dayData.morning.map((exam) => (
+                              <ExamCard key={exam.examGroup} exam={exam} />
+                            ))
+                          ) : (
+                            <p className="text-xs text-gray-400 px-1 pt-2 italic text-center">
+                              -- Trống --
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Ca Chiều */}
+                      <div className="pt-2 border-t border-gray-100">
+                        <h4 className="text-xs font-semibold text-indigo-600 mb-2 pl-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> CHIỀU
+                        </h4>
+                        <div className="space-y-2">
+                          {dayData && dayData.afternoon.length > 0 ? (
+                            dayData.afternoon.map((exam) => (
+                              <ExamCard key={exam.examGroup} exam={exam} />
+                            ))
+                          ) : (
+                            <p className="text-xs text-gray-400 px-1 pt-2 italic text-center">
+                              -- Trống --
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
