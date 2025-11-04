@@ -13,7 +13,8 @@ import {
   UsersRound,
   Bot,
   CalendarRange,
-  Users, // dùng cho "Lớp học"
+  Users,
+  Clock3, // thêm mới cho "Ca thi"
 } from "lucide-react";
 import { adminPaths } from "./path";
 
@@ -54,7 +55,7 @@ const navItems = [
     path: adminPaths.ROOMS,
   },
   {
-    icon: <DoorOpen size={20} className="text-red-500" />,
+    icon: <Clock3 size={20} className="text-orange-500" />, // đổi icon
     name: "Ca thi",
     path: adminPaths.EXAM_SLOTS,
   },
@@ -83,7 +84,6 @@ const navItems = [
     name: "ĐK học phần",
     path: adminPaths.STUDENT_COURSE_REGISTRATIONS,
   },
-
   {
     icon: <Bot size={20} className="text-amber-500" />,
     name: "Xếp lịch tự động",

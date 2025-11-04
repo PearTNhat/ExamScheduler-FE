@@ -144,14 +144,14 @@ const LecturesManager = () => {
         response = await apiCreateLecturer({ body: data, accessToken });
       }
 
-      if (response.success) {
+      if (response.code == 200) {
         showToastSuccess(
           editingLecturer
             ? "Cập nhật giảng viên thành công!"
             : "Thêm giảng viên mới thành công!"
         );
         setIsModalOpen(false);
-        fetchLecturers();
+        fetchLecturers({ accessToken });
       } else {
         showToastError(response.message || "Có lỗi xảy ra");
       }
@@ -173,9 +173,9 @@ const LecturesManager = () => {
           id: lecturer.id,
           accessToken,
         });
-        if (response.success) {
+        if (response.code === 200) {
           showToastSuccess("Xóa giảng viên thành công");
-          fetchLecturers();
+          fetchLecturers({ accessToken });
         } else {
           showToastError(response.message || "Lỗi khi xóa giảng viên");
         }

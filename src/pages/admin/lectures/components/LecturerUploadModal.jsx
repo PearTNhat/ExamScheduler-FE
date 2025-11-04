@@ -9,6 +9,15 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import {
   Download,
   Upload,
@@ -16,9 +25,18 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  File,
+  AlertTriangle,
+  Info,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useSelector } from "react-redux";
+import {
+  showAlertError,
+  showToastSuccess,
+  showToastWarning,
+} from "~/utils/alert";
+import { formatFileSize } from "~/utils/file";
 
 export function LecturerUploadModal({ open, onOpenChange, onUploadSuccess }) {
   const [file, setFile] = useState(null);
@@ -35,7 +53,7 @@ export function LecturerUploadModal({ open, onOpenChange, onUploadSuccess }) {
         "application/vnd.ms-excel",
       ];
       if (!validTypes.includes(selectedFile.type)) {
-        alert("Vui lòng chọn file Excel (.xlsx hoặc .xls)");
+        showAlertError("Vui lòng chọn file Excel (.xlsx hoặc .xls)");
         return;
       }
       setFile(selectedFile);
@@ -85,7 +103,7 @@ export function LecturerUploadModal({ open, onOpenChange, onUploadSuccess }) {
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Vui lòng chọn file để upload");
+      showToastWarning("Vui lòng chọn file để upload");
       return;
     }
 
@@ -95,7 +113,6 @@ export function LecturerUploadModal({ open, onOpenChange, onUploadSuccess }) {
     try {
       const formData = new FormData();
       formData.append("file", file);
-
       const response = await fetch("http://localhost:3000/lecturers/upload", {
         method: "POST",
         headers: {
@@ -104,23 +121,35 @@ export function LecturerUploadModal({ open, onOpenChange, onUploadSuccess }) {
         body: formData,
       });
 
-      const data = await response.json();
+      const { data } = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Upload failed");
       }
 
-      setResult(data);
+      setResult(data.data);
 
-      // Call success callback after a delay to show results
+      // Show appropriate message based on result
+      if (data.imported > 0 && data.failed === 0) {
+        showToastSuccess(`Đã import thành công ${data.imported} giảng viên`);
+      } else if (data.imported > 0 && data.failed > 0) {
+        showToastWarning(
+          `Import thành công ${data.imported}, thất bại ${data.failed} giảng viên`
+        );
+      } else if (data.failed > 0) {
+        showAlertError(
+          `Import thất bại ${data.failed} giảng viên. Vui lòng kiểm tra lại file.`
+        );
+      }
       if (data.imported > 0) {
         setTimeout(() => {
-          onUploadSuccess?.();
+          console.log("fetch again");
+          onUploadSuccess();
         }, 2000);
       }
     } catch (error) {
       console.error("Upload error:", error);
-      alert(error.message || "Có lỗi xảy ra khi upload file");
+      showAlertError(error.message || "Có lỗi xảy ra khi upload file");
     } finally {
       setUploading(false);
     }
@@ -134,7 +163,7 @@ export function LecturerUploadModal({ open, onOpenChange, onUploadSuccess }) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <FileSpreadsheet className="w-6 h-6 text-green-600" />
@@ -147,114 +176,224 @@ export function LecturerUploadModal({ open, onOpenChange, onUploadSuccess }) {
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Download Template */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
-              <Download className="w-4 h-4" />
-              Tải Template Mẫu
-            </h3>
-            <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-              Tải xuống file Excel mẫu để biết định dạng chính xác
-            </p>
-            <Button
-              onClick={handleDownloadTemplate}
-              variant="outline"
-              className="w-full bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Tải Template
-            </Button>
-          </div>
+          {/* Instructions Card */}
+          <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2 text-blue-900">
+                <Info className="w-4 h-4" />
+                Hướng Dẫn
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-blue-700">
+                📋 Định dạng file Excel bao gồm các cột: Mã giảng viên, Họ, Tên,
+                Email, Mã khoa, Giám thị (true/false)
+              </p>
+              <Button
+                onClick={handleDownloadTemplate}
+                variant="outline"
+                size="sm"
+                className="w-full bg-white hover:bg-blue-50 border-blue-300"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Tải File Template Mẫu
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Upload Section */}
-          <div className="space-y-3">
-            <label className="block text-sm font-medium">Chọn File Excel</label>
-            <div className="flex gap-2">
-              <Input
-                type="file"
-                accept=".xlsx,.xls"
-                onChange={handleFileChange}
-                className="flex-1"
-              />
-              <Button
-                onClick={handleUpload}
-                disabled={!file || uploading}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {uploading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Đang xử lý...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload
-                  </>
-                )}
-              </Button>
-            </div>
-            {file && (
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                File đã chọn: <span className="font-medium">{file.name}</span>
-              </p>
-            )}
-          </div>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                Chọn File Để Upload
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileChange}
+                  className="flex-1"
+                  disabled={uploading}
+                />
+                <Button
+                  onClick={handleUpload}
+                  disabled={!file || uploading}
+                  className="bg-green-600 hover:bg-green-700 min-w-[120px]"
+                >
+                  {uploading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* File Info */}
+              {file && (
+                <div className="bg-slate-50 p-3 rounded-lg border flex items-center gap-3">
+                  <File className="w-8 h-8 text-green-600" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{file.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {formatFileSize(file.size)}
+                    </p>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700 border-green-300"
+                  >
+                    Đã chọn
+                  </Badge>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Result Display */}
           {result && (
-            <div className="space-y-4 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-900 dark:to-slate-900 p-4 rounded-lg border">
-              <h3 className="font-semibold text-lg flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-blue-600" />
-                Kết Quả Upload
-              </h3>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span className="text-sm font-medium">Thành công</span>
-                  </div>
-                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">
-                    {result.imported}
-                  </p>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-1">
-                    <XCircle className="w-4 h-4" />
-                    <span className="text-sm font-medium">Thất bại</span>
-                  </div>
-                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">
-                    {result.failed}
-                  </p>
-                </div>
-              </div>
-
-              {result.errors && result.errors.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="font-medium text-red-700 dark:text-red-400 mb-2 flex items-center gap-2">
-                    <XCircle className="w-4 h-4" />
-                    Chi Tiết Lỗi ({result.errors.length})
-                  </h4>
-                  <div className="max-h-48 overflow-y-auto space-y-2">
-                    {result.errors.map((error, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 p-2 rounded text-sm"
-                      >
-                        <Badge variant="destructive" className="mr-2">
-                          Dòng {error.row}
-                        </Badge>
-                        <span className="text-red-700 dark:text-red-300">
-                          {error.error}
-                        </span>
+            <Card className="border-slate-200">
+              <CardHeader className="bg-slate-50">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-slate-600" />
+                  Kết Quả Import
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                {/* Statistics */}
+                <div className="grid grid-cols-2 gap-4">
+                  <Card className="border-green-300 bg-green-50">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-green-800 mb-1">
+                            Thành công
+                          </p>
+                          <p className="text-3xl font-bold text-green-700">
+                            {result.imported}
+                          </p>
+                        </div>
+                        <CheckCircle2 className="w-12 h-12 text-green-500 opacity-70" />
                       </div>
-                    ))}
-                  </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-red-300 bg-red-50">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-red-800 mb-1">
+                            Thất bại
+                          </p>
+                          <p className="text-3xl font-bold text-red-700">
+                            {result.failed}
+                          </p>
+                        </div>
+                        <XCircle className="w-12 h-12 text-red-500 opacity-70" />
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              )}
-            </div>
+
+                {/* File Info */}
+                {(result.filename || result.size) && (
+                  <div className="bg-slate-50 p-3 rounded-lg border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileSpreadsheet className="w-4 h-4 text-gray-600" />
+                      <span className="text-sm font-medium">
+                        Thông tin file
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {result.filename && (
+                        <div>
+                          <span className="text-gray-500">Tên file: </span>
+                          <span className="font-medium">{result.filename}</span>
+                        </div>
+                      )}
+                      {result.size && (
+                        <div>
+                          <span className="text-gray-500">Kích thước: </span>
+                          <span className="font-medium">
+                            {formatFileSize(result.size)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Details Table */}
+                {result.errors && result.errors.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-red-700">
+                      <AlertTriangle className="w-5 h-5" />
+                      <h4 className="font-semibold">
+                        Chi Tiết Lỗi ({result.errors.length})
+                      </h4>
+                    </div>
+
+                    <div className="border rounded-lg overflow-hidden">
+                      <div className="max-h-80 overflow-y-auto">
+                        <Table>
+                          <TableHeader className="sticky top-0 bg-red-50">
+                            <TableRow>
+                              <TableHead className="w-20">Dòng</TableHead>
+                              <TableHead>Lỗi</TableHead>
+                              <TableHead className="w-48">Dữ liệu</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {result.errors.map((error, idx) => (
+                              <TableRow
+                                key={idx}
+                                className="hover:bg-red-50/50"
+                              >
+                                <TableCell>
+                                  <Badge
+                                    variant="destructive"
+                                    className="font-mono"
+                                  >
+                                    {error.row}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-sm text-red-700">
+                                  {error.error}
+                                </TableCell>
+                                <TableCell>
+                                  {error.data && (
+                                    <div className="text-xs text-gray-600 space-y-1">
+                                      {Object.entries(error.data)
+                                        .slice(0, 3)
+                                        .map(([key, value]) => (
+                                          <div key={key} className="truncate">
+                                            <span className="font-medium">
+                                              {key}:
+                                            </span>{" "}
+                                            {value || "N/A"}
+                                          </div>
+                                        ))}
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           )}
         </div>
 

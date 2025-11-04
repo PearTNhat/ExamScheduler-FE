@@ -69,6 +69,7 @@ const LecturerFormModal = ({
 
   useEffect(() => {
     if (editingLecturer) {
+      console.log("editing lecture ;", editingLecturer);
       reset({
         lecturerCode: editingLecturer.lecturerCode || "",
         firstName: editingLecturer.firstName || "",
@@ -302,7 +303,7 @@ const LecturerFormModal = ({
                   readOnly
                   value={
                     selectedDepartment
-                      ? `${selectedDepartment.name} (ID: ${selectedDepartment.id})`
+                      ? `${selectedDepartment.departmentCode} (ID: ${selectedDepartment.id})`
                       : ""
                   }
                   placeholder="Chọn khoa..."

@@ -184,11 +184,11 @@ export default function DepartmentPickerModal({
                         <div className="p-1.5 bg-indigo-100 rounded">
                           <Building2 className="h-4 w-4 text-indigo-600" />
                         </div>
-                        {department.code || "N/A"}
+                        {department.departmentCode || "N/A"}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {department.name}
+                      {department.departmentCode}
                     </TableCell>
                   </TableRow>
                 ))
@@ -213,8 +213,8 @@ export default function DepartmentPickerModal({
           <div className="text-sm text-gray-500">
             {selectedDepartment ? (
               <span>
-                Đã chọn: <strong>{selectedDepartment.name}</strong> (ID:{" "}
-                {selectedDepartment.id})
+                Đã chọn: <strong>{selectedDepartment.departmentName}</strong>{" "}
+                (ID: {selectedDepartment.id})
               </span>
             ) : (
               <span>Chưa chọn khoa nào</span>

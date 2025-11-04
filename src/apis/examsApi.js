@@ -87,6 +87,23 @@ const apiDeleteExam = async ({ accessToken, id }) => {
         throw new Error(error.message);
     }
 };
+const apiGenerateExamSchedule = async ({ body, accessToken }) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+
+        };
+        const res = await http.post(`/scheduling/generate-advanced`, body, config);
+        return res.data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+}
 
 export {
     apiGetExams,
@@ -94,4 +111,5 @@ export {
     apiCreateExam,
     apiUpdateExam,
     apiDeleteExam,
+    apiGenerateExamSchedule
 };
