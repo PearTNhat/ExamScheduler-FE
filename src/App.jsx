@@ -12,7 +12,7 @@ import Rooms from "./pages/admin/rooms/Rooms";
 import StudentManager from "./pages/admin/student/StudentManager";
 import StudentCourseRegistrations from "./pages/admin/student-course-registrations/StudentCourseRegistrationsNew";
 import AutoSchedule from "./pages/admin/auto-schedule/AutoSchedule";
-import ViewSchedule from "./pages/admin/view-schedule/ViewSchedule";
+import ViewExamTimetable from "./pages/admin/view-schedule/ViewExamTimetable";
 import UserLayout from "./pages/public/user/UserLayout";
 import UserProfile from "./pages/public/user/userProfile/UserProfile";
 import ChangePassword from "./pages/public/user/changePassword/ChangePassword";
@@ -62,7 +62,8 @@ function App() {
             element={<StudentCourseRegistrations />}
           />
           <Route path="auto-schedule" element={<AutoSchedule />} />
-          <Route path="view-schedule" element={<ViewSchedule />} />
+          {/* <Route path="view-schedule" element={<ViewSchedule />} /> */}
+          <Route path="view-schedule" element={<ViewExamTimetable />} />
           <Route path="schedule" element={<ScheduleGenerator />} />
           <Route path="classes" element={<ClassesManager />} />
           <Route path="exam-slots" element={<ExamSlotsManager />} />

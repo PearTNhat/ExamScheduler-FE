@@ -17,6 +17,22 @@ const apiGetExams = async ({ accessToken, params }) => {
         throw new Error(error.message);
     }
 };
+const apiViewTimetableExams = async ({ accessToken, params }) => {
+    try {
+        const { data } = await http.get("/exams/timetable/view", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            params,
+        });
+        return data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
 
 const apiGetExamById = async ({ accessToken, id }) => {
     try {
@@ -33,6 +49,21 @@ const apiGetExamById = async ({ accessToken, id }) => {
         throw new Error(error.message);
     }
 };
+const apiGetDetailExamById = async ({ accessToken, id }) => {
+    try {
+        const { data } = await http.get(`/exams/${id}/detail`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+        return data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+}
 
 const apiCreateExam = async ({ body, accessToken }) => {
     try {
@@ -111,5 +142,7 @@ export {
     apiCreateExam,
     apiUpdateExam,
     apiDeleteExam,
-    apiGenerateExamSchedule
+    apiGenerateExamSchedule,
+    apiGetDetailExamById,
+    apiViewTimetableExams,
 };
