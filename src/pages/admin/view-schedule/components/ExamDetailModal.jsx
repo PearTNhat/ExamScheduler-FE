@@ -31,6 +31,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { apiGetDetailExamById } from "~/apis/examsApi";
 import { showToastError } from "~/utils/alert";
+import { formatDate } from "~/utils/date";
 
 const ExamDetailModal = ({
   open,
@@ -55,8 +56,8 @@ const ExamDetailModal = ({
     try {
       setLoading(true);
       const response = await apiGetDetailExamById({ accessToken, id: examId });
-      if (response) {
-        setExamDetail(response);
+      if (response.code === 200) {
+        setExamDetail(response.data);
       }
     } catch (error) {
       showToastError(error.message || "Lỗi khi tải chi tiết kỳ thi");
@@ -81,16 +82,6 @@ const ExamDetailModal = ({
       </div>
     </div>
   );
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      weekday: "long",
-    });
-  };
 
   const getStatusBadge = (status) => {
     const statusMap = {

@@ -20,8 +20,10 @@ const ConstraintsConfiguration = ({ constraints, onConstraintsChange }) => {
         ...constraints[code],
         value:
           code === "maxExamsPerStudentPerDay"
-            ? constraints[code]?.value || 2
-            : !constraints[code]?.value,
+            ? constraints[code]?.value > 0 // Nếu đang > 0 thì tắt (đặt về 0)
+              ? 0
+              : 2 // Nếu đang tắt (0) thì bật (đặt về 2)
+            : !constraints[code]?.value, // Toggle boolean
       },
     });
   };
@@ -50,7 +52,7 @@ const ConstraintsConfiguration = ({ constraints, onConstraintsChange }) => {
     {
       code: "maxExamsPerStudentPerDay",
       name: "Giới hạn số ca thi/ngày",
-      description: "Sinh viên không thi quá X ca trong 1 ngày",
+      description: "Sinh viên không thi quá X ca trong 1 ngày (0 = tắt)",
       hasParam: true,
       paramType: "number",
       paramLabel: "Số ca thi tối đa:",
@@ -61,6 +63,13 @@ const ConstraintsConfiguration = ({ constraints, onConstraintsChange }) => {
       name: "Không di chuyển cơ sở",
       description:
         "Sinh viên không phải di chuyển giữa các cơ sở trong cùng ngày",
+      hasParam: false,
+      defaultValue: true,
+    },
+    {
+      code: "avoid_weekend", // <-- ĐÃ THÊM
+      name: "Tránh xếp lịch cuối tuần",
+      description: "Không xếp lịch thi vào ngày thứ 7 hoặc Chủ Nhật",
       hasParam: false,
       defaultValue: true,
     },
@@ -156,17 +165,22 @@ const ConstraintsConfiguration = ({ constraints, onConstraintsChange }) => {
                   <Input
                     id={`${constraint.code}-param`}
                     type={constraint.paramType}
-                    min="1"
+                    min="0"
                     max="5"
                     value={currentConstraint.value}
                     onChange={(e) =>
                       handleUpdateValue(
                         constraint.code,
-                        parseInt(e.target.value) || constraint.defaultValue
+                        parseInt(e.target.value) || 0
                       )
                     }
                     className="w-24 mt-1"
                   />
+                  {currentConstraint.value === 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Ràng buộc này đang tắt
+                    </p>
+                  )}
                 </div>
               )}
             </div>

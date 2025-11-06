@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSelector } from "react-redux"; // <-- ĐÃ THÊM
 import {
   Play,
   Pause,
@@ -28,6 +29,8 @@ import {
 import { apiGenerateExamSchedule } from "~/apis/examsApi";
 
 const AutoSchedule = () => {
+  const { accessToken } = useSelector((state) => state.user); // <-- ĐÃ THÊM
+
   // Exam Session
   const [selectedSessionId, setSelectedSessionId] = useState("");
   // Date Range
@@ -47,6 +50,11 @@ const AutoSchedule = () => {
       value: true,
       type: "Hard",
     },
+    avoid_weekend: {
+      // <-- ĐÃ THÊM
+      value: true,
+      type: "Hard",
+    },
   });
 
   // Scheduling State
@@ -61,12 +69,10 @@ const AutoSchedule = () => {
       showToastWarning("Vui lòng chọn đợt thi!");
       return;
     }
-
     if (!startDate || !endDate) {
       showToastWarning("Vui lòng chọn thời gian bắt đầu và kết thúc!");
       return;
     }
-
     if (new Date(startDate) > new Date(endDate)) {
       showToastError("Ngày bắt đầu phải trước ngày kết thúc!");
       return;
@@ -78,33 +84,83 @@ const AutoSchedule = () => {
     setCurrentStep("Đang chuẩn bị dữ liệu...");
 
     try {
-      // Prepare data
+      // --- BẮT ĐẦU CHUYỂN ĐỔI DỮ LIỆU ---
+
+      // 1. Hàm trợ giúp để xử lý logic "Chọn tất cả" hoặc "Chọn cụ thể"
+      // Trả về `null` nếu "Chọn tất cả" (hoặc chưa chọn gì),
+      // Trả về mảng [1, 2, 3] nếu chọn cụ thể.
+      const processIdSelection = (selectionArray, idKey) => {
+        const isSelectAll =
+          selectionArray.length > 0 && selectionArray[0]?.selectAll === true;
+        const isEmpty = selectionArray.length === 0;
+
+        if (isSelectAll || isEmpty) {
+          // Gửi `null` để backend hiểu là "chọn tất cả"
+          // Ghi chú: JSON của bạn không hỗ trợ "Loại trừ",
+          // nên logic này giả định `null` = "Tất cả"
+          return null;
+        }
+
+        // Nếu là danh sách cụ thể, trích xuất các ID
+        return selectionArray.map((item) => item[idKey]);
+      };
+
+      const roomIds = processIdSelection(selectedRooms, "roomId");
+      const lecturerIds = processIdSelection(selectedProctors, "proctorId");
+
+      // 2. Xử lý Ràng buộc (Constraints)
+      const formattedConstraints = {};
+
+      // Ánh xạ: maxExamsPerStudentPerDay -> max_exam_per_day
+      if (constraints.maxExamsPerStudentPerDay?.value > 0) {
+        formattedConstraints.max_exam_per_day =
+          constraints.maxExamsPerStudentPerDay.value;
+      }
+
+      // Ánh xạ: avoidInterLocationTravel -> max_location: 1
+      if (constraints.avoidInterLocationTravel?.value === true) {
+        formattedConstraints.max_location = 1;
+      }
+
+      // Ánh xạ: avoid_weekend -> avoid_weekend: true
+      if (constraints.avoid_weekend?.value === true) {
+        formattedConstraints.avoid_weekend = true;
+      }
+
+      // --- KẾT THÚC CHUYỂN ĐỔI ---
+
+      // Dữ liệu cuối cùng để gửi lên server
       const schedulingData = {
         examSessionId: parseInt(selectedSessionId),
-        holidays: holidays,
         startDate: startDate,
-        endDate: endDate,
-        constraints: constraints,
-        proctors: selectedProctors, // Empty array = select all
-        rooms: selectedRooms, // Empty array = select all
+        endDate: endDate, // File gốc của bạn là 2025-05-31, JSON mẫu là 2025-06-01. Lấy theo state.
+        holidays: holidays,
+        roomIds: roomIds, // `null` nếu chọn tất cả, [1,2,3] nếu chọn cụ thể
+        lecturerIds: lecturerIds, // `null` nếu chọn tất cả, [1,2,3] nếu chọn cụ thể
+        constraints: formattedConstraints,
       };
+
       setCurrentStep("Đang gửi yêu cầu xếp lịch...");
       setProgress(20);
 
+      // Log để kiểm tra payload
+      console.log(
+        "Sending scheduling payload:",
+        JSON.stringify(schedulingData, null, 2)
+      );
+
       const res = await apiGenerateExamSchedule({
-        accessToken,
+        accessToken, // <-- ĐÃ THÊM
         schedulingData,
       });
+
       if (res.code != 200) {
         throw new Error(res.message || "Lỗi từ server khi xếp lịch");
       }
       const result = res.data;
-      // setProgress(60);
-      // setCurrentStep("Đang xử lý kết quả...");
       setProgress(100);
       setCurrentStep("Hoàn thành!");
       setIsRunning(false);
-      // Set results
       setResults({
         success: true,
         fitness: result.fitness,
@@ -191,7 +247,7 @@ const AutoSchedule = () => {
               {!isRunning ? (
                 <Button
                   onClick={handleStartScheduling}
-                  disabled={!selectedSessionId}
+                  disabled={!selectedSessionId || !accessToken} // <-- Thêm check accessToken
                   className="w-full"
                   size="lg"
                 >
@@ -317,24 +373,6 @@ const AutoSchedule = () => {
               </CardContent>
             </Card>
           )}
-
-          {/* Info Panel */}
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="pt-6">
-              <div className="flex gap-3">
-                <Zap className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-medium text-blue-900">Lưu ý</h4>
-                  <ul className="mt-2 text-sm text-blue-700 space-y-1">
-                    <li>• Chọn "Tất cả" = Gửi mảng rỗng</li>
-                    <li>• Hard constraints: Bắt buộc thỏa mãn</li>
-                    <li>• Soft constraints: Tối ưu hóa</li>
-                    <li>• Có thể mất vài phút</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

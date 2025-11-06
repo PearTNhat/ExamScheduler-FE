@@ -83,7 +83,7 @@ const apiCreateExam = async ({ body, accessToken }) => {
     }
 };
 
-const apiUpdateExam = async ({ id, body, accessToken }) => {
+const apiUpdateExam = async ({ id, data, body, accessToken }) => {
     try {
         const config = {
             headers: {
@@ -91,7 +91,8 @@ const apiUpdateExam = async ({ id, body, accessToken }) => {
             },
         };
 
-        const response = await http.put(`/exams/${id}`, body, config);
+        const payload = data || body; // Support both 'data' and 'body' param names
+        const response = await http.put(`/exams/${id}`, payload, config);
         return response.data;
     } catch (error) {
         if (error.response && error.response.data) {
