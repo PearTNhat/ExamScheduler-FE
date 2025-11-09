@@ -55,7 +55,6 @@ const ExamEditModal = ({
   const [examDetail, setExamDetail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-
   // Form state
   const [examDate, setExamDate] = useState("");
   const [roomId, setRoomId] = useState("");
@@ -77,7 +76,7 @@ const ExamEditModal = ({
 
   useEffect(() => {
     if (open && exam && accessToken) {
-      fetchExamDetail({ accessToken });
+      fetchExamDetail({ accessToken, exam });
       fetchRooms({ accessToken });
       fetchSlots({ accessToken });
     }
@@ -94,12 +93,12 @@ const ExamEditModal = ({
     }
   }, [examDetail]);
 
-  const fetchExamDetail = async ({ accessToken }) => {
+  const fetchExamDetail = async ({ accessToken, exam }) => {
     try {
       setLoading(true);
       const response = await apiGetDetailExamById({
         accessToken,
-        id: exam.examId,
+        id: exam.id,
       });
       if (response.code === 200) {
         setExamDetail(response.data);

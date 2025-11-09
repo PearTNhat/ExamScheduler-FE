@@ -33,8 +33,6 @@ export default function RoomPickerModal({
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [tempSelectedRooms, setTempSelectedRooms] = useState([]);
-  const [excludedRooms, setExcludedRooms] = useState([]); // Rooms excluded when selectAll is true
-  const [selectAll, setSelectAll] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -71,18 +69,10 @@ export default function RoomPickerModal({
       fetchRooms(1, "");
       setSearchTerm("");
 
-      // Check if selectedRooms has selectAll flag or is empty array
-      if (selectedRooms.length === 0 || selectedRooms[0]?.selectAll) {
-        setSelectAll(true);
-        setExcludedRooms(selectedRooms[0]?.excludedRoomIds || []);
-        setTempSelectedRooms([]);
-      } else {
-        setSelectAll(false);
-        setExcludedRooms([]);
-        setTempSelectedRooms([...selectedRooms]);
-      }
+      // Initialize with current selected rooms (no selectAll logic)
+      setTempSelectedRooms([...selectedRooms]);
     }
-  }, [open]);
+  }, [open, selectedRooms]);
 
   // Handle search with debounce
   useEffect(() => {
@@ -93,79 +83,74 @@ export default function RoomPickerModal({
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
+  }, [searchTerm, open]);
 
   const handlePageChange = (page) => {
     fetchRooms(page, searchTerm);
   };
 
-  const handleSelectAll = (checked) => {
-    setSelectAll(checked);
+  // Check if all rooms in current page are selected
+  const areAllCurrentPageRoomsSelected = () => {
+    return rooms.every((room) =>
+      tempSelectedRooms.some((selected) => selected.roomId === room.id)
+    );
+  };
+
+  // Select/deselect all rooms in current page
+  const handleSelectAllCurrentPage = (checked) => {
     if (checked) {
-      // Switch to select all mode, clear individual selections
-      setTempSelectedRooms([]);
-      setExcludedRooms([]);
+      // Add all current page rooms to selection (if not already selected)
+      const newRooms = rooms
+        .filter(
+          (room) =>
+            !tempSelectedRooms.some((selected) => selected.roomId === room.id)
+        )
+        .map((room) => ({
+          roomId: room.id,
+          capacity: room.capacity,
+          location: room.location?.code || "N/A",
+          locationId: room.location?.id,
+          code: room.code,
+        }));
+
+      setTempSelectedRooms([...tempSelectedRooms, ...newRooms]);
     } else {
-      // Switch to individual mode, clear excluded list
-      setExcludedRooms([]);
-      setTempSelectedRooms([]);
+      // Remove all current page rooms from selection
+      const currentPageRoomIds = rooms.map((room) => room.id);
+      setTempSelectedRooms(
+        tempSelectedRooms.filter(
+          (selected) => !currentPageRoomIds.includes(selected.roomId)
+        )
+      );
     }
   };
 
   const handleToggleRoom = (room) => {
-    if (selectAll) {
-      // In select all mode: toggle exclude list
-      const isExcluded = excludedRooms.includes(room.id);
+    const isSelected = tempSelectedRooms.some((r) => r.roomId === room.id);
 
-      if (isExcluded) {
-        // Remove from excluded list (include this room)
-        setExcludedRooms(excludedRooms.filter((id) => id !== room.id));
-      } else {
-        // Add to excluded list
-        setExcludedRooms([...excludedRooms, room.id]);
-      }
+    if (isSelected) {
+      setTempSelectedRooms(
+        tempSelectedRooms.filter((r) => r.roomId !== room.id)
+      );
     } else {
-      // In individual select mode: toggle selected list
-      const isSelected = tempSelectedRooms.some((r) => r.roomId === room.id);
-
-      if (isSelected) {
-        setTempSelectedRooms(
-          tempSelectedRooms.filter((r) => r.roomId !== room.id)
-        );
-      } else {
-        setTempSelectedRooms([
-          ...tempSelectedRooms,
-          {
-            roomId: room.id,
-            capacity: room.capacity,
-            location: room.location?.code || "N/A",
-            code: room.code,
-          },
-        ]);
-      }
+      setTempSelectedRooms([
+        ...tempSelectedRooms,
+        {
+          roomId: room.id,
+          capacity: room.capacity,
+          location: room.location?.code || "N/A",
+          locationId: room.location?.id,
+          code: room.code,
+        },
+      ]);
     }
   };
 
   const handleConfirm = () => {
-    if (selectAll) {
-      // Return selectAll flag with excluded room IDs
-      onConfirm([
-        {
-          selectAll: true,
-          excludedRoomIds: excludedRooms,
-        },
-      ]);
-    } else {
-      onConfirm(tempSelectedRooms);
-    }
+    onConfirm(tempSelectedRooms);
   };
 
   const isRoomSelected = (roomId) => {
-    if (selectAll) {
-      // In select all mode: selected if NOT in excluded list
-      return !excludedRooms.includes(roomId);
-    }
-    // In individual mode: selected if in tempSelectedRooms
     return tempSelectedRooms.some((r) => r.roomId === roomId);
   };
 
@@ -194,23 +179,19 @@ export default function RoomPickerModal({
           />
         </div>
 
-        {/* Select All Checkbox */}
+        {/* Select All Current Page Checkbox */}
         <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <Checkbox
-            id="select-all-rooms"
-            checked={selectAll}
-            onCheckedChange={handleSelectAll}
+            id="select-all-current-page"
+            checked={areAllCurrentPageRoomsSelected()}
+            onCheckedChange={handleSelectAllCurrentPage}
           />
           <label
-            htmlFor="select-all-rooms"
+            htmlFor="select-all-current-page"
             className="text-sm font-medium cursor-pointer"
           >
-            Chọn tất cả phòng{" "}
-            {selectAll
-              ? excludedRooms.length > 0
-                ? `(Loại trừ ${excludedRooms.length} phòng)`
-                : "(Tất cả phòng)"
-              : `(${tempSelectedRooms.length} phòng đã chọn)`}
+            Chọn tất cả trang hiện tại ({rooms.length} phòng) - Đã chọn:{" "}
+            {tempSelectedRooms.length} phòng
           </label>
         </div>
 
@@ -256,7 +237,7 @@ export default function RoomPickerModal({
                       key={room.id}
                       className={`cursor-pointer hover:bg-blue-50 transition-colors ${
                         isSelected ? "bg-blue-100" : ""
-                      } ${selectAll ? "opacity-90" : ""}`}
+                      }`}
                       onClick={() => handleToggleRoom(room)}
                     >
                       <TableCell className="text-center">
@@ -304,20 +285,9 @@ export default function RoomPickerModal({
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t">
           <div className="text-sm text-gray-500">
-            {selectAll ? (
-              excludedRooms.length > 0 ? (
-                <span className="text-blue-600 font-medium">
-                  ✓ Tất cả phòng (Loại trừ{" "}
-                  <strong>{excludedRooms.length}</strong> phòng)
-                </span>
-              ) : (
-                <span className="text-blue-600 font-medium">
-                  ✓ Đã chọn tất cả phòng
-                </span>
-              )
-            ) : tempSelectedRooms.length > 0 ? (
-              <span>
-                Đã chọn: <strong>{tempSelectedRooms.length}</strong> phòng
+            {tempSelectedRooms.length > 0 ? (
+              <span className="text-blue-600 font-medium">
+                ✓ Đã chọn: <strong>{tempSelectedRooms.length}</strong> phòng
               </span>
             ) : (
               <span>Chưa chọn phòng nào</span>

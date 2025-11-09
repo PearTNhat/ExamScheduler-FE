@@ -15,7 +15,7 @@ import {
   BookOpen,
   User,
 } from "lucide-react";
-import { getColorClass } from "../utils/helper";
+import ExamCard from "./card/ExamCard";
 const TimetableGrid = ({
   exams = [],
   startDate, // <-- ĐÃ THÊM
@@ -26,6 +26,9 @@ const TimetableGrid = ({
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
+
+  // State để quản lý việc load chi tiết exam
+  const [loadingExamDetail, setLoadingExamDetail] = useState(false);
 
   // *** ĐÃ THÊM: Đồng bộ với bộ lọc của component cha ***
   useEffect(() => {
@@ -39,8 +42,7 @@ const TimetableGrid = ({
       // Nếu cha reset bộ lọc, quay về tuần hiện tại
       setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
     }
-  }, [startDate]); // Chạy lại khi startDate từ cha thay đổi
-  // *** KẾT THÚC THAY ĐỔI ***
+  }, [startDate]);
 
   // Tạo mảng 6 ngày (T2-T7) cho tuần hiện tại
   const weekDays = useMemo(() => {
@@ -101,6 +103,8 @@ const TimetableGrid = ({
   const handleToday = () => {
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
   };
+
+  // Function để load chi tiết exam trước khi edit
 
   if (!exams || exams.length === 0) {
     return (
@@ -207,6 +211,7 @@ const TimetableGrid = ({
                             exam={exam}
                             onViewDetail={onViewDetail}
                             onEdit={onEdit}
+                            isLoadingEdit={loadingExamDetail}
                           />
                         ))
                       ) : (
@@ -230,6 +235,7 @@ const TimetableGrid = ({
                             exam={exam}
                             onViewDetail={onViewDetail}
                             onEdit={onEdit}
+                            isLoadingEdit={loadingExamDetail}
                           />
                         ))
                       ) : (
@@ -248,110 +254,4 @@ const TimetableGrid = ({
     </div>
   );
 };
-
-// Exam Card Component - Tương tự ScheduleGenerator
-const ExamCard = ({ exam, onViewDetail, onEdit }) => {
-  // Extract exam data
-  const courseName = exam.exam_group?.course?.name || exam.courseName || "N/A";
-  const courseCode = exam.exam_group?.course?.code || exam.courseCode || "";
-  const examGroupCode = exam.exam_group?.code || "";
-  const roomCode = exam.room?.code || exam.roomName || "N/A";
-  const locationName = exam.room?.location?.name || exam.location || "";
-  const studentCount =
-    exam.exam_group?.expected_student_count || exam.studentCount || 0;
-
-  const slot = exam.examSlot || exam.slot;
-  const startTime = slot?.start_time || slot?.startTime || "";
-  const endTime = slot?.end_time || slot?.endTime || "";
-  const duration = exam.duration || slot?.duration || 90;
-
-  // Hàm tạo màu ngẫu nhiên (giống ScheduleGenerator)
-
-  const colorClass = getColorClass(examGroupCode || exam.id);
-
-  return (
-    <div
-      className={`rounded-lg border ${colorClass.border} ${colorClass.bg} shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
-      onClick={() => onViewDetail(exam.id)}
-    >
-      <div className="p-3">
-        {/* Hàng 1: Tên nhóm và Sĩ số */}
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <BookOpen
-                className={`h-3.5 w-3.5 ${colorClass.text} flex-shrink-0`}
-              />
-              <p
-                className={`font-bold text-sm ${colorClass.text} truncate`}
-                title={examGroupCode}
-              >
-                {examGroupCode}
-              </p>
-            </div>
-            <p className="text-xs text-gray-600 truncate" title={courseName}>
-              {courseName}
-            </p>
-          </div>
-          <Badge className={`${colorClass.badge} text-xs flex-shrink-0`}>
-            <Users className="h-3 w-3 mr-1" />
-            {studentCount}
-          </Badge>
-        </div>
-
-        {/* Hàng 2: Thông tin chi tiết */}
-        <div className="space-y-1.5 text-xs text-gray-600">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
-            <span className="font-medium">
-              {startTime} - {endTime}
-            </span>
-            <span className="text-gray-400">•</span>
-            <span>{duration} phút</span>
-          </div>
-
-          {/* Hiển thị phòng thi và địa điểm */}
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
-            <span className="text-gray-600 truncate">
-              <span className="font-medium text-gray-700">{roomCode}</span>
-              {locationName && (
-                <span className="text-gray-500"> ({locationName})</span>
-              )}
-            </span>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-1.5 mt-3">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewDetail(exam.id);
-            }}
-            className="flex-1 h-7 text-xs"
-          >
-            <Eye className="h-3 w-3 mr-1" />
-            Xem
-          </Button>
-          <Button
-            size="sm"
-            variant="default"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(exam);
-            }}
-            className="flex-1 h-7 text-xs"
-          >
-            <Edit className="h-3 w-3 mr-1" />
-            Sửa
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export default TimetableGrid;

@@ -13,10 +13,6 @@ const ProctorSelector = ({ selectedProctors, onProctorsChange }) => {
     setShowModal(false);
   };
 
-  const isSelectAll =
-    selectedProctors.length > 0 && selectedProctors[0]?.selectAll === true;
-  const excludedCount = selectedProctors[0]?.excludedProctorIds?.length || 0;
-
   return (
     <>
       <Card>
@@ -33,33 +29,12 @@ const ProctorSelector = ({ selectedProctors, onProctorsChange }) => {
               className="gap-2"
             >
               <Edit className="h-4 w-4" />
-              {isSelectAll || selectedProctors.length === 0
-                ? "Chọn giám thị"
-                : "Chỉnh sửa"}
+              {selectedProctors.length === 0 ? "Chọn giám thị" : "Chỉnh sửa"}
             </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {isSelectAll ? (
-            <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <div className="flex-1">
-                <div className="font-medium text-green-900">
-                  Đã chọn tất cả giám thị
-                </div>
-                <div className="text-sm text-green-700">
-                  {excludedCount > 0
-                    ? `Tất cả giảng viên giám thị sẽ được sử dụng (Loại trừ ${excludedCount} giám thị)`
-                    : "Tất cả giảng viên giám thị sẽ được sử dụng"}
-                </div>
-              </div>
-              {excludedCount > 0 && (
-                <Badge variant="destructive" className="text-xs">
-                  -{excludedCount}
-                </Badge>
-              )}
-            </div>
-          ) : selectedProctors.length === 0 ? (
+          {selectedProctors.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Users className="h-12 w-12 mx-auto mb-2 text-gray-300" />
               <p className="text-sm">Chưa chọn giám thị nào</p>

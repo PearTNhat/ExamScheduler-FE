@@ -13,10 +13,6 @@ const RoomSelector = ({ selectedRooms, onRoomsChange }) => {
     setShowModal(false);
   };
 
-  const isSelectAll =
-    selectedRooms.length > 0 && selectedRooms[0]?.selectAll === true;
-  const excludedCount = selectedRooms[0]?.excludedRoomIds?.length || 0;
-
   return (
     <>
       <Card>
@@ -33,33 +29,12 @@ const RoomSelector = ({ selectedRooms, onRoomsChange }) => {
               className="gap-2"
             >
               <Edit className="h-4 w-4" />
-              {isSelectAll || selectedRooms.length === 0
-                ? "Chọn phòng"
-                : "Chỉnh sửa"}
+              {selectedRooms.length === 0 ? "Chọn phòng" : "Chỉnh sửa"}
             </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {isSelectAll ? (
-            <div className="flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <CheckCircle2 className="h-5 w-5 text-blue-600" />
-              <div className="flex-1">
-                <div className="font-medium text-blue-900">
-                  Đã chọn tất cả phòng
-                </div>
-                <div className="text-sm text-blue-700">
-                  {excludedCount > 0
-                    ? `Tất cả phòng thi sẽ được sử dụng (Loại trừ ${excludedCount} phòng)`
-                    : "Tất cả phòng thi sẽ được sử dụng"}
-                </div>
-              </div>
-              {excludedCount > 0 && (
-                <Badge variant="destructive" className="text-xs">
-                  -{excludedCount}
-                </Badge>
-              )}
-            </div>
-          ) : selectedRooms.length === 0 ? (
+          {selectedRooms.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Building2 className="h-12 w-12 mx-auto mb-2 text-gray-300" />
               <p className="text-sm">Chưa chọn phòng nào</p>
@@ -78,9 +53,7 @@ const RoomSelector = ({ selectedRooms, onRoomsChange }) => {
                   >
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm font-medium">
-                        Phòng {room.roomId}
-                      </span>
+                      <span className="text-sm font-medium">{room.code}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-xs">

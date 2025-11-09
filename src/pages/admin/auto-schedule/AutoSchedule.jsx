@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux"; // <-- ĐÃ THÊM
 import {
   Play,
@@ -11,10 +11,8 @@ import {
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
 import RoomSelector from "./components/RoomSelector";
 import ProctorSelector from "./components/ProctorSelector";
-import HolidaySelector from "./components/HolidaySelector";
 import DateRangeSelector from "./components/DateRangeSelector";
 import ExamSessionSelector from "./components/ExamSessionSelector";
 import ConstraintsConfiguration from "./components/ConstraintsConfiguration";
@@ -23,10 +21,9 @@ import {
   showAlertSuccess,
   showAlertInfo,
   showToastError,
-  showToastSuccess,
   showToastWarning,
 } from "~/utils/alert";
-import { apiGenerateExamSchedule } from "~/apis/examsApi";
+import { apiGenerateExamSchedule, apiGetExamHistory } from "~/apis/examsApi";
 
 const AutoSchedule = () => {
   const { accessToken } = useSelector((state) => state.user); // <-- ĐÃ THÊM
@@ -36,32 +33,72 @@ const AutoSchedule = () => {
   // Date Range
   const [startDate, setStartDate] = useState("2025-05-01");
   const [endDate, setEndDate] = useState("2025-05-31");
-  // Holidays
-  const [holidays, setHolidays] = useState(["2025-05-01", "2025-05-15"]);
+
+  // Data from API when session is selected
+  const [examHistoryData, setExamHistoryData] = useState(null);
   const [selectedRooms, setSelectedRooms] = useState([]);
   const [selectedProctors, setSelectedProctors] = useState([]);
-  // Constraints
-  const [constraints, setConstraints] = useState({
-    maxExamsPerStudentPerDay: {
-      value: 2,
-      type: "Hard",
-    },
-    avoidInterLocationTravel: {
-      value: true,
-      type: "Hard",
-    },
-    avoid_weekend: {
-      // <-- ĐÃ THÊM
-      value: true,
-      type: "Hard",
-    },
-  });
 
+  // Constraints - Updated format
+  const [constraints, setConstraints] = useState([
+    {
+      constraintCode: "HOLIDAY",
+      rule: {
+        holiday: ["2025-05-01", "2025-05-15"],
+      },
+    },
+    {
+      constraintCode: "MAX_EXAMS_PER_DAY",
+      rule: {
+        max_exam_per_day: 2,
+      },
+    },
+    {
+      constraintCode: "ROOM_LOCATION_LIMIT",
+      rule: {
+        max_location: 1,
+      },
+    },
+  ]);
+  console.log("selectedProctors", selectedProctors);
   // Scheduling State
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState("");
   const [results, setResults] = useState(null);
+
+  // Load exam history data when session is selected
+  useEffect(() => {
+    const loadExamHistory = async () => {
+      if (!selectedSessionId || !accessToken) return;
+
+      try {
+        const response = await apiGetExamHistory({
+          accessToken,
+          examSessionId: parseInt(selectedSessionId),
+        });
+
+        if (response.code === 200) {
+          const data = response.data;
+          setExamHistoryData(data);
+
+          // Update date range from API
+          if (data.startDate) setStartDate(data.startDate);
+          if (data.endDate) setEndDate(data.endDate);
+
+          // Update constraints from API
+          if (data.constraints) {
+            setConstraints(data.constraints);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading exam history:", error);
+        showToastError("Lỗi khi tải thông tin đợt thi");
+      }
+    };
+
+    loadExamHistory();
+  }, [selectedSessionId, accessToken]);
 
   const handleStartScheduling = async () => {
     // Validation
@@ -77,81 +114,44 @@ const AutoSchedule = () => {
       showToastError("Ngày bắt đầu phải trước ngày kết thúc!");
       return;
     }
-
-    setIsRunning(true);
-    setProgress(0);
-    setResults(null);
-    setCurrentStep("Đang chuẩn bị dữ liệu...");
-
     try {
-      // --- BẮT ĐẦU CHUYỂN ĐỔI DỮ LIỆU ---
+      // Prepare rooms data - always use examHistoryData when available
+      let rooms = examHistoryData?.rooms || [];
 
-      // 1. Hàm trợ giúp để xử lý logic "Chọn tất cả" hoặc "Chọn cụ thể"
-      // Trả về `null` nếu "Chọn tất cả" (hoặc chưa chọn gì),
-      // Trả về mảng [1, 2, 3] nếu chọn cụ thể.
-      const processIdSelection = (selectionArray, idKey) => {
-        const isSelectAll =
-          selectionArray.length > 0 && selectionArray[0]?.selectAll === true;
-        const isEmpty = selectionArray.length === 0;
-
-        if (isSelectAll || isEmpty) {
-          // Gửi `null` để backend hiểu là "chọn tất cả"
-          // Ghi chú: JSON của bạn không hỗ trợ "Loại trừ",
-          // nên logic này giả định `null` = "Tất cả"
-          return null;
-        }
-
-        // Nếu là danh sách cụ thể, trích xuất các ID
-        return selectionArray.map((item) => item[idKey]);
-      };
-
-      const roomIds = processIdSelection(selectedRooms, "roomId");
-      const lecturerIds = processIdSelection(selectedProctors, "proctorId");
-
-      // 2. Xử lý Ràng buộc (Constraints)
-      const formattedConstraints = {};
-
-      // Ánh xạ: maxExamsPerStudentPerDay -> max_exam_per_day
-      if (constraints.maxExamsPerStudentPerDay?.value > 0) {
-        formattedConstraints.max_exam_per_day =
-          constraints.maxExamsPerStudentPerDay.value;
+      // If user has made specific room selections (not selectAll), use those instead
+      if (selectedRooms.length > 0 && !selectedRooms[0]?.selectAll) {
+        rooms = selectedRooms.map((room) => ({
+          id: room.roomId,
+          capacity: room.capacity,
+          locationId: room.locationId,
+          // code: room.code,
+        }));
       }
 
-      // Ánh xạ: avoidInterLocationTravel -> max_location: 1
-      if (constraints.avoidInterLocationTravel?.value === true) {
-        formattedConstraints.max_location = 1;
+      // Prepare lecturers data - always use examHistoryData when available
+      let lecturers = examHistoryData?.lecturers || [];
+
+      // If user has made specific proctor selections (not selectAll), use those instead
+      if (selectedProctors.length > 0 && !selectedProctors[0]?.selectAll) {
+        lecturers = selectedProctors.map((proctor) => ({
+          id: proctor.proctorId,
+          name: proctor.name,
+          // lecturerCode: proctor.lecturerCode,
+        }));
       }
 
-      // Ánh xạ: avoid_weekend -> avoid_weekend: true
-      if (constraints.avoid_weekend?.value === true) {
-        formattedConstraints.avoid_weekend = true;
-      }
-
-      // --- KẾT THÚC CHUYỂN ĐỔI ---
-
-      // Dữ liệu cuối cùng để gửi lên server
+      // Prepare scheduling data according to new format
       const schedulingData = {
+        rooms: rooms,
+        lecturers: lecturers,
         examSessionId: parseInt(selectedSessionId),
         startDate: startDate,
-        endDate: endDate, // File gốc của bạn là 2025-05-31, JSON mẫu là 2025-06-01. Lấy theo state.
-        holidays: holidays,
-        roomIds: roomIds, // `null` nếu chọn tất cả, [1,2,3] nếu chọn cụ thể
-        lecturerIds: lecturerIds, // `null` nếu chọn tất cả, [1,2,3] nếu chọn cụ thể
-        constraints: formattedConstraints,
+        endDate: endDate,
+        constraints: constraints, // Use constraints array directly
       };
-
-      setCurrentStep("Đang gửi yêu cầu xếp lịch...");
-      setProgress(20);
-
-      // Log để kiểm tra payload
-      console.log(
-        "Sending scheduling payload:",
-        JSON.stringify(schedulingData, null, 2)
-      );
-
       const res = await apiGenerateExamSchedule({
         accessToken, // <-- ĐÃ THÊM
-        schedulingData,
+        body: schedulingData,
       });
 
       if (res.code != 200) {
@@ -187,7 +187,6 @@ const AutoSchedule = () => {
     setCurrentStep("Đã dừng");
     showToastWarning("Đã dừng quá trình xếp lịch");
   };
-
   return (
     <div className="p-6">
       {/* Header */}
@@ -205,7 +204,6 @@ const AutoSchedule = () => {
             selectedSessionId={selectedSessionId}
             onSessionChange={setSelectedSessionId}
           />
-
           {/* Date Range Selector */}
           <DateRangeSelector
             startDate={startDate}
@@ -213,9 +211,6 @@ const AutoSchedule = () => {
             onStartDateChange={setStartDate}
             onEndDateChange={setEndDate}
           />
-
-          {/* Holiday Selector */}
-          <HolidaySelector holidays={holidays} onHolidaysChange={setHolidays} />
 
           {/* Room Selector */}
           <RoomSelector

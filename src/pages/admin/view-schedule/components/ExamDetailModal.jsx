@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Calendar,
   Clock,
@@ -43,28 +43,42 @@ const ExamDetailModal = ({
   const [examDetail, setExamDetail] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  console.log("ExamDetailModal props:", {
+    open,
+    examId,
+    accessToken: !!accessToken,
+  });
+
+  const fetchExamDetail = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log("Fetching exam detail for ID:", examId);
+      const response = await apiGetDetailExamById({ accessToken, id: examId });
+      console.log("Exam detail response:", response);
+      if (response.code === 200) {
+        setExamDetail(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching exam detail:", error);
+      showToastError(error.message || "Lỗi khi tải chi tiết kỳ thi");
+    } finally {
+      setLoading(false);
+    }
+  }, [examId, accessToken]);
+
   useEffect(() => {
+    console.log("ExamDetailModal useEffect:", {
+      open,
+      examId,
+      accessToken: !!accessToken,
+    });
     if (open && examId && accessToken) {
       fetchExamDetail();
     } else if (open && oldExam) {
       // Fallback to old exam data if examId not provided
       setExamDetail(null);
     }
-  }, [open, examId, accessToken]);
-
-  const fetchExamDetail = async () => {
-    try {
-      setLoading(true);
-      const response = await apiGetDetailExamById({ accessToken, id: examId });
-      if (response.code === 200) {
-        setExamDetail(response.data);
-      }
-    } catch (error) {
-      showToastError(error.message || "Lỗi khi tải chi tiết kỳ thi");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [open, examId, accessToken, oldExam, fetchExamDetail]);
 
   // Use examDetail if available, otherwise fallback to oldExam
   const exam = examDetail || oldExam;
@@ -181,12 +195,6 @@ const ExamDetailModal = ({
                 </h3>
                 <div className="space-y-2">
                   <InfoRow
-                    icon={FileText}
-                    label="Mã nhóm thi"
-                    value={exam.examGroupName || exam.exam_group?.code || "N/A"}
-                    iconColor="bg-amber-600"
-                  />
-                  <InfoRow
                     icon={BookOpen}
                     label="Học phần"
                     value={
@@ -250,6 +258,7 @@ const ExamDetailModal = ({
                         <Table>
                           <TableHeader>
                             <TableRow>
+                              {console.log("__", examDetail)}
                               <TableHead className="w-16">STT</TableHead>
                               <TableHead>Mã SV</TableHead>
                               <TableHead>Họ và tên</TableHead>

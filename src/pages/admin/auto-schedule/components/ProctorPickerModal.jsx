@@ -35,8 +35,6 @@ export default function ProctorPickerModal({
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [tempSelectedProctors, setTempSelectedProctors] = useState([]);
-  const [excludedProctors, setExcludedProctors] = useState([]); // Proctors excluded when selectAll is true
-  const [selectAll, setSelectAll] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -76,18 +74,10 @@ export default function ProctorPickerModal({
       fetchLecturers(1, "");
       setSearchTerm("");
 
-      // Check if selectedProctors has selectAll flag or is empty array
-      if (selectedProctors.length === 0 || selectedProctors[0]?.selectAll) {
-        setSelectAll(true);
-        setExcludedProctors(selectedProctors[0]?.excludedProctorIds || []);
-        setTempSelectedProctors([]);
-      } else {
-        setSelectAll(false);
-        setExcludedProctors([]);
-        setTempSelectedProctors([...selectedProctors]);
-      }
+      // Initialize with current selected proctors (no selectAll logic)
+      setTempSelectedProctors([...selectedProctors]);
     }
-  }, [open, accessToken]);
+  }, [open, accessToken, selectedProctors]);
 
   // Handle search with debounce
   useEffect(() => {
@@ -98,82 +88,76 @@ export default function ProctorPickerModal({
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
+  }, [searchTerm, open]);
 
   const handlePageChange = (page) => {
     fetchLecturers(page, searchTerm);
   };
 
-  const handleSelectAll = (checked) => {
-    setSelectAll(checked);
+  // Check if all lecturers in current page are selected
+  const areAllCurrentPageLecturersSelected = () => {
+    return lecturers.every((lecturer) =>
+      tempSelectedProctors.some(
+        (selected) => selected.proctorId === lecturer.id
+      )
+    );
+  };
+
+  // Select/deselect all lecturers in current page
+  const handleSelectAllCurrentPage = (checked) => {
     if (checked) {
-      // Switch to select all mode, clear individual selections
-      setTempSelectedProctors([]);
-      setExcludedProctors([]);
+      // Add all current page lecturers to selection (if not already selected)
+      const newProctors = lecturers
+        .filter(
+          (lecturer) =>
+            !tempSelectedProctors.some(
+              (selected) => selected.proctorId === lecturer.id
+            )
+        )
+        .map((lecturer) => ({
+          proctorId: lecturer.id,
+          lecturerCode: lecturer.lecturerCode,
+          name: `${lecturer.firstName} ${lecturer.lastName}`,
+        }));
+
+      setTempSelectedProctors([...tempSelectedProctors, ...newProctors]);
     } else {
-      // Switch to individual mode, clear excluded list
-      setExcludedProctors([]);
-      setTempSelectedProctors([]);
+      // Remove all current page lecturers from selection
+      const currentPageLecturerIds = lecturers.map((lecturer) => lecturer.id);
+      setTempSelectedProctors(
+        tempSelectedProctors.filter(
+          (selected) => !currentPageLecturerIds.includes(selected.proctorId)
+        )
+      );
     }
   };
 
   const handleToggleLecturer = (lecturer) => {
-    if (selectAll) {
-      // In select all mode: toggle exclude list
-      const isExcluded = excludedProctors.includes(lecturer.id);
+    const isSelected = tempSelectedProctors.some(
+      (p) => p.proctorId === lecturer.id
+    );
 
-      if (isExcluded) {
-        // Remove from excluded list (include this lecturer)
-        setExcludedProctors(
-          excludedProctors.filter((id) => id !== lecturer.id)
-        );
-      } else {
-        // Add to excluded list
-        setExcludedProctors([...excludedProctors, lecturer.id]);
-      }
-    } else {
-      // In individual select mode: toggle selected list
-      const isSelected = tempSelectedProctors.some(
-        (p) => p.proctorId === lecturer.id
+    if (isSelected) {
+      setTempSelectedProctors(
+        tempSelectedProctors.filter((p) => p.proctorId !== lecturer.id)
       );
-
-      if (isSelected) {
-        setTempSelectedProctors(
-          tempSelectedProctors.filter((p) => p.proctorId !== lecturer.id)
-        );
-      } else {
-        setTempSelectedProctors([
-          ...tempSelectedProctors,
-          {
-            proctorId: lecturer.id,
-            lecturerCode: lecturer.lecturerCode,
-            name: `${lecturer.firstName} ${lecturer.lastName}`,
-          },
-        ]);
-      }
+    } else {
+      setTempSelectedProctors([
+        ...tempSelectedProctors,
+        {
+          proctorId: lecturer.id,
+          lecturerCode: lecturer.lecturerCode,
+          name: `${lecturer.firstName} ${lecturer.lastName}`,
+        },
+      ]);
     }
   };
 
   const handleConfirm = () => {
-    if (selectAll) {
-      // Return selectAll flag with excluded proctor IDs
-      onConfirm([
-        {
-          selectAll: true,
-          excludedProctorIds: excludedProctors,
-        },
-      ]);
-    } else {
-      onConfirm(tempSelectedProctors);
-    }
+    onConfirm(tempSelectedProctors);
   };
 
   const isLecturerSelected = (lecturerId) => {
-    if (selectAll) {
-      // In select all mode: selected if NOT in excluded list
-      return !excludedProctors.includes(lecturerId);
-    }
-    // In individual mode: selected if in tempSelectedProctors
     return tempSelectedProctors.some((p) => p.proctorId === lecturerId);
   };
 
@@ -202,23 +186,19 @@ export default function ProctorPickerModal({
           />
         </div>
 
-        {/* Select All Checkbox */}
+        {/* Select All Current Page Checkbox */}
         <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
           <Checkbox
-            id="select-all-proctors"
-            checked={selectAll}
-            onCheckedChange={handleSelectAll}
+            id="select-all-current-page-proctors"
+            checked={areAllCurrentPageLecturersSelected()}
+            onCheckedChange={handleSelectAllCurrentPage}
           />
           <label
-            htmlFor="select-all-proctors"
+            htmlFor="select-all-current-page-proctors"
             className="text-sm font-medium cursor-pointer"
           >
-            Chọn tất cả giám thị{" "}
-            {selectAll
-              ? excludedProctors.length > 0
-                ? `(Loại trừ ${excludedProctors.length} giám thị)`
-                : "(Tất cả giám thị)"
-              : `(${tempSelectedProctors.length} giám thị đã chọn)`}
+            Chọn tất cả trang hiện tại ({lecturers.length} giám thị) - Đã chọn:{" "}
+            {tempSelectedProctors.length} giám thị
           </label>
         </div>
 
@@ -267,7 +247,7 @@ export default function ProctorPickerModal({
                       key={lecturer.id}
                       className={`cursor-pointer hover:bg-green-50 transition-colors ${
                         isSelected ? "bg-green-100" : ""
-                      } ${selectAll ? "opacity-90" : ""}`}
+                      }`}
                       onClick={() => handleToggleLecturer(lecturer)}
                     >
                       <TableCell className="text-center">
@@ -322,20 +302,10 @@ export default function ProctorPickerModal({
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t">
           <div className="text-sm text-gray-500">
-            {selectAll ? (
-              excludedProctors.length > 0 ? (
-                <span className="text-green-600 font-medium">
-                  ✓ Tất cả giám thị (Loại trừ{" "}
-                  <strong>{excludedProctors.length}</strong> giám thị)
-                </span>
-              ) : (
-                <span className="text-green-600 font-medium">
-                  ✓ Đã chọn tất cả giám thị
-                </span>
-              )
-            ) : tempSelectedProctors.length > 0 ? (
-              <span>
-                Đã chọn: <strong>{tempSelectedProctors.length}</strong> giám thị
+            {tempSelectedProctors.length > 0 ? (
+              <span className="text-green-600 font-medium">
+                ✓ Đã chọn: <strong>{tempSelectedProctors.length}</strong> giám
+                thị
               </span>
             ) : (
               <span>Chưa chọn giám thị nào</span>
