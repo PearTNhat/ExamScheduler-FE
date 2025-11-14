@@ -119,14 +119,9 @@ const apiDeleteExam = async ({ accessToken, id }) => {
         throw new Error(error.message);
     }
 };
-const apiGetExamHistory = async ({ accessToken, examSessionId }) => {
+const apiGetExamHistory = async ({ examSessionId }) => {
     try {
-        const { data } = await http.get(`/exams/history`, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-            params: { examSessionId },
-        });
+        const { data } = await http.get(`/api/schedule/config/${examSessionId}`);
         return data;
     } catch (error) {
         if (error.response && error.response.data) {
@@ -154,6 +149,74 @@ const apiGenerateExamSchedule = async ({ body, accessToken }) => {
     }
 }
 
+const apiRemoveStudentFromExam = async ({ accessToken, examId, studentId }) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
+        const res = await http.delete(`/exams/${examId}/students/${studentId}`, config);
+        return res.data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
+
+const apiRemoveSupervisorFromExam = async ({ accessToken, examId, supervisorId }) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
+        const res = await http.delete(`/exams/${examId}/supervisors/${supervisorId}`, config);
+        return res.data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
+
+const apiAddStudentsToExam = async ({ accessToken, examId, studentIds }) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
+        const res = await http.post(`/exams/${examId}/students`, { studentIds }, config);
+        return res.data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
+
+const apiAddSupervisorsToExam = async ({ accessToken, examId, supervisorIds }) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
+        const res = await http.post(`/exams/${examId}/supervisors`, { supervisorIds }, config);
+        return res.data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
+
 export {
     apiGetExams,
     apiGetExamById,
@@ -164,4 +227,8 @@ export {
     apiGetDetailExamById,
     apiViewTimetableExams,
     apiGetExamHistory,
+    apiRemoveStudentFromExam,
+    apiRemoveSupervisorFromExam,
+    apiAddStudentsToExam,
+    apiAddSupervisorsToExam,
 };

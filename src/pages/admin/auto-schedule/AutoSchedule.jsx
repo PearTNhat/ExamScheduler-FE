@@ -1,14 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux"; // <-- ĐÃ THÊM
-import {
-  Play,
-  Pause,
-  CheckCircle,
-  Clock,
-  Zap,
-  AlertTriangle,
-  Loader2,
-} from "lucide-react";
+import { Play, Pause, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import RoomSelector from "./components/RoomSelector";
@@ -22,6 +14,7 @@ import {
   showAlertInfo,
   showToastError,
   showToastWarning,
+  showToastSuccess,
 } from "~/utils/alert";
 import { apiGenerateExamSchedule, apiGetExamHistory } from "~/apis/examsApi";
 
@@ -38,8 +31,6 @@ const AutoSchedule = () => {
   const [examHistoryData, setExamHistoryData] = useState(null);
   const [selectedRooms, setSelectedRooms] = useState([]);
   const [selectedProctors, setSelectedProctors] = useState([]);
-
-  // Constraints - Updated format
   const [constraints, setConstraints] = useState([
     {
       constraintCode: "HOLIDAY",
@@ -60,21 +51,21 @@ const AutoSchedule = () => {
       },
     },
   ]);
-  console.log("selectedProctors", selectedProctors);
   // Scheduling State
   const [isRunning, setIsRunning] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState("");
   const [results, setResults] = useState(null);
 
   // Load exam history data when session is selected
   useEffect(() => {
+    if (!selectedSessionId) {
+      setExamHistoryData(null);
+      setSelectedRooms([]);
+      setSelectedProctors([]);
+      return;
+    }
     const loadExamHistory = async () => {
-      if (!selectedSessionId || !accessToken) return;
-
       try {
         const response = await apiGetExamHistory({
-          accessToken,
           examSessionId: parseInt(selectedSessionId),
         });
 
@@ -85,20 +76,40 @@ const AutoSchedule = () => {
           // Update date range from API
           if (data.startDate) setStartDate(data.startDate);
           if (data.endDate) setEndDate(data.endDate);
-
+          if (data.rooms && data.rooms.length > 0) {
+            const historyRooms = data.rooms.map((room) => ({
+              roomId: room.id,
+              capacity: room.capacity,
+              location: room.location?.code || "N/A",
+              locationId: room.locationId || room.location?.id,
+              code: room.code,
+            }));
+            setSelectedRooms(historyRooms);
+          } else {
+            setSelectedRooms([]); // Xóa nếu lịch sử không có phòng
+          }
+          if (data.lecturers && data.lecturers.length > 0) {
+            const historyProctors = data.lecturers.map((lecturer) => ({
+              proctorId: lecturer.id,
+              name: lecturer.name,
+              lecturerCode: lecturer.lecturerCode,
+            }));
+            setSelectedProctors(historyProctors);
+          } else {
+            setSelectedProctors([]); // Xóa nếu lịch sử không có giám thị
+          }
           // Update constraints from API
           if (data.constraints) {
             setConstraints(data.constraints);
           }
         }
       } catch (error) {
-        console.error("Error loading exam history:", error);
-        showToastError("Lỗi khi tải thông tin đợt thi");
+        showToastError("Lỗi khi tải thông tin đợt thi", error.message);
       }
     };
 
     loadExamHistory();
-  }, [selectedSessionId, accessToken]);
+  }, [selectedSessionId]);
 
   const handleStartScheduling = async () => {
     // Validation
@@ -114,33 +125,24 @@ const AutoSchedule = () => {
       showToastError("Ngày bắt đầu phải trước ngày kết thúc!");
       return;
     }
+    setIsRunning(true);
+    setResults(null); // Xóa kết quả cũ
     try {
-      // Prepare rooms data - always use examHistoryData when available
       let rooms = examHistoryData?.rooms || [];
-
-      // If user has made specific room selections (not selectAll), use those instead
-      if (selectedRooms.length > 0 && !selectedRooms[0]?.selectAll) {
+      if (selectedRooms.length > 0) {
         rooms = selectedRooms.map((room) => ({
           id: room.roomId,
           capacity: room.capacity,
           locationId: room.locationId,
-          // code: room.code,
         }));
       }
-
-      // Prepare lecturers data - always use examHistoryData when available
       let lecturers = examHistoryData?.lecturers || [];
-
-      // If user has made specific proctor selections (not selectAll), use those instead
-      if (selectedProctors.length > 0 && !selectedProctors[0]?.selectAll) {
+      if (selectedProctors.length > 0) {
         lecturers = selectedProctors.map((proctor) => ({
           id: proctor.proctorId,
           name: proctor.name,
-          // lecturerCode: proctor.lecturerCode,
         }));
       }
-
-      // Prepare scheduling data according to new format
       const schedulingData = {
         rooms: rooms,
         lecturers: lecturers,
@@ -150,7 +152,7 @@ const AutoSchedule = () => {
         constraints: constraints, // Use constraints array directly
       };
       const res = await apiGenerateExamSchedule({
-        accessToken, // <-- ĐÃ THÊM
+        accessToken,
         body: schedulingData,
       });
 
@@ -158,8 +160,6 @@ const AutoSchedule = () => {
         throw new Error(res.message || "Lỗi từ server khi xếp lịch");
       }
       const result = res.data;
-      setProgress(100);
-      setCurrentStep("Hoàn thành!");
       setIsRunning(false);
       setResults({
         success: true,
@@ -169,23 +169,16 @@ const AutoSchedule = () => {
         totalScheduled: result.timetable?.length || 0,
       });
 
-      showAlertSuccess("Xếp lịch thành công!");
+      showToastSuccess("Xếp lịch thành công!");
     } catch (error) {
       console.error("Scheduling error:", error);
       setIsRunning(false);
-      setCurrentStep("Lỗi!");
       showAlertError(error.message || "Có lỗi xảy ra khi xếp lịch!");
       setResults({
         success: false,
         error: error.message,
       });
     }
-  };
-
-  const handleStopScheduling = () => {
-    setIsRunning(false);
-    setCurrentStep("Đã dừng");
-    showToastWarning("Đã dừng quá trình xếp lịch");
   };
   return (
     <div className="p-6">
@@ -242,7 +235,7 @@ const AutoSchedule = () => {
               {!isRunning ? (
                 <Button
                   onClick={handleStartScheduling}
-                  disabled={!selectedSessionId || !accessToken} // <-- Thêm check accessToken
+                  disabled={!selectedSessionId || !accessToken}
                   className="w-full"
                   size="lg"
                 >
@@ -250,15 +243,17 @@ const AutoSchedule = () => {
                   Bắt đầu xếp lịch
                 </Button>
               ) : (
-                <Button
-                  onClick={handleStopScheduling}
-                  variant="destructive"
-                  className="w-full"
-                  size="lg"
-                >
-                  <Pause className="mr-2 h-5 w-5" />
-                  Dừng xếp lịch
-                </Button>
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-gray-800">
+                      Đang xếp lịch...
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Quá trình này có thể mất vài phút
+                    </div>
+                  </div>
+                </div>
               )}
 
               {!selectedSessionId && (
@@ -268,36 +263,6 @@ const AutoSchedule = () => {
               )}
             </CardContent>
           </Card>
-
-          {/* Progress */}
-          {(isRunning || progress > 0) && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Tiến độ</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Hoàn thành</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {progress.toFixed(0)}%
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-                {currentStep && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    {isRunning && <Loader2 className="h-4 w-4 animate-spin" />}
-                    <span>{currentStep}</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
           {/* Results */}
           {results && (
             <Card>
@@ -335,21 +300,6 @@ const AutoSchedule = () => {
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
                         ✅ Đã tìm được lịch thi tối ưu hoàn hảo (fitness = 0)!
                       </div>
-                    )}
-
-                    {results.timetable && results.timetable.length > 0 && (
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => {
-                          console.log("Timetable:", results.timetable);
-                          showAlertInfo(
-                            `Có ${results.timetable.length} lịch thi đã được tạo. Xem console để biết chi tiết.`
-                          );
-                        }}
-                      >
-                        Xem chi tiết lịch thi
-                      </Button>
                     )}
                   </>
                 ) : (

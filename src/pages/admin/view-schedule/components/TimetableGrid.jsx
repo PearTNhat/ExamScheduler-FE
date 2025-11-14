@@ -2,39 +2,15 @@ import { useState, useMemo, useEffect } from "react";
 import { startOfWeek, addDays, format, subDays, isSameDay } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Users,
-  Eye,
-  Edit,
-  ChevronLeft,
-  ChevronRight,
-  BookOpen,
-  User,
-} from "lucide-react";
+import { Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import ExamCard from "./card/ExamCard";
-const TimetableGrid = ({
-  exams = [],
-  startDate, // <-- ĐÃ THÊM
-  onViewDetail,
-  onEdit,
-}) => {
-  // State để quản lý tuần hiện tại (bắt đầu từ Thứ 2)
+const TimetableGrid = ({ exams = [], startDate, onViewDetail, onEdit }) => {
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
 
-  // State để quản lý việc load chi tiết exam
-  const [loadingExamDetail, setLoadingExamDetail] = useState(false);
-
-  // *** ĐÃ THÊM: Đồng bộ với bộ lọc của component cha ***
   useEffect(() => {
     if (startDate) {
-      // Nếu cha có lọc ngày, nhảy đến tuần của ngày đó
-      // Phải parse ngày theo múi giờ địa phương
       const dateParts = startDate.split("-").map(Number);
       const localDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
       setCurrentWeekStart(startOfWeek(localDate, { weekStartsOn: 1 }));
@@ -211,7 +187,6 @@ const TimetableGrid = ({
                             exam={exam}
                             onViewDetail={onViewDetail}
                             onEdit={onEdit}
-                            isLoadingEdit={loadingExamDetail}
                           />
                         ))
                       ) : (
@@ -235,7 +210,6 @@ const TimetableGrid = ({
                             exam={exam}
                             onViewDetail={onViewDetail}
                             onEdit={onEdit}
-                            isLoadingEdit={loadingExamDetail}
                           />
                         ))
                       ) : (

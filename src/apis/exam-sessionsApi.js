@@ -1,7 +1,6 @@
 import { http } from "~/utils/http";
 
 const apiGetExamSessions = async ({ accessToken }) => {
-    console.log("sessionToken", accessToken)
     try {
         const { data } = await http.get("/exam-sessions", {
             headers: {

@@ -96,3 +96,11 @@ export {
     confirmAlert, // Đã sửa tên hàm từ confirmAleart -> confirmAlert
     showToastConfirm
 }
+
+// Toast object for react-hot-toast compatibility
+export const toast = {
+    success: showToastSuccess,
+    error: showToastError,
+    warning: showToastWarning,
+    info: showAlertInfo
+}

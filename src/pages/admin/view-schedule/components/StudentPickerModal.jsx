@@ -35,8 +35,6 @@ export default function StudentPickerModal({
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [tempSelectedStudents, setTempSelectedStudents] = useState([]);
-  const [excludedStudents, setExcludedStudents] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -50,7 +48,7 @@ export default function StudentPickerModal({
         accessToken,
         params: {
           page,
-          limit: 10,
+          limit: 20,
           fullName: fullName.trim() || undefined,
         },
       });
@@ -75,19 +73,9 @@ export default function StudentPickerModal({
     if (open && accessToken) {
       fetchStudents(1, "");
       setSearchTerm("");
-
-      // Check if selectedStudents has selectAll flag
-      if (selectedStudents.length === 0 || selectedStudents[0]?.selectAll) {
-        setSelectAll(true);
-        setExcludedStudents(selectedStudents[0]?.excludedStudentIds || []);
-        setTempSelectedStudents([]);
-      } else {
-        setSelectAll(false);
-        setExcludedStudents([]);
-        setTempSelectedStudents([...selectedStudents]);
-      }
+      setTempSelectedStudents([...selectedStudents]);
     }
-  }, [open, accessToken]);
+  }, [open, accessToken, selectedStudents]);
 
   // Handle search with debounce
   useEffect(() => {
@@ -104,58 +92,58 @@ export default function StudentPickerModal({
     fetchStudents(page, searchTerm);
   };
 
-  const handleSelectAll = (checked) => {
-    setSelectAll(checked);
-    if (checked) {
-      setTempSelectedStudents([]);
-      setExcludedStudents([]);
-    } else {
-      setExcludedStudents([]);
-      setTempSelectedStudents([]);
-    }
+  // Check if all students in current page are selected
+  const areAllCurrentPageStudentsSelected = () => {
+    return students.every((student) =>
+      tempSelectedStudents.some((selected) => selected.id === student.id)
+    );
   };
 
-  const handleToggleStudent = (student) => {
-    if (selectAll) {
-      // In select all mode: toggle exclude list
-      const isExcluded = excludedStudents.includes(student.id);
+  // Select/deselect all students in current page
+  const handleSelectAllCurrentPage = (checked) => {
+    if (checked) {
+      // Add all current page students to selection (if not already selected)
+      const newStudents = students.filter(
+        (student) =>
+          !tempSelectedStudents.some((selected) => selected.id === student.id)
+      );
 
-      if (isExcluded) {
-        setExcludedStudents(excludedStudents.filter((id) => id !== student.id));
-      } else {
-        setExcludedStudents([...excludedStudents, student.id]);
-      }
+      setTempSelectedStudents([...tempSelectedStudents, ...newStudents]);
     } else {
-      // In individual select mode: toggle selected list
-      const isSelected = tempSelectedStudents.some((s) => s.id === student.id);
+      // Remove all current page students from selection
+      const currentPageStudentIds = students.map((student) => student.id);
+      setTempSelectedStudents(
+        tempSelectedStudents.filter(
+          (selected) => !currentPageStudentIds.includes(selected.id)
+        )
+      );
+    }
+  };
+  const handleToggleStudent = (student) => {
+    const isSelected = tempSelectedStudents.some((s) => s.id === student.id);
 
-      if (isSelected) {
-        setTempSelectedStudents(
-          tempSelectedStudents.filter((s) => s.id !== student.id)
-        );
-      } else {
-        setTempSelectedStudents([...tempSelectedStudents, student]);
-      }
+    if (isSelected) {
+      setTempSelectedStudents(
+        tempSelectedStudents.filter((s) => s.id !== student.id)
+      );
+    } else {
+      setTempSelectedStudents([
+        ...tempSelectedStudents,
+        {
+          id: student.id,
+          studentCode: student.studentCode,
+          className: student.classes?.className,
+          fullName: `${student.firstName} ${student.lastName}`,
+        },
+      ]);
     }
   };
 
   const handleConfirm = () => {
-    if (selectAll) {
-      onConfirm([
-        {
-          selectAll: true,
-          excludedStudentIds: excludedStudents,
-        },
-      ]);
-    } else {
-      onConfirm(tempSelectedStudents);
-    }
+    onConfirm(tempSelectedStudents);
   };
 
   const isStudentSelected = (studentId) => {
-    if (selectAll) {
-      return !excludedStudents.includes(studentId);
-    }
     return tempSelectedStudents.some((s) => s.id === studentId);
   };
 
@@ -184,23 +172,19 @@ export default function StudentPickerModal({
           />
         </div>
 
-        {/* Select All Checkbox */}
+        {/* Select All Current Page Checkbox */}
         <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <Checkbox
-            id="select-all-students"
-            checked={selectAll}
-            onCheckedChange={handleSelectAll}
+            id="select-all-current-page-students"
+            checked={areAllCurrentPageStudentsSelected()}
+            onCheckedChange={handleSelectAllCurrentPage}
           />
           <label
-            htmlFor="select-all-students"
+            htmlFor="select-all-current-page-students"
             className="text-sm font-medium cursor-pointer"
           >
-            Chọn tất cả sinh viên{" "}
-            {selectAll
-              ? excludedStudents.length > 0
-                ? `(Loại trừ ${excludedStudents.length} sinh viên)`
-                : "(Tất cả sinh viên)"
-              : `(${tempSelectedStudents.length} sinh viên đã chọn)`}
+            Chọn tất cả trang hiện tại ({students.length} sinh viên) - Đã chọn:{" "}
+            {tempSelectedStudents.length} sinh viên
           </label>
         </div>
 
@@ -264,13 +248,15 @@ export default function StudentPickerModal({
                           <div className="p-1.5 bg-blue-100 rounded">
                             <GraduationCap className="h-4 w-4 text-blue-600" />
                           </div>
-                          {student.code}
+                          {student.studentCode}
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{fullName}</TableCell>
                       <TableCell>
-                        {student.class ? (
-                          <Badge variant="outline">{student.class.name}</Badge>
+                        {student.classes ? (
+                          <Badge variant="outline">
+                            {student.classes.className}
+                          </Badge>
                         ) : (
                           <span className="text-gray-400 text-sm">N/A</span>
                         )}
@@ -300,20 +286,9 @@ export default function StudentPickerModal({
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t">
           <div className="text-sm text-gray-500">
-            {selectAll ? (
-              excludedStudents.length > 0 ? (
-                <span className="text-blue-600 font-medium">
-                  ✓ Tất cả sinh viên (Loại trừ{" "}
-                  <strong>{excludedStudents.length}</strong> sinh viên)
-                </span>
-              ) : (
-                <span className="text-blue-600 font-medium">
-                  ✓ Đã chọn tất cả sinh viên
-                </span>
-              )
-            ) : tempSelectedStudents.length > 0 ? (
-              <span>
-                Đã chọn: <strong>{tempSelectedStudents.length}</strong> sinh
+            {tempSelectedStudents.length > 0 ? (
+              <span className="text-blue-600 font-medium">
+                ✓ Đã chọn: <strong>{tempSelectedStudents.length}</strong> sinh
                 viên
               </span>
             ) : (

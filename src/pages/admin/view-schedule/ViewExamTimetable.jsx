@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Badge } from "~/components/ui/badge";
 import { apiViewTimetableExams, apiGetExams } from "~/apis/examsApi";
 import { apiGetExamSessions } from "~/apis/exam-sessionsApi";
 import { showToastError } from "~/utils/alert";
@@ -18,9 +17,10 @@ import ExamDetailModal from "./components/ExamDetailModal";
 import ExamEditModal from "./components/ExamEditModal";
 import TimetableGrid from "./components/TimetableGrid";
 import CalendarMonthView from "./components/CalendarMonthView";
-import TimetableExamCard from "./components/card/TimeableExamCard";
-import ExamCard from "./components/card/ExamCard";
+import { getInitialDateRange } from "./utils/helper";
 
+// Tính toán giá trị ban đầu một lần
+const { start: initialStartDate, end: initialEndDate } = getInitialDateRange();
 const ViewExamTimetable = () => {
   const [timetable, setTimetable] = useState([]);
   const [allExams, setAllExams] = useState([]); // For calendar view
@@ -29,15 +29,14 @@ const ViewExamTimetable = () => {
   const { accessToken } = useSelector((state) => state.user);
   const [sessions, setSessions] = useState([]);
   const [selectedSession, setSelectedSession] = useState("all");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(initialStartDate);
+  const [endDate, setEndDate] = useState(initialEndDate);
   const [viewMode, setViewMode] = useState("calendar-month"); // "list", "calendar", "timetable", "calendar-month"
 
   const [selectedExamId, setSelectedExamId] = useState(null);
   const [selectedExam, setSelectedExam] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  console.log("all", allExams);
   useEffect(() => {
     if (accessToken) {
       fetchSessions();
@@ -119,7 +118,6 @@ const ViewExamTimetable = () => {
   };
 
   const handleViewExamDetail = (examId) => {
-    console.log("click");
     setSelectedExamId(examId);
     setIsDetailModalOpen(true);
   };
@@ -133,7 +131,6 @@ const ViewExamTimetable = () => {
     fetchTimetable();
     fetchAllExams();
   };
-  console.log(isDetailModalOpen);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="mb-8">

@@ -38,7 +38,12 @@ import {
   AlertCircle,
   Search,
 } from "lucide-react";
-import { apiGetDetailExamById, apiUpdateExam } from "~/apis/examsApi";
+import {
+  apiGetDetailExamById,
+  apiUpdateExam,
+  apiRemoveStudentFromExam,
+  apiRemoveSupervisorFromExam,
+} from "~/apis/examsApi";
 import { apiGetRooms } from "~/apis/roomsApi";
 import { apiGetExamSlots } from "~/apis/exam-slotApi";
 import { showToastError, showToastSuccess } from "~/utils/alert";
@@ -81,10 +86,9 @@ const ExamEditModal = ({
       fetchSlots({ accessToken });
     }
   }, [open, exam, accessToken]);
-
   useEffect(() => {
     if (examDetail) {
-      setExamDate(examDetail.exam_date?.split("T")[0] || "");
+      setExamDate(examDetail.examDate?.split("T")[0] || "");
       setRoomId(examDetail.room?.id?.toString() || "");
       setSlotId(examDetail.slot?.id?.toString() || "");
       setDuration(examDetail.duration?.toString() || "");
@@ -150,81 +154,159 @@ const ExamEditModal = ({
   }, [rooms, roomSearchTerm]);
 
   const handleStudentPickerConfirm = (selectedStudents) => {
-    if (selectedStudents[0]?.selectAll) {
-      // Handle select all mode - you might want to fetch all students
-      showToastSuccess("Đã chọn tất cả sinh viên");
-      // For now, just close modal - in production you'd fetch all students
-      setIsStudentPickerOpen(false);
-    } else {
-      setStudents(selectedStudents);
-      showToastSuccess(`Đã chọn ${selectedStudents.length} sinh viên`);
-      setIsStudentPickerOpen(false);
-    }
+    setStudents(selectedStudents);
+    showToastSuccess(`Đã chọn ${selectedStudents.length} sinh viên`);
+    setIsStudentPickerOpen(false);
   };
 
   const handleProctorPickerConfirm = (selectedProctors) => {
-    if (selectedProctors[0]?.selectAll) {
-      showToastSuccess("Đã chọn tất cả giám thị");
-      setIsProctorPickerOpen(false);
-    } else {
-      const proctorsData = selectedProctors.map((p) => ({
-        id: p.proctorId,
-        code: p.proctorCode,
-        full_name: p.proctorName,
-        role: "Supervisor",
-      }));
-      setSupervisors(proctorsData);
-      showToastSuccess(`Đã chọn ${proctorsData.length} giám thị`);
-      setIsProctorPickerOpen(false);
-    }
+    const proctorsData = selectedProctors.map((p) => ({
+      id: p.proctorId,
+      code: p.proctorCode,
+      full_name: p.proctorName,
+      role: "Supervisor",
+    }));
+    setSupervisors(proctorsData);
+    showToastSuccess(`Đã chọn ${proctorsData.length} giám thị`);
+    setIsProctorPickerOpen(false);
   };
 
   const handleRemoveStudent = (studentId) => {
-    setStudents(students.filter((s) => s.id !== studentId));
-    showToastSuccess("Đã xóa sinh viên");
+    // Chỉ cần lọc ra khỏi state, không cần gọi API
+    setStudents(
+      students.filter((s) => s.id.toString() !== studentId.toString())
+    ); // Tùy chọn: có thể toast "Đã tạm xóa..."
   };
 
   const handleRemoveSupervisor = (supervisorId) => {
-    setSupervisors(supervisors.filter((s) => s.id !== supervisorId));
-    showToastSuccess("Đã xóa giám thị");
+    // Chỉ cần lọc ra khỏi state, không cần gọi API
+    setSupervisors(
+      supervisors.filter((s) => s.id.toString() !== supervisorId.toString())
+    );
   };
+
+  // [TRONG ExamEditModal.js]
 
   const handleSave = async () => {
     try {
-      setSaving(true);
+      setSaving(true); // --- 1. TÍNH TOÁN SO SÁNH (DIFF) --- // SINH VIÊN
 
-      const updateData = {
-        examDate: examDate ? new Date(examDate).toISOString() : undefined,
-        roomId: roomId ? parseInt(roomId) : undefined,
-        slotId: slotId ? parseInt(slotId) : undefined,
-        duration: duration ? parseInt(duration) : undefined,
-        studentIds: students.map((s) => s.id),
-        supervisorIds: supervisors.map((s) => ({
-          lecturerId: s.id,
-          role: s.role || "Supervisor",
-        })),
-      };
+      const originalStudentIds = new Set(
+        examDetail?.students?.map((s) => s.id) || []
+      );
+      const currentStudentIds = new Set(students.map((s) => s.id));
 
-      const response = await apiUpdateExam({
-        accessToken,
-        id: exam.examId,
-        data: updateData,
-      });
+      const newStudentIds = [...currentStudentIds].filter(
+        (id) => !originalStudentIds.has(id)
+      );
+      const removedStudentIds = [...originalStudentIds].filter(
+        (id) => !currentStudentIds.has(id)
+      ); // GIÁM THỊ
 
-      if (response.code === 200) {
-        showToastSuccess("Cập nhật lịch thi thành công");
-        onExamUpdated?.();
-        onOpenChange(false);
+      const originalSupervisorIds = new Set(
+        examDetail?.supervisors?.map((s) => s.id) || []
+      );
+      const currentSupervisorIds = new Set(supervisors.map((s) => s.id));
+
+      const newSupervisorIds = [...currentSupervisorIds].filter(
+        (id) => !originalSupervisorIds.has(id)
+      );
+      const removedSupervisorIds = [...originalSupervisorIds].filter(
+        (id) => !currentSupervisorIds.has(id)
+      ); // --- 2. CHUẨN BỊ PAYLOAD CẬP NHẬT/THÊM MỚI ---
+
+      const changedFields = {}; // Thêm thông tin cơ bản
+
+      const originalDate = examDetail?.examDate?.split("T")[0] || "";
+      if (examDate !== originalDate) {
+        changedFields.examDate = new Date(examDate).toISOString();
       }
+      const originalRoomId = examDetail?.room?.id?.toString() || "";
+      if (roomId !== originalRoomId) {
+        changedFields.roomId = parseInt(roomId);
+      }
+      const originalSlotId = examDetail?.slot?.id?.toString() || "";
+      if (slotId !== originalSlotId) {
+        changedFields.slotId = parseInt(slotId);
+      }
+      const originalDuration = examDetail?.duration?.toString() || "";
+      if (duration !== originalDuration) {
+        changedFields.duration = parseInt(duration);
+      } // Thêm danh sách ID mới
+
+      if (newStudentIds.length > 0) {
+        changedFields.studentIds = newStudentIds;
+      }
+      if (newSupervisorIds.length > 0) {
+        changedFields.supervisorIds = newSupervisorIds;
+      } // --- 3. KIỂM TRA XEM CÓ THAY ĐỔI KHÔNG ---
+
+      const hasUpdates = Object.keys(changedFields).length > 0;
+      const hasRemovals =
+        removedStudentIds.length > 0 || removedSupervisorIds.length > 0;
+
+      if (!hasUpdates && !hasRemovals) {
+        showToastSuccess("Không có thay đổi nào để lưu");
+        setSaving(false);
+        return;
+      } // --- 4. THỰC THI XÓA (THEO YÊU CẦU CỦA BẠN) ---
+
+      const deletionPromises = []; // Tạo promise cho mỗi API xóa sinh viên
+
+      for (const studentId of removedStudentIds) {
+        console.log("Đang xóa sinh viên:", studentId);
+        deletionPromises.push(
+          apiRemoveStudentFromExam({
+            accessToken,
+            examId: exam.id,
+            studentId,
+          })
+        );
+      } // Tạo promise cho mỗi API xóa giám thị
+
+      for (const supervisorId of removedSupervisorIds) {
+        console.log("Đang xóa giám thị:", supervisorId);
+        deletionPromises.push(
+          apiRemoveSupervisorFromExam({
+            accessToken,
+            examId: exam.id,
+            supervisorId,
+          })
+        );
+      } // Chờ tất cả API xóa thực thi (dùng Promise.all để chạy song song cho nhanh)
+
+      if (deletionPromises.length > 0) {
+        const deletionResults = await Promise.all(deletionPromises); // Kiểm tra nếu có lỗi trong lúc xóa
+        for (const result of deletionResults) {
+          if (result.code !== 200) {
+            throw new Error(result.message || "Lỗi khi đang xóa thành viên");
+          }
+        }
+      } // --- 5. THỰC THI CẬP NHẬT / THÊM MỚI ---
+
+      if (hasUpdates) {
+        const response = await apiUpdateExam({
+          accessToken,
+          id: exam.id,
+          data: changedFields,
+        });
+
+        if (response.code !== 200) {
+          throw new Error(response.message || "Lỗi khi cập nhật lịch thi");
+        }
+      }
+
+      showToastSuccess("Cập nhật lịch thi thành công");
+      onExamUpdated?.();
+      onOpenChange(false);
     } catch (error) {
-      showToastError(error.message || "Lỗi khi cập nhật lịch thi");
+      showToastError(error.message || "Đã xảy ra lỗi");
     } finally {
       setSaving(false);
     }
   };
-
   if (!exam) return null;
-
+  console.log(students);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -250,7 +332,6 @@ const ExamEditModal = ({
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  {console.log("examdate", examDate)}
                   <Label htmlFor="examDate" className="text-sm font-medium">
                     Ngày thi
                   </Label>
@@ -402,16 +483,12 @@ const ExamEditModal = ({
                           <TableRow key={student.id}>
                             <TableCell>{index + 1}</TableCell>
                             <TableCell className="font-mono">
-                              {student.studentCode || student.code}
+                              {student.studentCode}
                             </TableCell>
-                            <TableCell>
-                              {student.fullName || student.full_name}
-                            </TableCell>
+                            <TableCell>{student.fullName}</TableCell>
                             <TableCell>
                               <Badge variant="outline">
-                                {student.className ||
-                                  student.class?.name ||
-                                  "N/A"}
+                                {student.className || "N/A"}
                               </Badge>
                             </TableCell>
                             <TableCell>

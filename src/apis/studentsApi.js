@@ -18,6 +18,24 @@ const apiGetStudents = async ({ accessToken, params }) => {
     }
 };
 
+
+const apiExamStudent = async ({ accessToken, examSessionId }) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
+        const { data } = await http.get(`/students/student/${examSessionId}`, config);
+        return data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
+
 const apiCreateStudent = async ({ body, accessToken }) => {
     try {
         const config = {
@@ -72,4 +90,4 @@ const apiDeleteStudent = async ({ accessToken, id }) => {
     }
 };
 
-export { apiGetStudents, apiCreateStudent, apiUpdateStudent, apiDeleteStudent };
+export { apiGetStudents, apiCreateStudent, apiUpdateStudent, apiDeleteStudent, apiExamStudent };

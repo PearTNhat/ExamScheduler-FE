@@ -8,9 +8,9 @@ function UserLayout() {
 
   // Mock user data - Replace with actual user data from Redux/Context
   const [user] = useState({
-    firstName: "Nguyễn Đình",
-    lastName: "Luật",
-    email: "luatnguyen@example.com",
+    firstName: "Lê Tuấn ",
+    lastName: "Nhật",
+    email: "nhat@example.com",
     avatar: "", // URL to avatar image
     role: "admin", // or "user"
   });

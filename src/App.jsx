@@ -10,7 +10,7 @@ import ExamSessions from "./pages/admin/exam-sessions/ExamSessions";
 import Courses from "./pages/admin/courses/Courses";
 import Rooms from "./pages/admin/rooms/Rooms";
 import StudentManager from "./pages/admin/student/StudentManager";
-import StudentCourseRegistrations from "./pages/admin/student-course-registrations/StudentCourseRegistrationsNew";
+
 import AutoSchedule from "./pages/admin/auto-schedule/AutoSchedule";
 import ViewExamTimetable from "./pages/admin/view-schedule/ViewExamTimetable";
 import UserLayout from "./pages/public/user/UserLayout";
@@ -18,9 +18,6 @@ import UserProfile from "./pages/public/user/userProfile/UserProfile";
 import ChangePassword from "./pages/public/user/changePassword/ChangePassword";
 import ExamSchedule from "./pages/public/user/examSchedule/ExamSchedule";
 import RegisteredCourses from "./pages/public/user/registeredCourses/RegisteredCourses";
-import ExamResults from "./pages/public/user/examResults/ExamResults";
-import Notifications from "./pages/public/user/notifications/Notifications";
-import ActivityHistory from "./pages/public/user/activityHistory/ActivityHistory";
 import Departments from "./pages/admin/departments/Departments";
 import Locations from "./pages/admin/locations/Locations";
 import LecturesManager from "./pages/admin/lectures/LecturesManager";
@@ -29,6 +26,7 @@ import { ScheduleGenerator } from "./pages/admin/schedule/ScheduleGenerator";
 import ClassesManager from "./pages/admin/classes/ClassesManager";
 import ExamSlotsManager from "./pages/admin/exam-slots/ExamSlotsManager";
 import ExamGroupsManager from "./pages/admin/exam-groups/ExamGroupsManager";
+import StudentCourseRegistrationManager from "./pages/admin/student-course-registrations/StudentCourseRegistrationManager";
 
 function App() {
   return (
@@ -44,9 +42,6 @@ function App() {
           <Route path="change-password" element={<ChangePassword />} />
           <Route path="exam-schedule" element={<ExamSchedule />} />
           <Route path="registered-courses" element={<RegisteredCourses />} />
-          <Route path="exam-results" element={<ExamResults />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="activity-history" element={<ActivityHistory />} />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
@@ -59,10 +54,10 @@ function App() {
           <Route path="locations" element={<Locations />} />
           <Route
             path="student-course-registrations"
-            element={<StudentCourseRegistrations />}
+            element={<StudentCourseRegistrationManager />}
           />
           <Route path="auto-schedule" element={<AutoSchedule />} />
-          {/* <Route path="view-schedule" element={<ViewSchedule />} /> */}
+
           <Route path="view-schedule" element={<ViewExamTimetable />} />
           <Route path="schedule" element={<ScheduleGenerator />} />
           <Route path="classes" element={<ClassesManager />} />

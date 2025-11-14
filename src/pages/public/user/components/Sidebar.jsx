@@ -47,24 +47,6 @@ const Sidebar = ({ isOpen, onClose }) => {
       icon: BookOpen,
       description: "Danh sách môn đã đăng ký",
     },
-    {
-      title: "Kết quả thi",
-      href: "/user/exam-results",
-      icon: Trophy,
-      description: "Xem điểm và kết quả thi",
-    },
-    {
-      title: "Thông báo",
-      href: "/user/notifications",
-      icon: Bell,
-      description: "Thông báo từ hệ thống",
-    },
-    {
-      title: "Lịch sử",
-      href: "/user/activity-history",
-      icon: History,
-      description: "Lịch sử hoạt động",
-    },
   ];
 
   return (

@@ -9,7 +9,6 @@ import {
   subMonths,
   format,
   isSameMonth,
-  isSameDay,
   isToday,
 } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -42,11 +41,8 @@ const CalendarMonthView = ({
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // *** ĐÃ THÊM: Đồng bộ với bộ lọc của component cha ***
   useEffect(() => {
     if (startDate) {
-      // Nếu cha có lọc ngày, nhảy đến tháng của ngày đó
-      // Phải parse ngày theo múi giờ địa phương
       const dateParts = startDate.split("-").map(Number);
       const localDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
       setCurrentMonth(localDate);
@@ -55,7 +51,6 @@ const CalendarMonthView = ({
       setCurrentMonth(new Date());
     }
   }, [startDate]); // Chạy lại khi startDate từ cha thay đổi
-  // *** KẾT THÚC THAY ĐỔI ***
 
   // Group exams by date
   const examsByDate = useMemo(() => {
@@ -116,8 +111,6 @@ const CalendarMonthView = ({
     const dateKey = format(date, "yyyy-MM-dd");
     return examsByDate[dateKey] || [];
   };
-
-  const selectedDateExams = selectedDate ? getExamsForDate(selectedDate) : [];
 
   // Group selected date exams by session (morning/afternoon)
   const groupedSelectedExams = useMemo(() => {
@@ -191,9 +184,7 @@ const CalendarMonthView = ({
         </div>
       </div>
 
-      {/* Calendar Grid */}
       <div className="p-4">
-        {/* Week day headers */}
         <div className="grid grid-cols-7 gap-2 mb-2">
           {weekDays.map((day, idx) => (
             <div
@@ -204,7 +195,6 @@ const CalendarMonthView = ({
             </div>
           ))}
         </div>
-
         {/* Calendar days */}
         <div className="grid grid-cols-7 gap-2">
           {calendarDays.map((day, idx) => {
@@ -248,18 +238,13 @@ const CalendarMonthView = ({
                     </Badge>
                   )}
                 </div>
-
-                {/* Exam indicators */}
                 {hasExams && isCurrentMonth && (
                   <div className="space-y-1">
                     {dayExams.slice(0, 2).map((exam, examIdx) => {
                       const courseName =
-                        exam.exam_group?.course?.name ||
-                        exam.courseName ||
-                        "N/A";
-                      const slot = exam.examSlot || exam.slot;
-                      const startTime =
-                        slot?.start_time || slot?.startTime || "";
+                        exam.examGroup?.course?.codeCourse || "N/A";
+                      const slot = exam.examSlot;
+                      const startTime = slot?.startTime || "";
 
                       return (
                         <div
@@ -294,7 +279,6 @@ const CalendarMonthView = ({
         </div>
       </div>
 
-      {/* Modal for selected date exams */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -362,17 +346,15 @@ const CalendarMonthView = ({
 
 // Exam Card in Modal
 const ExamCardModal = ({ exam, onViewDetail, onEdit }) => {
-  const courseName = exam.exam_group?.course?.name || exam.courseName || "N/A";
-  const examGroupCode = exam.exam_group?.code || exam.courseCode || "";
+  const courseName = exam.examGroup?.course?.nameCourse || "N/A";
   const roomCode = exam.room?.code || exam.roomName || "N/A";
   const locationName = exam.room?.location?.name || exam.location || "";
   const studentCount =
-    exam.exam_group?.expected_student_count || exam.studentCount || 0;
+    exam.examGroup?.expectedStudentCount || exam.studentCount || 0;
   const slot = exam.examSlot || exam.slot;
-  const startTime = slot?.start_time || slot?.startTime || "";
-  const endTime = slot?.end_time || slot?.endTime || "";
-  const slotName = slot?.slot_name || slot?.slotName || "";
-
+  const startTime = slot?.startTime || "";
+  const endTime = slot?.endTime || "";
+  const slotName = slot?.slotName || "";
   return (
     <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-4">
@@ -385,10 +367,8 @@ const ExamCardModal = ({ exam, onViewDetail, onEdit }) => {
               <h4 className="font-semibold text-gray-900 text-base">
                 {courseName}
               </h4>
-              <p className="text-sm text-gray-600">Mã: {examGroupCode}</p>
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-3 mt-3">
             <div className="flex items-center gap-2 text-sm">
               <Clock className="h-4 w-4 text-gray-400" />

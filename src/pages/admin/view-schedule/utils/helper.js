@@ -36,4 +36,23 @@ const getColorClass = (id) => {
         .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
 };
-export { getColorClass };
+// Hàm định dạng ngày sang "YYYY-MM-DD"
+const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
+// Hàm lấy ngày đầu và cuối của tháng hiện tại
+const getInitialDateRange = () => {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0); // '0' là ngày cuối cùng của tháng trước
+    return {
+        start: formatDate(firstDay),
+        end: formatDate(lastDay),
+    };
+};
+
+export { getColorClass, getInitialDateRange };
