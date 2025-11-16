@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Calendar, Users2, Filter, List, Grid3x3Icon } from "lucide-react";
+import {
+  Calendar,
+  Users2,
+  Filter,
+  List,
+  Grid3x3Icon,
+  Plus,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -9,12 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { apiViewTimetableExams, apiGetExams } from "~/apis/examsApi";
+import { apiViewTimetableExams, apiDeleteExam } from "~/apis/examsApi";
 import { apiGetExamSessions } from "~/apis/exam-sessionsApi";
-import { showToastError } from "~/utils/alert";
+import { showToastError, showToastSuccess, confirmAlert } from "~/utils/alert";
 import { useSelector } from "react-redux";
 import ExamDetailModal from "./components/ExamDetailModal";
 import ExamEditModal from "./components/ExamEditModal";
+import CreateExamModal from "./components/CreateExamModal";
 import TimetableGrid from "./components/TimetableGrid";
 import CalendarMonthView from "./components/CalendarMonthView";
 import { getInitialDateRange } from "./utils/helper";
@@ -23,7 +31,6 @@ import { getInitialDateRange } from "./utils/helper";
 const { start: initialStartDate, end: initialEndDate } = getInitialDateRange();
 const ViewExamTimetable = () => {
   const [timetable, setTimetable] = useState([]);
-  const [allExams, setAllExams] = useState([]); // For calendar view
   const [loading, setLoading] = useState(true);
   const [totalExams, setTotalExams] = useState(0);
   const { accessToken } = useSelector((state) => state.user);
@@ -31,32 +38,19 @@ const ViewExamTimetable = () => {
   const [selectedSession, setSelectedSession] = useState("all");
   const [startDate, setStartDate] = useState(initialStartDate);
   const [endDate, setEndDate] = useState(initialEndDate);
-  const [viewMode, setViewMode] = useState("calendar-month"); // "list", "calendar", "timetable", "calendar-month"
+  const [viewMode, setViewMode] = useState("timetable"); // "timetable", "calendar-month"
 
   const [selectedExamId, setSelectedExamId] = useState(null);
   const [selectedExam, setSelectedExam] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   useEffect(() => {
     if (accessToken) {
-      fetchSessions();
       fetchTimetable();
-      fetchAllExams();
     }
   }, [accessToken]);
-  const fetchSessions = async () => {
-    try {
-      const response = await apiGetExamSessions({
-        accessToken,
-        params: { page: 1, limit: 100 },
-      });
-      if (response.code === 200) {
-        setSessions(response.data || []);
-      }
-    } catch (error) {
-      console.error("Error fetching sessions:", error);
-    }
-  };
+
   const fetchTimetable = async () => {
     try {
       setLoading(true);
@@ -84,37 +78,15 @@ const ViewExamTimetable = () => {
     }
   };
 
-  const fetchAllExams = async () => {
-    try {
-      const params = { page: 1, limit: 1000 };
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
-      if (selectedSession && selectedSession !== "all") {
-        params.examSessionId = selectedSession;
-      }
-
-      const response = await apiGetExams({ accessToken, params });
-      if (response.code === 200) {
-        setAllExams(response.data.data || []);
-      } else {
-        // setAllExams([]);
-      }
-    } catch (error) {
-      console.error("Error fetching exams:", error);
-    }
-  };
-
   const handleFilter = () => {
     fetchTimetable();
-    fetchAllExams();
   };
 
   const handleResetFilter = () => {
-    setStartDate("");
-    setEndDate("");
+    setStartDate(initialStartDate);
+    setEndDate(initialEndDate);
     setSelectedSession("all");
     fetchTimetable();
-    fetchAllExams();
   };
 
   const handleViewExamDetail = (examId) => {
@@ -129,23 +101,61 @@ const ViewExamTimetable = () => {
 
   const handleExamUpdated = () => {
     fetchTimetable();
-    fetchAllExams();
   };
+
+  const handleExamCreated = () => {
+    fetchTimetable();
+  };
+
+  const handleDeleteExam = async (examId) => {
+    // Đợi modal đóng hoàn toàn trước khi hiển thị confirm
+    setTimeout(async () => {
+      const result = await confirmAlert({
+        title: "Xác nhận xóa lịch thi",
+        message:
+          "Bạn có chắc chắn muốn xóa lịch thi này? Thao tác này sẽ xóa tất cả thông tin đăng ký sinh viên và giám thị liên quan.",
+        confirmText: "Xóa",
+      });
+      if (result.isConfirmed) {
+        try {
+          const response = await apiDeleteExam({ accessToken, id: examId });
+          if (response.code === 200) {
+            showToastSuccess("Xóa lịch thi thành công");
+            fetchTimetable();
+          } else {
+            showToastError(response.message || "Lỗi khi xóa lịch thi");
+          }
+        } catch (error) {
+          showToastError(error.message || "Lỗi khi xóa lịch thi");
+        }
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-            <Calendar className="h-8 w-8 text-white" />
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+              <Calendar className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Lịch Thi Chi Tiết
+              </h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Xem lịch thi theo thời gian biểu với đầy đủ thông tin
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Lịch Thi Chi Tiết
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Xem lịch thi theo thời gian biểu với đầy đủ thông tin
-            </p>
-          </div>
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 gap-2"
+          >
+            <Plus className="h-5 w-5" />
+            Tạo lịch thi
+          </Button>
         </div>
       </div>
       {/* Filters and View Toggle */}
@@ -296,17 +306,19 @@ const ViewExamTimetable = () => {
           </div>
         ) : viewMode === "calendar-month" ? (
           <CalendarMonthView
-            exams={allExams}
+            timetable={timetable}
             startDate={startDate}
             onViewDetail={handleViewExamDetail}
             onEdit={handleEditExam}
+            onDelete={handleDeleteExam}
           />
         ) : (
           <TimetableGrid
-            exams={allExams}
+            timetable={timetable}
             startDate={startDate}
             onViewDetail={handleViewExamDetail}
             onEdit={handleEditExam}
+            onDelete={handleDeleteExam}
           />
         )}
       </div>
@@ -323,6 +335,12 @@ const ViewExamTimetable = () => {
         exam={selectedExam}
         accessToken={accessToken}
         onExamUpdated={handleExamUpdated}
+      />
+
+      <CreateExamModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onExamCreated={handleExamCreated}
       />
     </div>
   );

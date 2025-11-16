@@ -1,5 +1,9 @@
+import { Calendar, Clock, MapPin, Users2, Eye, Trash2 } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
+
 // Timetable Exam Card - Giống ExamCard format
-const TimetableExamCard = ({ exam, onViewDetail, onEdit }) => {
+const TimetableExamCard = ({ exam, onViewDetail, onEdit, onDelete }) => {
   const getColorClass = (code) => {
     const colors = [
       {
@@ -112,6 +116,15 @@ const TimetableExamCard = ({ exam, onViewDetail, onEdit }) => {
           >
             <Calendar className="h-3 w-3 mr-1" />
             Sửa
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => onDelete && onDelete(exam.examId)}
+            className="flex-1 h-7 text-xs"
+          >
+            <Trash2 className="h-3 w-3 mr-1" />
+            Xóa
           </Button>
         </div>
       </div>

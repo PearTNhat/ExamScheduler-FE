@@ -28,6 +28,7 @@ export default function RoomPickerModal({
   onOpenChange,
   onConfirm,
   selectedRooms,
+  singleSelect = false,
 }) {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -108,11 +109,10 @@ export default function RoomPickerModal({
         .map((room) => ({
           roomId: room.id,
           capacity: room.capacity,
-          location: room.location?.code || "N/A",
+          location: room.location?.name || "N/A",
           locationId: room.location?.id,
           code: room.code,
         }));
-
       setTempSelectedRooms([...tempSelectedRooms, ...newRooms]);
     } else {
       // Remove all current page rooms from selection
@@ -128,21 +128,39 @@ export default function RoomPickerModal({
   const handleToggleRoom = (room) => {
     const isSelected = tempSelectedRooms.some((r) => r.roomId === room.id);
 
-    if (isSelected) {
-      setTempSelectedRooms(
-        tempSelectedRooms.filter((r) => r.roomId !== room.id)
-      );
+    if (singleSelect) {
+      // Single select mode: only one room can be selected
+      if (isSelected) {
+        setTempSelectedRooms([]);
+      } else {
+        setTempSelectedRooms([
+          {
+            roomId: room.id,
+            capacity: room.capacity,
+            location: room.location?.name || "N/A",
+            locationId: room.location?.id,
+            code: room.code,
+          },
+        ]);
+      }
     } else {
-      setTempSelectedRooms([
-        ...tempSelectedRooms,
-        {
-          roomId: room.id,
-          capacity: room.capacity,
-          location: room.location?.code || "N/A",
-          locationId: room.location?.id,
-          code: room.code,
-        },
-      ]);
+      // Multi select mode: can select multiple rooms
+      if (isSelected) {
+        setTempSelectedRooms(
+          tempSelectedRooms.filter((r) => r.roomId !== room.id)
+        );
+      } else {
+        setTempSelectedRooms([
+          ...tempSelectedRooms,
+          {
+            roomId: room.id,
+            capacity: room.capacity,
+            location: room.location?.name || "N/A",
+            locationId: room.location?.id,
+            code: room.code,
+          },
+        ]);
+      }
     }
   };
 
@@ -180,20 +198,22 @@ export default function RoomPickerModal({
         </div>
 
         {/* Select All Current Page Checkbox */}
-        <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <Checkbox
-            id="select-all-current-page"
-            checked={areAllCurrentPageRoomsSelected()}
-            onCheckedChange={handleSelectAllCurrentPage}
-          />
-          <label
-            htmlFor="select-all-current-page"
-            className="text-sm font-medium cursor-pointer"
-          >
-            Chọn tất cả trang hiện tại ({rooms.length} phòng) - Đã chọn:{" "}
-            {tempSelectedRooms.length} phòng
-          </label>
-        </div>
+        {!singleSelect && (
+          <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <Checkbox
+              id="select-all-current-page"
+              checked={areAllCurrentPageRoomsSelected()}
+              onCheckedChange={handleSelectAllCurrentPage}
+            />
+            <label
+              htmlFor="select-all-current-page"
+              className="text-sm font-medium cursor-pointer"
+            >
+              Chọn tất cả trang hiện tại ({rooms.length} phòng) - Đã chọn:{" "}
+              {tempSelectedRooms.length} phòng
+            </label>
+          </div>
+        )}
 
         {/* Table */}
         <div className="flex-1 overflow-auto border rounded-lg">

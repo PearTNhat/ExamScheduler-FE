@@ -7,6 +7,8 @@ import {
   Users2,
   BookOpen,
   Calendar,
+  Building2,
+  Hash,
 } from "lucide-react";
 import {
   Table,
@@ -20,11 +22,20 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import {
   apiGetExamGroups,
   apiCreateExamGroup,
   apiUpdateExamGroup,
   apiDeleteExamGroup,
 } from "~/apis/exam-groupsApi";
+import { apiGetDepartments } from "~/apis/departmentsApi";
+import { apiGetExamSessions } from "~/apis/exam-sessionsApi";
 import {
   showToastSuccess,
   showToastError,
@@ -50,6 +61,12 @@ const ExamGroupsManager = () => {
     [searchParams]
   );
 
+  // Filter states
+  const [departments, setDepartments] = useState([]);
+  const [examSessions, setExamSessions] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedExamSession, setSelectedExamSession] = useState("");
+
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
@@ -62,8 +79,16 @@ const ExamGroupsManager = () => {
       const params = {
         page: currentParams.page || 1,
         limit: 10,
-        // code: currentParams.code || searchTerm,
       };
+
+      // Add filters if selected
+      if (selectedDepartment) {
+        params.departmentId = parseInt(selectedDepartment);
+      }
+      if (selectedExamSession) {
+        params.examSessionId = parseInt(selectedExamSession);
+      }
+
       const response = await apiGetExamGroups({ accessToken, params });
       if (response.code === 200) {
         setExamGroups(response.data.data || []);
@@ -79,13 +104,39 @@ const ExamGroupsManager = () => {
     } finally {
       setLoading(false);
     }
-  }, [accessToken, currentParams, searchTerm]);
+  }, [accessToken, currentParams, selectedDepartment, selectedExamSession]);
 
   useEffect(() => {
     if (accessToken) {
       fetchExamGroups();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken, currentParams]);
+
+  // Load departments and exam sessions
+  useEffect(() => {
+    const loadFilters = async () => {
+      try {
+        const [deptRes, sessRes] = await Promise.all([
+          apiGetDepartments({ accessToken }),
+          apiGetExamSessions({ accessToken, params: { page: 1, limit: 100 } }),
+        ]);
+
+        if (deptRes.code === 200) {
+          setDepartments(deptRes.data.data || []);
+        }
+        if (sessRes.code === 200) {
+          setExamSessions(sessRes.data || []);
+        }
+      } catch (error) {
+        console.error("Error loading filters:", error);
+      }
+    };
+
+    if (accessToken) {
+      loadFilters();
+    }
+  }, [accessToken]);
 
   // Search handler
   const handleSearch = () => {
@@ -95,6 +146,29 @@ const ExamGroupsManager = () => {
     } else {
       params.delete("code");
     }
+    params.set("page", "1");
+    setSearchParams(params);
+  };
+
+  // Filter handlers
+  const handleDepartmentChange = (value) => {
+    setSelectedDepartment(value);
+  };
+
+  const handleExamSessionChange = (value) => {
+    setSelectedExamSession(value);
+  };
+
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", "1");
+    setSearchParams(params);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedDepartment("");
+    setSelectedExamSession("");
+    const params = new URLSearchParams();
     params.set("page", "1");
     setSearchParams(params);
   };
@@ -232,6 +306,69 @@ const ExamGroupsManager = () => {
 
       {/* Actions */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-100">
+        {/* Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Building2 className="h-4 w-4 inline mr-1" />
+              Khoa
+            </label>
+            <Select
+              value={selectedDepartment}
+              onValueChange={handleDepartmentChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Tất cả khoa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả khoa</SelectItem>
+                {departments.map((dept) => (
+                  <SelectItem key={dept.id} value={dept.id.toString()}>
+                    {dept.departmentName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Calendar className="h-4 w-4 inline mr-1" />
+              Kỳ thi
+            </label>
+            <Select
+              value={selectedExamSession}
+              onValueChange={handleExamSessionChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Tất cả kỳ thi" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả kỳ thi</SelectItem>
+                {examSessions.map((session) => (
+                  <SelectItem key={session.id} value={session.id.toString()}>
+                    {session.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-end gap-2">
+            <Button onClick={handleApplyFilters} className="flex-1 h-11">
+              Áp dụng
+            </Button>
+            <Button
+              onClick={handleResetFilters}
+              variant="outline"
+              className="h-11"
+            >
+              Đặt lại
+            </Button>
+          </div>
+        </div>
+
+        {/* Search and Add */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -269,11 +406,12 @@ const ExamGroupsManager = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gradient-to-r from-amber-50 to-amber-100/50 hover:from-amber-50 hover:to-amber-100/50">
-              <TableHead className="font-semibold text-amber-900">
-                Mã nhóm thi
-              </TableHead>
+              <TableHead className="font-semibold text-amber-900">Id</TableHead>
               <TableHead className="font-semibold text-amber-900">
                 Học phần
+              </TableHead>
+              <TableHead className="font-semibold text-amber-900">
+                Khoa
               </TableHead>
               <TableHead className="font-semibold text-amber-900">
                 Đợt thi
@@ -326,18 +464,25 @@ const ExamGroupsManager = () => {
                   key={group.id}
                   className="hover:bg-amber-50/30 transition-colors"
                 >
-                  <TableCell className="font-medium text-gray-900">
-                    <Badge variant="outline" className="font-mono">
-                      {group.code}
-                    </Badge>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm">{group.id || "N/A"}</span>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-blue-500" />
                       <span className="text-sm">
-                        {group.course?.nameCourse || "N/A"}
+                        {group.courseDepartment?.course?.nameCourse || "N/A"}
                       </span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="font-normal">
+                      {group.courseDepartment?.department?.departmentName ||
+                        "N/A"}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

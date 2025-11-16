@@ -3,7 +3,7 @@ import { Building2, Edit, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import RoomPickerModal from "./RoomPickerModal";
+import RoomPickerModal from "~/pages/admin/components/RoomPickerModal";
 
 const RoomSelector = ({ selectedRooms, onRoomsChange }) => {
   const [showModal, setShowModal] = useState(false);
@@ -12,7 +12,6 @@ const RoomSelector = ({ selectedRooms, onRoomsChange }) => {
     onRoomsChange(rooms);
     setShowModal(false);
   };
-
   return (
     <>
       <Card>

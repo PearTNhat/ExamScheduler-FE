@@ -57,6 +57,7 @@ const ExamEditModal = ({
   accessToken,
   onExamUpdated,
 }) => {
+  console.log("select exam", exam);
   const [examDetail, setExamDetail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -102,7 +103,7 @@ const ExamEditModal = ({
       setLoading(true);
       const response = await apiGetDetailExamById({
         accessToken,
-        id: exam.id,
+        id: exam.examId,
       });
       if (response.code === 200) {
         setExamDetail(response.data);
@@ -252,24 +253,23 @@ const ExamEditModal = ({
       } // --- 4. THỰC THI XÓA (THEO YÊU CẦU CỦA BẠN) ---
 
       const deletionPromises = []; // Tạo promise cho mỗi API xóa sinh viên
-
+      console.log();
       for (const studentId of removedStudentIds) {
         console.log("Đang xóa sinh viên:", studentId);
         deletionPromises.push(
           apiRemoveStudentFromExam({
             accessToken,
-            examId: exam.id,
+            examId: exam.examId,
             studentId,
           })
         );
       } // Tạo promise cho mỗi API xóa giám thị
 
       for (const supervisorId of removedSupervisorIds) {
-        console.log("Đang xóa giám thị:", supervisorId);
         deletionPromises.push(
           apiRemoveSupervisorFromExam({
             accessToken,
-            examId: exam.id,
+            examId: exam.examId,
             supervisorId,
           })
         );
@@ -287,10 +287,9 @@ const ExamEditModal = ({
       if (hasUpdates) {
         const response = await apiUpdateExam({
           accessToken,
-          id: exam.id,
+          id: exam.examId,
           data: changedFields,
         });
-
         if (response.code !== 200) {
           throw new Error(response.message || "Lỗi khi cập nhật lịch thi");
         }

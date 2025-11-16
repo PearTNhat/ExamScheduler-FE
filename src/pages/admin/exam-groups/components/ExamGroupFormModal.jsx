@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Search, Users2 } from "lucide-react";
-import CoursePickerModal from "./CoursePickerModal";
+import CourseDepartmentPickerModal from "~/pages/admin/components/CourseDepartmentPickerModal";
 import ExamSessionPickerModal from "~/pages/admin/exam-slots/components/ExamSessionPickerModal";
 
 export default function ExamGroupFormModal({
@@ -29,15 +29,15 @@ export default function ExamGroupFormModal({
   isSubmitting,
 }) {
   const [formData, setFormData] = useState({
-    code: "",
     expected_student_count: "",
-    course_id: null,
+    course_department_id: null,
     exam_session_id: null,
     status: "not_scheduled",
   });
-  const [courseName, setCourseName] = useState("");
+  const [courseDepartmentName, setCourseDepartmentName] = useState("");
   const [sessionName, setSessionName] = useState("");
-  const [showCoursePicker, setShowCoursePicker] = useState(false);
+  const [showCourseDepartmentPicker, setShowCourseDepartmentPicker] =
+    useState(false);
   const [showSessionPicker, setShowSessionPicker] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -45,33 +45,44 @@ export default function ExamGroupFormModal({
   useEffect(() => {
     if (editingGroup) {
       setFormData({
-        code: editingGroup.code || "",
         expected_student_count:
           editingGroup.expected_student_count?.toString() || "",
-        course_id: editingGroup.course_id || null,
-        exam_session_id: editingGroup.exam_session_id || null,
+        course_department_id: editingGroup.courseDepartment?.id || null,
+        exam_session_id: editingGroup.examSession?.id || null,
         status: editingGroup.status || "not_scheduled",
       });
-      setCourseName(editingGroup.course?.name || "");
-      setSessionName(editingGroup.session?.name || "");
+
+      // Set course department display name
+      if (editingGroup.courseDepartment) {
+        const courseName =
+          editingGroup.courseDepartment.course?.nameCourse || "";
+        const deptName =
+          editingGroup.courseDepartment.department?.departmentName || "";
+        setCourseDepartmentName(`${courseName} - ${deptName}`);
+      } else {
+        setCourseDepartmentName("");
+      }
+
+      setSessionName(editingGroup.examSession?.name || "");
     } else {
       setFormData({
-        code: "",
         expected_student_count: "",
-        course_id: null,
+        course_department_id: null,
         exam_session_id: null,
         status: "not_scheduled",
       });
-      setCourseName("");
+      setCourseDepartmentName("");
       setSessionName("");
     }
     setErrors({});
   }, [editingGroup, open]);
 
-  const handleCourseSelect = (course) => {
-    setFormData({ ...formData, course_id: course.id });
-    setCourseName(course.name);
-    setShowCoursePicker(false);
+  const handleCourseDepartmentSelect = (courseDepartment) => {
+    setFormData({ ...formData, course_department_id: courseDepartment.id });
+    const courseName = courseDepartment.course?.nameCourse || "";
+    const deptName = courseDepartment.department?.departmentName || "";
+    setCourseDepartmentName(`${courseName} - ${deptName}`);
+    setShowCourseDepartmentPicker(false);
   };
 
   const handleSessionSelect = (session) => {
@@ -83,10 +94,6 @@ export default function ExamGroupFormModal({
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.code.trim()) {
-      newErrors.code = "Mã nhóm thi không được để trống";
-    }
-
     if (!formData.expected_student_count) {
       newErrors.expected_student_count =
         "Số lượng sinh viên không được để trống";
@@ -94,8 +101,8 @@ export default function ExamGroupFormModal({
       newErrors.expected_student_count = "Số lượng sinh viên phải lớn hơn 0";
     }
 
-    if (!formData.course_id) {
-      newErrors.course_id = "Vui lòng chọn học phần";
+    if (!formData.course_department_id) {
+      newErrors.course_department_id = "Vui lòng chọn đăng ký học phần";
     }
 
     if (!formData.exam_session_id) {
@@ -142,25 +149,6 @@ export default function ExamGroupFormModal({
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-5 py-4">
-            {/* Mã nhóm thi */}
-            <div className="space-y-2">
-              <Label htmlFor="code" className="text-sm font-medium">
-                Mã nhóm thi <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="code"
-                placeholder="VD: EG001"
-                value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                className={errors.code ? "border-red-500" : ""}
-              />
-              {errors.code && (
-                <p className="text-sm text-red-500">{errors.code}</p>
-              )}
-            </div>
-
             {/* Số lượng sinh viên dự kiến */}
             <div className="space-y-2">
               <Label
@@ -193,39 +181,44 @@ export default function ExamGroupFormModal({
               )}
             </div>
 
-            {/* Học phần - Course Picker */}
+            {/* Đăng ký học phần - CourseDepartment Picker */}
             <div className="space-y-2">
-              <Label htmlFor="course" className="text-sm font-medium">
-                Học phần <span className="text-red-500">*</span>
+              <Label
+                htmlFor="course_department"
+                className="text-sm font-medium"
+              >
+                Đăng ký học phần <span className="text-red-500">*</span>
               </Label>
               <div className="flex gap-2">
                 <Input
-                  id="course"
-                  placeholder="Chọn học phần..."
-                  value={courseName}
+                  id="course_department"
+                  placeholder="Chọn đăng ký học phần..."
+                  value={courseDepartmentName}
                   readOnly
-                  onClick={() => setShowCoursePicker(true)}
+                  onClick={() => setShowCourseDepartmentPicker(true)}
                   className={`flex-1 cursor-pointer ${
-                    errors.course_id ? "border-red-500" : ""
+                    errors.course_department_id ? "border-red-500" : ""
                   }`}
                 />
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  onClick={() => setShowCoursePicker(true)}
+                  onClick={() => setShowCourseDepartmentPicker(true)}
                   className="shrink-0"
                 >
                   <Search className="h-4 w-4" />
                 </Button>
               </div>
-              {formData.course_id && (
+              {formData.course_department_id && (
                 <p className="text-xs text-gray-500">
-                  ID: {formData.course_id}
+                  ID: {formData.course_department_id}
                 </p>
               )}
-              {errors.course_id && (
-                <p className="text-sm text-red-500">{errors.course_id}</p>
+              {errors.course_department_id && (
+                <p className="text-sm text-red-500">
+                  {errors.course_department_id}
+                </p>
               )}
             </div>
 
@@ -319,11 +312,11 @@ export default function ExamGroupFormModal({
         </DialogContent>
       </Dialog>
 
-      {/* Course Picker Modal */}
-      <CoursePickerModal
-        open={showCoursePicker}
-        onOpenChange={setShowCoursePicker}
-        onSelect={handleCourseSelect}
+      {/* CourseDepartment Picker Modal */}
+      <CourseDepartmentPickerModal
+        open={showCourseDepartmentPicker}
+        onOpenChange={setShowCourseDepartmentPicker}
+        onSelect={handleCourseDepartmentSelect}
       />
 
       {/* Exam Session Picker Modal */}

@@ -29,13 +29,15 @@ import {
   Users,
   Eye,
   Edit,
+  Trash2,
 } from "lucide-react";
 
 const CalendarMonthView = ({
-  exams = [],
-  startDate, // <-- ĐÃ THÊM
+  timetable = [],
+  startDate,
   onViewDetail,
   onEdit,
+  onDelete,
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -47,26 +49,18 @@ const CalendarMonthView = ({
       const localDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
       setCurrentMonth(localDate);
     } else {
-      // Nếu cha reset bộ lọc, quay về tháng hiện tại
       setCurrentMonth(new Date());
     }
-  }, [startDate]); // Chạy lại khi startDate từ cha thay đổi
+  }, [startDate]);
 
-  // Group exams by date
-  const examsByDate = useMemo(() => {
-    const grouped = {};
-    exams.forEach((exam) => {
-      const examDate = exam.examDate || exam.exam_date;
-      if (!examDate) return;
-
-      const dateKey = format(new Date(examDate), "yyyy-MM-dd");
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
-      }
-      grouped[dateKey].push(exam);
+  // Convert timetable array to map for quick lookup
+  const timetableMap = useMemo(() => {
+    const map = {};
+    timetable.forEach((day) => {
+      map[day.date] = day;
     });
-    return grouped;
-  }, [exams]);
+    return map;
+  }, [timetable]);
 
   // Generate calendar days for current month
   const calendarDays = useMemo(() => {
@@ -100,45 +94,31 @@ const CalendarMonthView = ({
 
   const handleDateClick = (date) => {
     const dateKey = format(date, "yyyy-MM-dd");
-    const dayExams = examsByDate[dateKey];
-    if (dayExams && dayExams.length > 0) {
+    const dayData = timetableMap[dateKey];
+    if (
+      dayData &&
+      (dayData.morning.length > 0 || dayData.afternoon.length > 0)
+    ) {
       setSelectedDate(date);
       setIsModalOpen(true);
     }
   };
 
-  const getExamsForDate = (date) => {
+  const getDayData = (date) => {
     const dateKey = format(date, "yyyy-MM-dd");
-    return examsByDate[dateKey] || [];
+    return (
+      timetableMap[dateKey] || { date: dateKey, morning: [], afternoon: [] }
+    );
   };
 
-  // Group selected date exams by session (morning/afternoon)
-  const groupedSelectedExams = useMemo(() => {
+  // Get selected date data
+  const selectedDayData = useMemo(() => {
     if (!selectedDate) return { morning: [], afternoon: [] };
-
-    const dateExams = getExamsForDate(selectedDate);
-    const morning = [];
-    const afternoon = [];
-
-    dateExams.forEach((exam) => {
-      const slot = exam.examSlot || exam.slot;
-      const startTime = slot?.start_time || slot?.startTime || "";
-
-      // Check if morning (before 12:00) or afternoon
-      if (startTime) {
-        const hour = parseInt(startTime.split(":")[0]);
-        if (hour < 12) {
-          morning.push(exam);
-        } else {
-          afternoon.push(exam);
-        }
-      } else {
-        afternoon.push(exam); // Default to afternoon if no time
-      }
-    });
-
-    return { morning, afternoon };
-  }, [selectedDate, examsByDate]);
+    const dateKey = format(selectedDate, "yyyy-MM-dd");
+    return (
+      timetableMap[dateKey] || { date: dateKey, morning: [], afternoon: [] }
+    );
+  }, [selectedDate, timetableMap]);
 
   const weekDays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
@@ -198,10 +178,12 @@ const CalendarMonthView = ({
         {/* Calendar days */}
         <div className="grid grid-cols-7 gap-2">
           {calendarDays.map((day, idx) => {
-            const dayExams = getExamsForDate(day);
+            const dayData = getDayData(day);
+            const totalExams =
+              dayData.morning.length + dayData.afternoon.length;
             const isCurrentMonth = isSameMonth(day, currentMonth);
             const isTodayDate = isToday(day);
-            const hasExams = dayExams.length > 0;
+            const hasExams = totalExams > 0;
 
             return (
               <div
@@ -234,41 +216,41 @@ const CalendarMonthView = ({
                   </span>
                   {hasExams && isCurrentMonth && (
                     <Badge className="bg-blue-600 text-white text-[10px] px-1.5 py-0">
-                      {dayExams.length}
+                      {totalExams}
                     </Badge>
                   )}
                 </div>
                 {hasExams && isCurrentMonth && (
                   <div className="space-y-1">
-                    {dayExams.slice(0, 2).map((exam, examIdx) => {
-                      const courseName =
-                        exam.examGroup?.course?.codeCourse || "N/A";
-                      const slot = exam.examSlot;
-                      const startTime = slot?.startTime || "";
+                    {[...dayData.morning, ...dayData.afternoon]
+                      .slice(0, 2)
+                      .map((examEvent, examIdx) => {
+                        const courseName = examEvent.courseCode || "N/A";
+                        const startTime = examEvent.slot?.startTime || "";
 
-                      return (
-                        <div
-                          key={examIdx}
-                          className="bg-blue-100 rounded px-1.5 py-1 text-[10px] truncate"
-                          title={courseName}
-                        >
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-2.5 w-2.5 text-blue-600 flex-shrink-0" />
-                            <span className="font-medium text-blue-700 truncate">
-                              {startTime}
-                            </span>
+                        return (
+                          <div
+                            key={examIdx}
+                            className="bg-blue-100 rounded px-1.5 py-1 text-[10px] truncate"
+                            title={courseName}
+                          >
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-2.5 w-2.5 text-blue-600 flex-shrink-0" />
+                              <span className="font-medium text-blue-700 truncate">
+                                {startTime}
+                              </span>
+                            </div>
+                            <div className="text-gray-700 truncate font-medium mt-0.5">
+                              {courseName.length > 15
+                                ? courseName.substring(0, 15) + "..."
+                                : courseName}
+                            </div>
                           </div>
-                          <div className="text-gray-700 truncate font-medium mt-0.5">
-                            {courseName.length > 15
-                              ? courseName.substring(0, 15) + "..."
-                              : courseName}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {dayExams.length > 2 && (
+                        );
+                      })}
+                    {totalExams > 2 && (
                       <div className="text-[10px] text-blue-600 font-semibold text-center">
-                        +{dayExams.length - 2} lịch thi
+                        +{totalExams - 2} lịch thi
                       </div>
                     )}
                   </div>
@@ -289,22 +271,22 @@ const CalendarMonthView = ({
                 format(selectedDate, "dd/MM/yyyy", { locale: vi })}
             </DialogTitle>
           </DialogHeader>
-
           <div className="space-y-6 mt-4">
-            {/* Morning Session */}
-            {groupedSelectedExams.morning.length > 0 && (
+            {selectedDayData.morning.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                  Buổi sáng ({groupedSelectedExams.morning.length} kỳ thi)
+                  Buổi sáng ({selectedDayData.morning.length} kỳ thi)
                 </h3>
                 <div className="space-y-3">
-                  {groupedSelectedExams.morning.map((exam) => (
+                  {selectedDayData.morning.map((examEvent) => (
                     <ExamCardModal
-                      key={exam.id}
-                      exam={exam}
+                      key={examEvent.examId}
+                      exam={examEvent}
                       onViewDetail={onViewDetail}
                       onEdit={onEdit}
+                      setIsModalOpen={setIsModalOpen}
+                      onDelete={onDelete}
                     />
                   ))}
                 </div>
@@ -312,27 +294,29 @@ const CalendarMonthView = ({
             )}
 
             {/* Afternoon Session */}
-            {groupedSelectedExams.afternoon.length > 0 && (
+            {selectedDayData.afternoon.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-orange-500"></div>
-                  Buổi chiều ({groupedSelectedExams.afternoon.length} kỳ thi)
+                  Buổi chiều ({selectedDayData.afternoon.length} kỳ thi)
                 </h3>
                 <div className="space-y-3">
-                  {groupedSelectedExams.afternoon.map((exam) => (
+                  {selectedDayData.afternoon.map((examEvent) => (
                     <ExamCardModal
-                      key={exam.id}
-                      exam={exam}
+                      key={examEvent.examId}
+                      exam={examEvent}
                       onViewDetail={onViewDetail}
                       onEdit={onEdit}
+                      setIsModalOpen={setIsModalOpen}
+                      onDelete={onDelete}
                     />
                   ))}
                 </div>
               </div>
             )}
 
-            {groupedSelectedExams.morning.length === 0 &&
-              groupedSelectedExams.afternoon.length === 0 && (
+            {selectedDayData.morning.length === 0 &&
+              selectedDayData.afternoon.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   Không có lịch thi nào trong ngày này
                 </div>
@@ -345,8 +329,14 @@ const CalendarMonthView = ({
 };
 
 // Exam Card in Modal
-const ExamCardModal = ({ exam, onViewDetail, onEdit }) => {
-  const courseName = exam.examGroup?.course?.nameCourse || "N/A";
+const ExamCardModal = ({
+  exam,
+  onViewDetail,
+  onEdit,
+  onDelete,
+  setIsModalOpen,
+}) => {
+  const courseName = exam.courseCode || "N/A";
   const roomCode = exam.room?.code || exam.roomName || "N/A";
   const locationName = exam.room?.location?.name || exam.location || "";
   const studentCount =
@@ -401,7 +391,7 @@ const ExamCardModal = ({ exam, onViewDetail, onEdit }) => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onViewDetail(exam.id)}
+            onClick={() => onViewDetail(exam.examId)}
             className="gap-2"
           >
             <Eye className="h-4 w-4" />
@@ -415,6 +405,18 @@ const ExamCardModal = ({ exam, onViewDetail, onEdit }) => {
           >
             <Edit className="h-4 w-4" />
             Sửa
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => {
+              setIsModalOpen(false);
+              return onDelete && onDelete(exam.examId);
+            }}
+            className="gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Xóa
           </Button>
         </div>
       </div>

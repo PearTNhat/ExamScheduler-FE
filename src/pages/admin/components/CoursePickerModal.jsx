@@ -96,6 +96,7 @@ export default function CoursePickerModal({ open, onOpenChange, onSelect }) {
       onSelect(selectedCourse);
     }
   };
+  console.log("courses", courses);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -179,10 +180,12 @@ export default function CoursePickerModal({ open, onOpenChange, onSelect }) {
                         <div className="p-1.5 bg-blue-100 rounded">
                           <BookOpen className="h-4 w-4 text-blue-600" />
                         </div>
-                        <span className="font-mono">{course.code}</span>
+                        <span className="font-mono">{course.codeCourse}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{course.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {course.nameCourse}
+                    </TableCell>
                     <TableCell className="text-sm text-gray-600">
                       {course.credits || "N/A"}
                     </TableCell>

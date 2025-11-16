@@ -4,7 +4,14 @@ import { vi } from "date-fns/locale";
 import { Button } from "~/components/ui/button";
 import { Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import ExamCard from "./card/ExamCard";
-const TimetableGrid = ({ exams = [], startDate, onViewDetail, onEdit }) => {
+
+const TimetableGrid = ({
+  timetable = [],
+  startDate,
+  onViewDetail,
+  onEdit,
+  onDelete,
+}) => {
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -15,7 +22,6 @@ const TimetableGrid = ({ exams = [], startDate, onViewDetail, onEdit }) => {
       const localDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
       setCurrentWeekStart(startOfWeek(localDate, { weekStartsOn: 1 }));
     } else {
-      // Nếu cha reset bộ lọc, quay về tuần hiện tại
       setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
     }
   }, [startDate]);
@@ -27,45 +33,14 @@ const TimetableGrid = ({ exams = [], startDate, onViewDetail, onEdit }) => {
     );
   }, [currentWeekStart]);
 
-  // Group exams by date and session (morning/afternoon)
-  const timetableData = useMemo(() => {
-    if (!exams || exams.length === 0) return {};
-
-    const grouped = {};
-
-    exams.forEach((exam) => {
-      const examDate = exam.examDate || exam.exam_date;
-      if (!examDate) return;
-
-      const dateString = format(new Date(examDate), "yyyy-MM-dd");
-
-      if (!grouped[dateString]) {
-        grouped[dateString] = {
-          date: dateString,
-          morning: [],
-          afternoon: [],
-        };
-      }
-
-      // Determine if morning or afternoon based on slot time
-      const slot = exam.examSlot || exam.slot;
-      const startTime = slot?.start_time || slot?.startTime || "";
-
-      if (startTime) {
-        const hour = parseInt(startTime.split(":")[0]);
-        if (hour < 12) {
-          grouped[dateString].morning.push(exam);
-        } else {
-          grouped[dateString].afternoon.push(exam);
-        }
-      } else {
-        // Default to afternoon if no time
-        grouped[dateString].afternoon.push(exam);
-      }
+  // Convert timetable array to map for quick lookup
+  const timetableMap = useMemo(() => {
+    const map = {};
+    timetable.forEach((day) => {
+      map[day.date] = day;
     });
-
-    return grouped;
-  }, [exams]);
+    return map;
+  }, [timetable]);
 
   // Hàm điều hướng tuần
   const handleNextWeek = () => {
@@ -80,9 +55,7 @@ const TimetableGrid = ({ exams = [], startDate, onViewDetail, onEdit }) => {
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
   };
 
-  // Function để load chi tiết exam trước khi edit
-
-  if (!exams || exams.length === 0) {
+  if (!timetable || timetable.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-12 text-center">
         <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -139,7 +112,7 @@ const TimetableGrid = ({ exams = [], startDate, onViewDetail, onEdit }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 lg:gap-4">
           {weekDays.map((date) => {
             const dateString = format(date, "yyyy-MM-dd");
-            const dayData = timetableData[dateString] || {
+            const dayData = timetableMap[dateString] || {
               date: dateString,
               morning: [],
               afternoon: [],
@@ -181,12 +154,13 @@ const TimetableGrid = ({ exams = [], startDate, onViewDetail, onEdit }) => {
                     </h4>
                     <div className="space-y-2">
                       {dayData.morning.length > 0 ? (
-                        dayData.morning.map((exam) => (
+                        dayData.morning.map((examEvent) => (
                           <ExamCard
-                            key={exam.id}
-                            exam={exam}
+                            key={examEvent.examId}
+                            exam={examEvent}
                             onViewDetail={onViewDetail}
                             onEdit={onEdit}
+                            onDelete={onDelete}
                           />
                         ))
                       ) : (
@@ -204,12 +178,13 @@ const TimetableGrid = ({ exams = [], startDate, onViewDetail, onEdit }) => {
                     </h4>
                     <div className="space-y-2">
                       {dayData.afternoon.length > 0 ? (
-                        dayData.afternoon.map((exam) => (
+                        dayData.afternoon.map((examEvent) => (
                           <ExamCard
-                            key={exam.id}
-                            exam={exam}
+                            key={examEvent.examId}
+                            exam={examEvent}
                             onViewDetail={onViewDetail}
                             onEdit={onEdit}
+                            onDelete={onDelete}
                           />
                         ))
                       ) : (

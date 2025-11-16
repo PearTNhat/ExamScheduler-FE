@@ -10,8 +10,6 @@ import ExamSessionSelector from "./components/ExamSessionSelector";
 import ConstraintsConfiguration from "./components/ConstraintsConfiguration";
 import {
   showAlertError,
-  showAlertSuccess,
-  showAlertInfo,
   showToastError,
   showToastWarning,
   showToastSuccess,
@@ -80,9 +78,9 @@ const AutoSchedule = () => {
             const historyRooms = data.rooms.map((room) => ({
               roomId: room.id,
               capacity: room.capacity,
-              location: room.location?.code || "N/A",
-              locationId: room.locationId || room.location?.id,
-              code: room.code,
+              location: room.location?.locationName || "N/A",
+              locationId: room.locationId,
+              code: room.roomCode,
             }));
             setSelectedRooms(historyRooms);
           } else {
@@ -92,7 +90,7 @@ const AutoSchedule = () => {
             const historyProctors = data.lecturers.map((lecturer) => ({
               proctorId: lecturer.id,
               name: lecturer.name,
-              lecturerCode: lecturer.lecturerCode,
+              lecturerCode: lecturer.lectureCode,
             }));
             setSelectedProctors(historyProctors);
           } else {
@@ -134,6 +132,8 @@ const AutoSchedule = () => {
           id: room.roomId,
           capacity: room.capacity,
           locationId: room.locationId,
+          roomCode: room.code,
+          locationName: room.location,
         }));
       }
       let lecturers = examHistoryData?.lecturers || [];
@@ -141,6 +141,7 @@ const AutoSchedule = () => {
         lecturers = selectedProctors.map((proctor) => ({
           id: proctor.proctorId,
           name: proctor.name,
+          lecturerCode: proctor.lecturerCode,
         }));
       }
       const schedulingData = {
@@ -211,7 +212,6 @@ const AutoSchedule = () => {
             onRoomsChange={setSelectedRooms}
           />
 
-          {/* Proctor Selector */}
           <ProctorSelector
             selectedProctors={selectedProctors}
             onProctorsChange={setSelectedProctors}

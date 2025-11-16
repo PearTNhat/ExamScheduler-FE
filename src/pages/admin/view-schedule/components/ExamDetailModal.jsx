@@ -43,12 +43,6 @@ const ExamDetailModal = ({
   const [examDetail, setExamDetail] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  console.log("ExamDetailModal props:", {
-    open,
-    examId,
-    accessToken: !!accessToken,
-  });
-
   const fetchExamDetail = useCallback(async () => {
     try {
       setLoading(true);
@@ -126,7 +120,7 @@ const ExamDetailModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto ">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Info className="h-6 w-6 text-blue-600" />

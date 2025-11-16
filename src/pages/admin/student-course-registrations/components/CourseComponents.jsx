@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Search, Users, BookOpen, X, Check } from "lucide-react";
+import { Plus, Search, Users, BookOpen, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -22,20 +22,31 @@ import {
 import Pagination from "~/components/pagination/Pagination";
 
 // Component Header
-const PageHeader = () => (
+const PageHeader = ({ onAddClick }) => (
   <div className="mb-6">
-    <div className="flex items-center gap-3 mb-2">
-      <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-        <BookOpen className="h-8 w-8 text-white" />
+    <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center gap-3">
+        <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+          <BookOpen className="h-8 w-8 text-white" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Quản lý Đăng ký Học phần
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Quản lý đăng ký môn học của sinh viên theo kỳ thi
+          </p>
+        </div>
       </div>
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Quản lý Đăng ký Học phần
-        </h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Quản lý đăng ký môn học của sinh viên theo kỳ thi
-        </p>
-      </div>
+      {onAddClick && (
+        <Button
+          onClick={onAddClick}
+          className="bg-green-600 hover:bg-green-700"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Thêm đăng ký học phần
+        </Button>
+      )}
     </div>
   </div>
 );
@@ -47,12 +58,17 @@ const CoursesList = ({
   searchTerm,
   onSearchChange,
   onCourseSelect,
+  onDeleteCourse,
   pagination,
   onPageChange,
   // Props cho exam session selector
   examSessions,
   selectedExamSession,
   onSelectExamSession,
+  // Props cho department filter
+  departments,
+  selectedDepartment,
+  onSelectDepartment,
 }) => (
   <Card>
     <CardHeader>
@@ -61,7 +77,6 @@ const CoursesList = ({
         Danh sách Môn học
       </CardTitle>
       <div className="flex items-center gap-4 flex-wrap">
-        {/* Exam Session Selector */}
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-gray-700">Kỳ thi:</label>
           <Select
@@ -76,6 +91,28 @@ const CoursesList = ({
               {examSessions?.map((session) => (
                 <SelectItem key={session.id} value={session.id.toString()}>
                   {session.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Department Filter */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700">Khoa:</label>
+          <Select
+            value={selectedDepartment}
+            onValueChange={onSelectDepartment}
+            disabled={loading || !selectedExamSession}
+          >
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Tất cả khoa" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả khoa</SelectItem>
+              {departments?.map((dept) => (
+                <SelectItem key={dept.id} value={dept.id.toString()}>
+                  {dept.departmentName}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -120,6 +157,7 @@ const CoursesList = ({
                 <TableRow className="bg-gray-50">
                   <TableHead className="font-semibold">Mã môn học</TableHead>
                   <TableHead className="font-semibold">Tên môn học</TableHead>
+                  <TableHead className="font-semibold">Khoa</TableHead>
                   <TableHead className="font-semibold">Tín chỉ</TableHead>
                   <TableHead className="font-semibold">Thời gian thi</TableHead>
                   <TableHead className="font-semibold">
@@ -133,7 +171,7 @@ const CoursesList = ({
               <TableBody>
                 {courses?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12">
+                    <TableCell colSpan={7} className="text-center py-12">
                       <div className="flex flex-col items-center gap-2">
                         <BookOpen className="h-12 w-12 text-gray-300" />
                         <p className="font-medium text-gray-500">
@@ -144,7 +182,10 @@ const CoursesList = ({
                   </TableRow>
                 ) : (
                   courses?.map((item) => (
-                    <TableRow key={item.id} className="hover:bg-gray-50">
+                    <TableRow
+                      key={item.courseDepartmentId}
+                      className="hover:bg-gray-50"
+                    >
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-blue-100 rounded">
@@ -153,8 +194,17 @@ const CoursesList = ({
                           {item.codeCourse}
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {item.nameCourse}
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-900">
+                            {item.nameCourse}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="font-normal">
+                          {item.departmentName || "N/A"}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{item.credits} TC</Badge>
@@ -189,15 +239,31 @@ const CoursesList = ({
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onCourseSelect(item)}
-                          className="flex items-center gap-2 hover:bg-blue-50"
-                        >
-                          <Users className="h-4 w-4" />
-                          Quản lý SV
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onCourseSelect(item)}
+                            className="flex items-center gap-2 hover:bg-blue-50"
+                          >
+                            <Users className="h-4 w-4" />
+                            Quản lý SV
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onDeleteCourse(item)}
+                            disabled={item.registeredCount > 0}
+                            className="flex items-center gap-2 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={
+                              item.registeredCount > 0
+                                ? "Không thể xóa môn học đã có sinh viên đăng ký"
+                                : "Xóa môn học"
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -205,12 +271,11 @@ const CoursesList = ({
               </TableBody>
             </Table>
           </div>
-
           {pagination.totalPages > 1 && (
             <div className="mt-6">
               <Pagination
                 currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
+                totalPageCount={pagination.totalPages}
                 onPageChange={onPageChange}
               />
             </div>

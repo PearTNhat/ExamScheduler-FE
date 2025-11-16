@@ -33,6 +33,7 @@ import * as XLSX from "xlsx";
 import { useSelector } from "react-redux";
 import {
   showAlertError,
+  showToastError,
   showToastSuccess,
   showToastWarning,
 } from "~/utils/alert";
@@ -121,7 +122,7 @@ export function LecturerUploadModal({ open, onOpenChange, onUploadSuccess }) {
         body: formData,
       });
 
-      const { data } = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Upload failed");
@@ -130,20 +131,21 @@ export function LecturerUploadModal({ open, onOpenChange, onUploadSuccess }) {
       setResult(data.data);
 
       // Show appropriate message based on result
-      if (data.imported > 0 && data.failed === 0) {
-        showToastSuccess(`Đã import thành công ${data.imported} giảng viên`);
-      } else if (data.imported > 0 && data.failed > 0) {
-        showToastWarning(
-          `Import thành công ${data.imported}, thất bại ${data.failed} giảng viên`
+      if (data.data.imported > 0 && data.data.failed === 0) {
+        showToastSuccess(
+          `Đã import thành công ${data.data.imported} giảng viên`
         );
-      } else if (data.failed > 0) {
-        showAlertError(
-          `Import thất bại ${data.failed} giảng viên. Vui lòng kiểm tra lại file.`
+      } else if (data.data.imported > 0 && data.data.failed > 0) {
+        showToastWarning(
+          `Import thành công ${data.data.imported}, thất bại ${data.data.failed} giảng viên`
+        );
+      } else if (data.data.failed > 0) {
+        showToastError(
+          `Import thất bại ${data.data.failed} giảng viên. Vui lòng kiểm tra lại file.`
         );
       }
-      if (data.imported > 0) {
+      if (data.data.imported > 0) {
         setTimeout(() => {
-          console.log("fetch again");
           onUploadSuccess();
         }, 2000);
       }

@@ -183,3 +183,29 @@
 .modal-content {
   animation: modalFadeIn 0.2s ease-out;
 }
+
+/* Fix SweetAlert2 z-index to appear above shadcn/ui Dialog */
+.swal2-container {
+  z-index: 99999 !important;
+}
+
+.swal2-popup {
+  z-index: 99999 !important;
+}
+
+.swal2-title {
+  z-index: 99999 !important;
+}
+
+.swal2-html-container {
+  z-index: 99999 !important;
+}
+
+.swal2-actions {
+  z-index: 99999 !important;
+}
+
+.swal2-confirm,
+.swal2-cancel {
+  z-index: 99999 !important;
+}

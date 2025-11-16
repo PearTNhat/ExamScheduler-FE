@@ -39,29 +39,103 @@ const StudentManagementModal = ({
   bulkLoading,
   pagination,
   onPageChange,
-  examSessionId, // Thêm prop này để truyền vào StudentPickerModal
+  examSessionId,
+  onAddStudentToList, // Thêm callback để add student vào list
+  onRemoveStudentFromList, // Thêm callback để remove student khỏi list
 }) => {
   const [originalStudentIds, setOriginalStudentIds] = useState(new Set());
   const [showStudentPicker, setShowStudentPicker] = useState(false);
-  // Set original state khi modal mở
+
+  // Sync selectedStudents với danh sách students khi modal mở
   useEffect(() => {
     if (isOpen && students.length > 0) {
+      // Nếu selectedStudents rỗng, đồng bộ từ students.isRegistered
+      if (selectedStudents.length === 0) {
+        const registeredIds = students
+          .filter((item) => item.isRegistered)
+          .map((item) => item.id);
+
+        registeredIds.forEach((id) => {
+          onStudentSelect(id, true);
+        });
+      }
+
+      // Set original state
       const registeredIds = students
         .filter((item) => item.isRegistered)
         .map((item) => item.id);
       setOriginalStudentIds(new Set(registeredIds));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, students]);
+
   // Xử lý khi chọn sinh viên từ StudentPickerModal
   const handleStudentPickerConfirm = (pickedStudents) => {
-    // Thêm các sinh viên đã chọn vào selectedStudents
+    // Lấy danh sách ID của sinh viên hiện tại được chọn trong picker
+    const pickedStudentIds = new Set(pickedStudents.map((s) => s.id));
+
+    // Tìm các sinh viên đã bỏ chọn (có trong selectedStudents nhưng không có trong pickedStudents)
+    const currentlySelectedInPicker = students
+      .filter((s) => selectedStudents.includes(s.id))
+      .map((s) => s.id);
+
+    const deselectedStudentIds = currentlySelectedInPicker.filter(
+      (id) => !pickedStudentIds.has(id)
+    );
+
+    // Xử lý các sinh viên bị bỏ chọn
+    deselectedStudentIds.forEach((studentId) => {
+      const wasOriginallyRegistered = originalStudentIds.has(studentId);
+
+      // Bỏ chọn sinh viên
+      onStudentSelect(studentId, false);
+
+      // Nếu sinh viên này KHÔNG có trong original (mới thêm vào cached)
+      // thì xóa luôn khỏi danh sách hiển thị
+      if (!wasOriginallyRegistered && onRemoveStudentFromList) {
+        onRemoveStudentFromList(studentId);
+      }
+      // Nếu có trong original thì chỉ bỏ chọn, để trạng thái "Xóa"
+    });
+
+    // Thêm các sinh viên mới được chọn
     pickedStudents.forEach((pickedStudent) => {
       if (!selectedStudents.includes(pickedStudent.id)) {
         onStudentSelect(pickedStudent.id, true);
+
+        // Thêm vào cached students list nếu chưa có trong danh sách
+        const existsInList = students.some((s) => s.id === pickedStudent.id);
+        if (!existsInList && onAddStudentToList) {
+          onAddStudentToList({
+            id: pickedStudent.id,
+            studentCode: pickedStudent.studentCode,
+            firstName: pickedStudent.fullName.split(" ").slice(0, -1).join(" "),
+            lastName: pickedStudent.fullName.split(" ").slice(-1)[0],
+            classes: {
+              className: pickedStudent.className,
+            },
+            phoneNumber: pickedStudent.phoneNumber || "N/A",
+            isRegistered: false, // Chưa lưu vào DB
+          });
+        }
       }
     });
 
     setShowStudentPicker(false);
+  };
+
+  // Xử lý khi bỏ chọn sinh viên
+  const handleStudentDeselect = (studentId) => {
+    const wasOriginallyRegistered = originalStudentIds.has(studentId);
+
+    // Bỏ chọn
+    onStudentSelect(studentId, false);
+
+    // Nếu sinh viên này KHÔNG có trong original (đang ở trạng thái "Thêm" - mới thêm vào cached)
+    // thì xóa luôn khỏi danh sách hiển thị
+    if (!wasOriginallyRegistered && onRemoveStudentFromList) {
+      onRemoveStudentFromList(studentId);
+    }
   };
 
   // Tính toán sự khác biệt như ExamEditModal
@@ -217,16 +291,24 @@ const StudentManagementModal = ({
                               className={`hover:bg-gray-50 cursor-pointer ${
                                 isChanged ? "bg-yellow-50" : ""
                               }`}
-                              onClick={() =>
-                                onStudentSelect(item.id, !isSelected)
-                              }
+                              onClick={() => {
+                                if (isSelected) {
+                                  handleStudentDeselect(item.id);
+                                } else {
+                                  onStudentSelect(item.id, true);
+                                }
+                              }}
                             >
                               <TableCell onClick={(e) => e.stopPropagation()}>
                                 <Checkbox
                                   checked={isSelected}
-                                  onCheckedChange={(checked) =>
-                                    onStudentSelect(item.id, checked)
-                                  }
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      onStudentSelect(item.id, true);
+                                    } else {
+                                      handleStudentDeselect(item.id);
+                                    }
+                                  }}
                                 />
                               </TableCell>
                               <TableCell className="font-medium">
@@ -278,7 +360,7 @@ const StudentManagementModal = ({
                   <div className="flex-shrink-0 p-4 border-t">
                     <Pagination
                       currentPage={pagination.currentPage}
-                      totalPages={pagination.totalPages}
+                      totalPageCount={pagination.totalPages}
                       onPageChange={onPageChange}
                     />
                   </div>
