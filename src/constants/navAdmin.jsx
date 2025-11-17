@@ -8,7 +8,6 @@ import {
   GraduationCap,
   UserSquare,
   CalendarClock,
-  UploadCloud,
   Notebook,
   UsersRound,
   Bot,
@@ -25,9 +24,14 @@ const navItems = [
     path: adminPaths.DASHBOARD,
   },
   {
-    icon: <CalendarDays size={20} className="text-green-500" />,
+    icon: <GraduationCap size={20} className="text-blue-500" />,
     name: "Đợt thi",
     path: adminPaths.EXAM_SESSIONS,
+  },
+  {
+    icon: <CalendarDays size={20} className="text-green-500" />,
+    name: "Năm học",
+    path: adminPaths.ACADEMIC_YEARS,
   },
   {
     icon: <MapPinned size={20} className="text-purple-500" />,

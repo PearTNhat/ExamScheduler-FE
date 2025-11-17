@@ -13,6 +13,7 @@ import { Label } from "~/components/ui/label";
 import { Building2, Search } from "lucide-react";
 import { useSelector } from "react-redux";
 import DepartmentPickerModal from "./DepartmentPickerModal";
+import AcademicYearPickerModal from "~/pages/admin/components/AcademicYearPickerModal";
 
 export default function ClassFormModal({
   open,
@@ -25,9 +26,12 @@ export default function ClassFormModal({
     name: "",
     code: "",
     departmentId: null,
+    id_nam_nhap_hoc: null,
   });
   const [departmentName, setDepartmentName] = useState("");
+  const [academicYearName, setAcademicYearName] = useState("");
   const [showDepartmentPicker, setShowDepartmentPicker] = useState(false);
+  const [showAcademicYearPicker, setShowAcademicYearPicker] = useState(false);
   const [errors, setErrors] = useState({});
 
   // Load data when editing
@@ -37,15 +41,19 @@ export default function ClassFormModal({
         name: editingClass.name || "",
         code: editingClass.code || "",
         departmentId: editingClass.departmentId || null,
+        id_nam_nhap_hoc: editingClass.id_nam_nhap_hoc || null,
       });
       setDepartmentName(editingClass.department?.name || "");
+      setAcademicYearName(editingClass.academicYear?.name || "");
     } else {
       setFormData({
         name: "",
         code: "",
         departmentId: null,
+        id_nam_nhap_hoc: null,
       });
       setDepartmentName("");
+      setAcademicYearName("");
     }
     setErrors({});
   }, [editingClass, open]);
@@ -54,6 +62,12 @@ export default function ClassFormModal({
     setFormData({ ...formData, departmentId: department.id });
     setDepartmentName(department.name);
     setShowDepartmentPicker(false);
+  };
+
+  const handleAcademicYearSelect = (year) => {
+    setFormData({ ...formData, id_nam_nhap_hoc: year.id });
+    setAcademicYearName(year.name);
+    setErrors({ ...errors, id_nam_nhap_hoc: "" });
   };
 
   const validate = () => {
@@ -136,6 +150,36 @@ export default function ClassFormModal({
               )}
             </div>
 
+            {/* Năm nhập học */}
+            <div className="space-y-2">
+              <Label htmlFor="academicYear" className="text-sm font-medium">
+                Năm nhập học <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="academicYear"
+                  placeholder="Chọn năm nhập học..."
+                  value={academicYearName}
+                  readOnly
+                  className={`flex-1 cursor-pointer ${
+                    errors.id_nam_nhap_hoc ? "border-red-500" : ""
+                  }`}
+                  onClick={() => setShowAcademicYearPicker(true)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAcademicYearPicker(true)}
+                  className="px-3"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+              {errors.id_nam_nhap_hoc && (
+                <p className="text-sm text-red-500">{errors.id_nam_nhap_hoc}</p>
+              )}
+            </div>
+
             {/* Khoa - Department Picker */}
             <div className="space-y-2">
               <Label htmlFor="department" className="text-sm font-medium">
@@ -206,6 +250,13 @@ export default function ClassFormModal({
         open={showDepartmentPicker}
         onOpenChange={setShowDepartmentPicker}
         onSelect={handleDepartmentSelect}
+      />
+
+      {/* Academic Year Picker Modal */}
+      <AcademicYearPickerModal
+        open={showAcademicYearPicker}
+        onOpenChange={setShowAcademicYearPicker}
+        onSelect={handleAcademicYearSelect}
       />
     </>
   );

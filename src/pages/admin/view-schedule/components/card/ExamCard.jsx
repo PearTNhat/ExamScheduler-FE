@@ -44,7 +44,7 @@ const ExamCard = ({ exam, onViewDetail, onEdit, onDelete }) => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onViewDetail(exam.id)}
+            onClick={() => onViewDetail(exam.examId)}
             className="gap-2"
           >
             <Eye className="h-4 w-4" />
@@ -60,7 +60,7 @@ const ExamCard = ({ exam, onViewDetail, onEdit, onDelete }) => {
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => onDelete && onDelete(exam.id)}
+            onClick={() => onDelete && onDelete(exam.examId)}
             className="gap-2"
           >
             <Trash2 className="h-4 w-4" />

@@ -126,6 +126,7 @@ export default function CourseDepartmentPickerModal({
 
   // Handle exam session change
   const handleExamSessionChange = (sessionId) => {
+    console.log("sessionId", sessionId);
     setSelectedExamSession(sessionId);
     fetchCourseDepartments(1, searchTerm, sessionId);
   };

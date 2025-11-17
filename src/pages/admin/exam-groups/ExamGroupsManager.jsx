@@ -49,7 +49,6 @@ import Pagination from "~/components/pagination/Pagination";
 const ExamGroupsManager = () => {
   const [examGroups, setExamGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const { accessToken } = useSelector((state) => state.user);
   const [searchParams, setSearchParams] = useSearchParams();
   const [pagination, setPagination] = useState({
@@ -75,17 +74,18 @@ const ExamGroupsManager = () => {
   // Fetch exam groups
   const fetchExamGroups = useCallback(async () => {
     try {
+      console.log("call apu");
       setLoading(true);
       const params = {
         page: currentParams.page || 1,
         limit: 10,
       };
 
-      // Add filters if selected
-      if (selectedDepartment) {
+      // Add filters if selected (skip if 'all')
+      if (selectedDepartment && selectedDepartment !== "all") {
         params.departmentId = parseInt(selectedDepartment);
       }
-      if (selectedExamSession) {
+      if (selectedExamSession && selectedExamSession !== "all") {
         params.examSessionId = parseInt(selectedExamSession);
       }
 
@@ -111,7 +111,7 @@ const ExamGroupsManager = () => {
       fetchExamGroups();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, currentParams]);
+  }, [accessToken, currentParams, selectedDepartment, selectedExamSession]);
 
   // Load departments and exam sessions
   useEffect(() => {
@@ -138,46 +138,20 @@ const ExamGroupsManager = () => {
     }
   }, [accessToken]);
 
-  // Search handler
-  const handleSearch = () => {
-    const params = new URLSearchParams(searchParams);
-    if (searchTerm) {
-      params.set("code", searchTerm);
-    } else {
-      params.delete("code");
-    }
-    params.set("page", "1");
-    setSearchParams(params);
-  };
-
   // Filter handlers
   const handleDepartmentChange = (value) => {
     setSelectedDepartment(value);
-  };
-
-  const handleExamSessionChange = (value) => {
-    setSelectedExamSession(value);
-  };
-
-  const handleApplyFilters = () => {
     const params = new URLSearchParams(searchParams);
     params.set("page", "1");
     setSearchParams(params);
   };
 
-  const handleResetFilters = () => {
-    setSelectedDepartment("");
-    setSelectedExamSession("");
-    const params = new URLSearchParams();
+  const handleExamSessionChange = (value) => {
+    console.log("sesisonId", value);
+    setSelectedExamSession(value);
+    const params = new URLSearchParams(searchParams);
     params.set("page", "1");
     setSearchParams(params);
-  };
-
-  // Handle Enter key in search
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
   };
 
   // Pagination handler
@@ -307,7 +281,7 @@ const ExamGroupsManager = () => {
       {/* Actions */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-100">
         {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Building2 className="h-4 w-4 inline mr-1" />
@@ -354,45 +328,11 @@ const ExamGroupsManager = () => {
             </Select>
           </div>
 
-          <div className="flex items-end gap-2">
-            <Button onClick={handleApplyFilters} className="flex-1 h-11">
-              Áp dụng
-            </Button>
-            <Button
-              onClick={handleResetFilters}
-              variant="outline"
-              className="h-11"
-            >
-              Đặt lại
-            </Button>
-          </div>
-        </div>
-
-        {/* Search and Add */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <Input
-              type="text"
-              placeholder="Tìm kiếm theo mã nhóm thi..."
-              className="pl-10 h-11 border-gray-300 focus:border-amber-500 focus:ring-amber-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleSearch}
-              variant="outline"
-              className="h-11 px-6"
-            >
-              <Search className="h-5 w-5 mr-2" />
-              Tìm kiếm
-            </Button>
+          {/* Add Button */}
+          <div className="flex items-end">
             <Button
               onClick={handleOpenAddModal}
-              className="gap-2 h-11 px-6 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-md hover:shadow-lg transition-all"
+              className="gap-2 h-11 px-6 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-md hover:shadow-lg transition-all w-full"
             >
               <Plus className="h-5 w-5" />
               Thêm nhóm thi
@@ -445,16 +385,10 @@ const ExamGroupsManager = () => {
                 >
                   <div className="flex flex-col items-center gap-2">
                     <Users2 className="h-12 w-12 text-gray-300" />
-                    <p className="font-medium">
-                      {searchTerm
-                        ? "Không tìm thấy nhóm thi phù hợp"
-                        : "Chưa có nhóm thi nào"}
+                    <p className="font-medium">Chưa có nhóm thi nào</p>
+                    <p className="text-sm">
+                      Nhấn "Thêm nhóm thi" để tạo nhóm thi mới
                     </p>
-                    {!searchTerm && (
-                      <p className="text-sm">
-                        Nhấn "Thêm nhóm thi" để tạo nhóm thi mới
-                      </p>
-                    )}
                   </div>
                 </TableCell>
               </TableRow>

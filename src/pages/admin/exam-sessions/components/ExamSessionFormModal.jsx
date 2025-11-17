@@ -12,6 +12,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Search } from "lucide-react";
 import LocationPickerModal from "./LocationPickerModal";
+import AcademicYearPickerModal from "~/pages/admin/components/AcademicYearPickerModal";
 
 export default function ExamSessionFormModal({
   open,
@@ -27,9 +28,12 @@ export default function ExamSessionFormModal({
     is_active: true,
     description: "",
     location_id: null,
+    academicYearId: null,
   });
   const [locationName, setLocationName] = useState("");
+  const [academicYearName, setAcademicYearName] = useState("");
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [showAcademicYearPicker, setShowAcademicYearPicker] = useState(false);
   const [errors, setErrors] = useState({});
 
   // Load data when editing
@@ -46,8 +50,10 @@ export default function ExamSessionFormModal({
         is_active: editingSession.is_active ?? true,
         description: editingSession.description || "",
         location_id: editingSession.location_id || null,
+        academicYearId: editingSession.academicYearId || null,
       });
       setLocationName(editingSession.location?.name || "");
+      setAcademicYearName(editingSession.academicYear?.name || "");
     } else {
       setFormData({
         name: "",
@@ -56,8 +62,10 @@ export default function ExamSessionFormModal({
         is_active: true,
         description: "",
         location_id: null,
+        academicYearId: null,
       });
       setLocationName("");
+      setAcademicYearName("");
     }
     setErrors({});
   }, [editingSession, open]);
@@ -66,6 +74,12 @@ export default function ExamSessionFormModal({
     setFormData({ ...formData, location_id: location.id });
     setLocationName(location.name);
     setShowLocationPicker(false);
+  };
+
+  const handleAcademicYearSelect = (year) => {
+    setFormData({ ...formData, academicYearId: year.id });
+    setAcademicYearName(year.name);
+    setErrors({ ...errors, academicYearId: "" });
   };
 
   const validate = () => {
@@ -175,6 +189,36 @@ export default function ExamSessionFormModal({
               />
               {errors.end_date && (
                 <p className="text-sm text-red-500">{errors.end_date}</p>
+              )}
+            </div>
+
+            {/* Năm học - Academic Year Picker */}
+            <div className="space-y-2">
+              <Label htmlFor="academicYear" className="text-sm font-medium">
+                Năm học <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="academicYear"
+                  placeholder="Chọn năm học..."
+                  value={academicYearName}
+                  readOnly
+                  className={`flex-1 cursor-pointer ${
+                    errors.academicYearId ? "border-red-500" : ""
+                  }`}
+                  onClick={() => setShowAcademicYearPicker(true)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAcademicYearPicker(true)}
+                  className="px-3"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+              {errors.academicYearId && (
+                <p className="text-sm text-red-500">{errors.academicYearId}</p>
               )}
             </div>
 
@@ -294,6 +338,13 @@ export default function ExamSessionFormModal({
         open={showLocationPicker}
         onOpenChange={setShowLocationPicker}
         onSelect={handleLocationSelect}
+      />
+
+      {/* Academic Year Picker Modal */}
+      <AcademicYearPickerModal
+        open={showAcademicYearPicker}
+        onOpenChange={setShowAcademicYearPicker}
+        onSelect={handleAcademicYearSelect}
       />
     </>
   );

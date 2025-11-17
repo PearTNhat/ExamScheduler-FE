@@ -27,6 +27,7 @@ import ClassesManager from "./pages/admin/classes/ClassesManager";
 import ExamSlotsManager from "./pages/admin/exam-slots/ExamSlotsManager";
 import ExamGroupsManager from "./pages/admin/exam-groups/ExamGroupsManager";
 import StudentCourseRegistrationManager from "./pages/admin/student-course-registrations/StudentCourseRegistrationManager";
+import AcademicYearManager from "./pages/admin/academic-years/AcademicYearManager";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="exam-sessions" element={<ExamSessions />} />
+          <Route path="academic-years" element={<AcademicYearManager />} />
           <Route path="courses" element={<Courses />} />
           <Route path="rooms" element={<Rooms />} />
           <Route path="students" element={<StudentManager />} />
