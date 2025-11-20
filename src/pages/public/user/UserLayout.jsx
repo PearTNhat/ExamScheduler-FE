@@ -1,44 +1,35 @@
-import React, { useState } from "react";
+import React from "react";
 import { Outlet } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
+import { useSelector } from "react-redux";
 
 function UserLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Mock user data - Replace with actual user data from Redux/Context
-  const [user] = useState({
-    firstName: "Lê Tuấn ",
-    lastName: "Nhật",
-    email: "nhat@example.com",
-    avatar: "", // URL to avatar image
-    role: "admin", // or "user"
-  });
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
-
+  const { userData, isLoggedIn, accessToken } = useSelector(
+    (state) => state.user
+  );
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        {/* Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
-
-        {/* Main content */}
-        <div className="flex-1 lg:ml-0">
-          <Header user={user} onToggleSidebar={toggleSidebar} />
-          <main className="p-6 lg:p-8">
-            <div className="max-w-7xl mx-auto">
-              <Outlet />
-            </div>
+      <Header
+        user={userData}
+        isLoggedIn={isLoggedIn}
+        accessToken={accessToken}
+      />
+      {/* Only show sidebar and layout if logged in */}
+      {isLoggedIn ? (
+        <div className="flex max-w-7xl">
+          {/* Sidebar - sticky on left */}
+          <Sidebar />
+          {/* Main content */}
+          <main className="flex-1 p-6 lg:p-8">
+            <Outlet />
           </main>
         </div>
-      </div>
+      ) : (
+        <main className="w-full">
+          <Outlet />
+        </main>
+      )}
     </div>
   );
 }

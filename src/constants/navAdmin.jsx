@@ -78,11 +78,7 @@ const navItems = [
     name: "Giảng viên",
     path: adminPaths.LECTURES,
   },
-  {
-    icon: <CalendarClock size={20} className="text-yellow-500" />,
-    name: "Xếp lịch",
-    path: adminPaths.SCHEDULE,
-  },
+
   {
     icon: <Notebook size={20} className="text-pink-500" />,
     name: "ĐK học phần",

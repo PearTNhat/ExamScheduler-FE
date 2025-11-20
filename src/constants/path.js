@@ -1,8 +1,8 @@
 const publicPaths = {
-    HOME: '/',
-    LOGIN: '/login',
-    REGISTER: '/register',
+    LOGIN: '/user/login',
+    REGISTER: '/user/register',
     RESET_PASSWORD: '/reset-password',
+    USER: '/user',
 };
 
 const adminPaths = {

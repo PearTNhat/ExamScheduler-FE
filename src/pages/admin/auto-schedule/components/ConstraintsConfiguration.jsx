@@ -81,6 +81,51 @@ const ConstraintsConfiguration = ({
     }
   };
 
+  // ✅ THÊM: Handler cho LECTURER_LOCATION_MOVEMENT
+  const lecturerLocationConstraint = getConstraint(
+    "LECTURER_LOCATION_MOVEMENT"
+  );
+  const lecturerLocationEnabled =
+    lecturerLocationConstraint?.rule?.enabled || false;
+
+  const handleLecturerLocationChange = (enabled) => {
+    if (enabled) {
+      updateConstraint("LECTURER_LOCATION_MOVEMENT", { enabled: true });
+    } else {
+      removeConstraint("LECTURER_LOCATION_MOVEMENT");
+    }
+  };
+
+  // ✅ THÊM: Handler cho MAX_EXAMS_PER_LECTURER
+  const maxExamsPerLecturerConstraint = getConstraint("MAX_EXAMS_PER_LECTURER");
+  const maxExamsPerLecturer =
+    maxExamsPerLecturerConstraint?.rule?.max_exams_per_lecturer || 0;
+
+  const handleMaxExamsPerLecturerChange = (value) => {
+    if (value > 0) {
+      updateConstraint("MAX_EXAMS_PER_LECTURER", {
+        max_exams_per_lecturer: value,
+      });
+    } else {
+      removeConstraint("MAX_EXAMS_PER_LECTURER");
+    }
+  };
+
+  // ✅ THÊM: Handler cho SAME_DEPT_COURSE_SLOT
+  const sameDeptCourseSlotConstraint = getConstraint("SAME_DEPT_COURSE_SLOT");
+  const sameDeptCourseSlotEnabled =
+    sameDeptCourseSlotConstraint?.rule?.same_dept_course_slot || false;
+
+  const handleSameDeptCourseSlotChange = (enabled) => {
+    if (enabled) {
+      updateConstraint("SAME_DEPT_COURSE_SLOT", {
+        same_dept_course_slot: true,
+      });
+    } else {
+      removeConstraint("SAME_DEPT_COURSE_SLOT");
+    }
+  };
+
   const constraintsList = [
     {
       code: "MAX_EXAMS_PER_DAY",
@@ -96,7 +141,7 @@ const ConstraintsConfiguration = ({
     },
     {
       code: "ROOM_LOCATION_LIMIT",
-      name: "Giới hạn cơ sở/ngày",
+      name: "Giới hạn cơ sở/ngày (Sinh viên)",
       description:
         "Giới hạn số lượng cơ sở tối đa mà sinh viên có thể thi trong cùng một ngày",
       type: "MỀM",
@@ -106,6 +151,41 @@ const ConstraintsConfiguration = ({
       value: roomLocationLimit,
       isEnabled: roomLocationLimit > 0,
       onChange: handleRoomLocationChange,
+    },
+    // ✅ THÊM MỚI
+    {
+      code: "LECTURER_LOCATION_MOVEMENT",
+      name: "Hạn chế di chuyển cơ sở (Giảng viên)",
+      description:
+        "Giảm thiểu việc giảng viên phải di chuyển giữa các cơ sở trong cùng một ngày",
+      type: "MỀM",
+      hasParam: false,
+      value: lecturerLocationEnabled,
+      isEnabled: lecturerLocationEnabled,
+      onChange: handleLecturerLocationChange,
+    },
+    {
+      code: "MAX_EXAMS_PER_LECTURER",
+      name: "Giới hạn số môn thi/giảng viên",
+      description: "Mỗi giảng viên chỉ được phân công tối đa X môn thi",
+      type: "MỀM",
+      hasParam: true,
+      paramType: "number",
+      paramLabel: "Số môn thi tối đa:",
+      value: maxExamsPerLecturer,
+      isEnabled: maxExamsPerLecturer > 0,
+      onChange: handleMaxExamsPerLecturerChange,
+    },
+    {
+      code: "SAME_DEPT_COURSE_SLOT",
+      name: "Xếp cùng ca thi cho môn cùng khoa",
+      description:
+        "Các lớp học cùng môn, cùng khoa nên xếp cùng ca thi để tránh lộ đề",
+      type: "MỀM",
+      hasParam: false,
+      value: sameDeptCourseSlotEnabled,
+      isEnabled: sameDeptCourseSlotEnabled,
+      onChange: handleSameDeptCourseSlotChange,
     },
   ];
 

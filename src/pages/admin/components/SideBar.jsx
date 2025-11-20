@@ -233,7 +233,7 @@ const SideBar = () => {
           <button>
             {isExpanded || isHovered || isMobileOpen ? (
               <div className="">
-                <Link to="/">
+                <Link to="/user">
                   <img
                     className="rounded-full w-10 h-10"
                     src="/images/logo_stationery.svg"
@@ -244,7 +244,7 @@ const SideBar = () => {
                 </Link>
               </div>
             ) : (
-              <Link to="/">
+              <Link to="/user">
                 <img
                   className="rounded-full w-10 h-10"
                   src="/images/logo_stationery.svg"

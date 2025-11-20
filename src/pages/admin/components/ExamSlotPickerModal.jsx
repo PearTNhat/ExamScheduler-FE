@@ -23,11 +23,18 @@ import { apiGetExamSlots } from "~/apis/exam-slotApi";
 import { showToastError } from "~/utils/alert";
 import Pagination from "~/components/pagination/Pagination";
 
-export default function ExamSlotPickerModal({ open, onOpenChange, onSelect }) {
+export default function ExamSlotPickerModal({
+  open,
+  onOpenChange,
+  onSelect,
+  multiSelect = false, // ✅ THÊM: Cho phép chọn nhiều
+  selectedSlots = [], // ✅ THÊM: Danh sách đã chọn từ bên ngoài
+}) {
   const { accessToken } = useSelector((state) => state.user);
   const [examSlots, setExamSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [localSelectedSlots, setLocalSelectedSlots] = useState([]); // ✅ THÊM: State local
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -68,17 +75,42 @@ export default function ExamSlotPickerModal({ open, onOpenChange, onSelect }) {
     if (open && accessToken) {
       fetchExamSlots(1);
       setSearchTerm("");
+      setLocalSelectedSlots(selectedSlots); // ✅ THÊM: Đồng bộ từ props
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, accessToken]);
+  }, [open, accessToken, selectedSlots]);
 
   const handlePageChange = (page) => {
     fetchExamSlots(page);
   };
 
   const handleSelect = (examSlot) => {
-    onSelect(examSlot);
+    if (multiSelect) {
+      // ✅ Multi select: Toggle
+      const isSelected = localSelectedSlots.some((s) => s.id === examSlot.id);
+      if (isSelected) {
+        setLocalSelectedSlots((prev) =>
+          prev.filter((s) => s.id !== examSlot.id)
+        );
+      } else {
+        setLocalSelectedSlots((prev) => [...prev, examSlot]);
+      }
+    } else {
+      // ✅ Single select: Chọn và đóng ngay
+      onSelect(examSlot);
+      onOpenChange(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (multiSelect) {
+      onSelect(localSelectedSlots);
+    }
     onOpenChange(false);
+  };
+
+  const isSlotSelected = (slotId) => {
+    return localSelectedSlots.some((s) => s.id === slotId);
   };
 
   // Filter exam slots by search term (client-side)
@@ -155,44 +187,66 @@ export default function ExamSlotPickerModal({ open, onOpenChange, onSelect }) {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredExamSlots.map((slot) => (
-                  <TableRow
-                    key={slot.id}
-                    className="cursor-pointer hover:bg-green-50 transition-colors"
-                    onClick={() => handleSelect(slot)}
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-green-100 rounded">
-                          <Clock className="h-4 w-4 text-green-600" />
+                filteredExamSlots.map((slot) => {
+                  const selected = multiSelect && isSlotSelected(slot.id);
+                  return (
+                    <TableRow
+                      key={slot.id}
+                      className={`cursor-pointer hover:bg-green-50 transition-colors ${
+                        selected
+                          ? "bg-green-100 border-l-4 border-green-600"
+                          : ""
+                      }`}
+                      onClick={() => handleSelect(slot)}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {multiSelect && (
+                            <input
+                              type="checkbox"
+                              checked={selected}
+                              onChange={() => handleSelect(slot)}
+                              className="h-4 w-4 text-green-600 rounded"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          )}
+                          <div className="p-1.5 bg-green-100 rounded">
+                            <Clock className="h-4 w-4 text-green-600" />
+                          </div>
+                          <span className="font-medium">{slot.slotName}</span>
                         </div>
-                        <span className="font-medium">{slot.slotName}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-blue-50">
-                        {slot.startTime}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-purple-50">
-                        {slot.endTime}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelect(slot);
-                        }}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Chọn
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-blue-50">
+                          {slot.startTime}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-purple-50">
+                          {slot.endTime}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {multiSelect ? (
+                          <Badge variant={selected ? "default" : "outline"}>
+                            {selected ? "Đã chọn" : "Chọn"}
+                          </Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSelect(slot);
+                            }}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            Chọn
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -212,14 +266,33 @@ export default function ExamSlotPickerModal({ open, onOpenChange, onSelect }) {
           )}
 
         {/* Footer */}
-        <div className="flex justify-end pt-4 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Hủy
-          </Button>
+        <div className="flex justify-between items-center pt-4 border-t">
+          {multiSelect && (
+            <div className="text-sm text-gray-600">
+              Đã chọn:{" "}
+              <span className="font-semibold">{localSelectedSlots.length}</span>{" "}
+              ca thi
+            </div>
+          )}
+          <div className="flex gap-2 ml-auto">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Hủy
+            </Button>
+            {multiSelect && (
+              <Button
+                type="button"
+                onClick={handleConfirm}
+                className="bg-green-600 hover:bg-green-700"
+                disabled={localSelectedSlots.length === 0}
+              >
+                Xác nhận ({localSelectedSlots.length})
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

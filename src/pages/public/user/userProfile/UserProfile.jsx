@@ -1,21 +1,11 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { User, Mail, Save, Camera } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-
+import { useSelector } from "react-redux";
 function UserProfile() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [avatarPreview, setAvatarPreview] = useState("");
-
-  // Mock user data - Replace with actual user data
-  const [userData] = useState({
-    firstName: "Nguyễn Đình",
-    lastName: "Luật",
-    email: "luatnguyen@example.com",
-    avatar: "",
-  });
-
+  const { userData } = useSelector((state) => state.user);
   const {
     register,
     handleSubmit,
@@ -23,32 +13,12 @@ function UserProfile() {
   } = useForm({
     defaultValues: userData,
   });
-
-  const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ""}${
-      lastName?.charAt(0) || ""
-    }`.toUpperCase();
-  };
-
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const onSubmit = async (data) => {
     setIsLoading(true);
     setMessage("");
 
     try {
       console.log("Update profile:", data);
-      // TODO: Call API to update profile
-
       setTimeout(() => {
         setMessage("Cập nhật thông tin thành công!");
         setIsLoading(false);
@@ -70,33 +40,6 @@ function UserProfile() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-8">
-          {/* Avatar Section */}
-          <div className="flex flex-col items-center mb-8 pb-8 border-b">
-            <div className="relative group">
-              <Avatar className="h-32 w-32 border-4 border-indigo-100">
-                <AvatarImage
-                  src={avatarPreview || userData.avatar}
-                  alt={`${userData.firstName} ${userData.lastName}`}
-                />
-                <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-3xl font-bold">
-                  {getInitials(userData.firstName, userData.lastName)}
-                </AvatarFallback>
-              </Avatar>
-              <label className="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-colors">
-                <Camera className="h-5 w-5" />
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                />
-              </label>
-            </div>
-            <p className="mt-4 text-sm text-gray-500">
-              Nhấn vào icon camera để thay đổi ảnh đại diện
-            </p>
-          </div>
-
           {/* Form Fields */}
           <div className="space-y-6">
             {/* Name Fields Row */}

@@ -142,6 +142,12 @@ const AutoSchedule = () => {
           id: proctor.proctorId,
           name: proctor.name,
           lecturerCode: proctor.lecturerCode,
+          // ✅ Chỉ gửi date và slotId (bỏ slots)
+          unavailable_dates:
+            proctor.unavailable_dates?.map((d) => ({
+              date: d.date,
+              slotId: d.slotId,
+            })) || [],
         }));
       }
       const schedulingData = {

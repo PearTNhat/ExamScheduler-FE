@@ -1,6 +1,8 @@
-import React from "react";
-import { User, Settings, LogOut, UserCircle, Shield, Menu } from "lucide-react";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Settings, LogOut, UserCircle, Shield, Calendar } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,17 +11,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { useDispatch } from "react-redux";
+import { userActions } from "~/stores/slice/userSlice";
+import { fetchCurrentUser } from "~/stores/action/user";
 
-function Header({ user, onToggleSidebar }) {
+function Header({ user, isLoggedIn, accessToken }) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-    // Xử lý đăng xuất
-    console.log("Logout");
-    // TODO: Clear token, redirect to login
-  };
-
-  const handleNavigate = (path) => {
-    console.log("Navigate to:", path);
-    // TODO: Add navigation logic
+    dispatch(userActions.logout());
+    navigate("/login");
   };
 
   // Get initials from user name
@@ -28,95 +30,105 @@ function Header({ user, onToggleSidebar }) {
       lastName?.charAt(0) || ""
     }`.toUpperCase();
   };
-
+  useEffect(() => {
+    if (accessToken) {
+      dispatch(fetchCurrentUser({ accessToken }));
+    }
+  }, [accessToken]);
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container flex h-16 items-center justify-between px-4">
-        {/* Logo/Title + Mobile Menu */}
+    <header className="sticky top-0 z-40 w-full border-b bg-white shadow-sm">
+      <div className="w-full flex h-16 items-center justify-between px-6">
+        {/* Logo/Title */}
         <div className="flex items-center gap-4">
-          {/* Mobile menu button */}
-          <button
-            onClick={onToggleSidebar}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <Menu className="h-5 w-5 text-gray-600" />
-          </button>
-
-          <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Exam Scheduler
-          </h1>
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-2 rounded-lg">
+              <Calendar className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">ExamScheduler</h1>
+              <p className="text-xs text-gray-600">
+                Hệ thống xếp lịch thi PTIT
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* User Menu */}
+        {/* Right side: Admin button + User Menu OR Login button */}
         <div className="flex items-center gap-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="focus:outline-none">
-              <div className="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors cursor-pointer">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-semibold text-gray-900">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
-                </div>
-                <Avatar className="h-10 w-10 border-2 border-indigo-100">
-                  <AvatarImage
-                    src={user?.avatar}
-                    alt={`${user?.firstName} ${user?.lastName}`}
-                  />
-                  <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold">
-                    {getInitials(user?.firstName, user?.lastName)}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => handleNavigate("/user/profile")}
-                className="cursor-pointer"
-              >
-                <UserCircle className="mr-2 h-4 w-4" />
-                <span>Thông tin cá nhân</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleNavigate("/user/change-password")}
-                className="cursor-pointer"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Đổi mật khẩu</span>
-              </DropdownMenuItem>
-              {user?.role === "admin" && (
-                <>
+          {isLoggedIn ? (
+            <>
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="focus:outline-none" asChild>
+                  <div className="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors cursor-pointer">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {user?.firstName} {user?.lastName}
+                      </p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
+                    </div>
+                    <Avatar className="h-10 w-10 border-2 border-indigo-100">
+                      <AvatarImage
+                        src={user?.avatar}
+                        alt={`${user?.firstName} ${user?.lastName}`}
+                      />
+                      <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold">
+                        {getInitials(user?.firstName, user?.lastName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user?.firstName} {user?.lastName}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {user?.roles.includes("ADMIN") && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="cursor-pointer">
+                        <UserCircle className="mr-2 h-4 w-4" />
+                        <span>Quản trị</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link to="/user" className="cursor-pointer">
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      <span>Thông tin cá nhân</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/change-password" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Đổi mật khẩu</span>
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => handleNavigate("/admin")}
-                    className="cursor-pointer"
+                    onClick={handleLogout}
+                    className="cursor-pointer text-red-600 focus:text-red-600"
                   >
-                    <Shield className="mr-2 h-4 w-4" />
-                    <span>Quản trị hệ thống</span>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Đăng xuất</span>
                   </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="cursor-pointer text-red-600 focus:text-red-600"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Đăng xuất</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <Button
+              asChild
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+            >
+              <Link to="/login">Đăng nhập</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>
