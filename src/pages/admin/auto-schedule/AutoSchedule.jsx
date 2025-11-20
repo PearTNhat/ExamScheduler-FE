@@ -133,6 +133,7 @@ const AutoSchedule = () => {
           capacity: room.capacity,
           locationId: room.locationId,
           roomCode: room.code,
+          roomType: room.roomType,
           locationName: room.location,
         }));
       }

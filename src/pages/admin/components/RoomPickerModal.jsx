@@ -111,6 +111,7 @@ export default function RoomPickerModal({
           capacity: room.capacity,
           location: room.location?.name || "N/A",
           locationId: room.location?.id,
+          roomType: room.type,
           code: room.code,
         }));
       setTempSelectedRooms([...tempSelectedRooms, ...newRooms]);
@@ -139,6 +140,7 @@ export default function RoomPickerModal({
             capacity: room.capacity,
             location: room.location?.name || "N/A",
             locationId: room.location?.id,
+            roomType: room.type,
             code: room.code,
           },
         ]);
@@ -157,6 +159,7 @@ export default function RoomPickerModal({
             capacity: room.capacity,
             location: room.location?.name || "N/A",
             locationId: room.location?.id,
+            roomType: room.type,
             code: room.code,
           },
         ]);
@@ -223,6 +226,7 @@ export default function RoomPickerModal({
                 <TableHead className="w-12"></TableHead>
                 <TableHead className="font-semibold">Mã phòng</TableHead>
                 <TableHead className="font-semibold">Địa điểm</TableHead>
+                <TableHead className="font-semibold">Loại phòng</TableHead>
                 <TableHead className="font-semibold">Sức chứa</TableHead>
               </TableRow>
             </TableHeader>
@@ -279,6 +283,9 @@ export default function RoomPickerModal({
                         <Badge variant="outline">
                           {room.location?.name || "N/A"}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{room.type || "N/A"}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{room.capacity} người</Badge>

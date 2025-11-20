@@ -56,6 +56,9 @@ const RoomSelector = ({ selectedRooms, onRoomsChange }) => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-xs">
+                        {room.roomType}
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
                         {room.capacity}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
