@@ -65,10 +65,6 @@ const CoursesList = ({
   examSessions,
   selectedExamSession,
   onSelectExamSession,
-  // Props cho department filter
-  departments,
-  selectedDepartment,
-  onSelectDepartment,
 }) => (
   <Card>
     <CardHeader>
@@ -91,28 +87,6 @@ const CoursesList = ({
               {examSessions?.map((session) => (
                 <SelectItem key={session.id} value={session.id.toString()}>
                   {session.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Department Filter */}
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700">Khoa:</label>
-          <Select
-            value={selectedDepartment}
-            onValueChange={onSelectDepartment}
-            disabled={loading || !selectedExamSession}
-          >
-            <SelectTrigger className="w-64">
-              <SelectValue placeholder="Tất cả khoa" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả khoa</SelectItem>
-              {departments?.map((dept) => (
-                <SelectItem key={dept.id} value={dept.id.toString()}>
-                  {dept.departmentName}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -157,7 +131,8 @@ const CoursesList = ({
                 <TableRow className="bg-gray-50">
                   <TableHead className="font-semibold">Mã môn học</TableHead>
                   <TableHead className="font-semibold">Tên môn học</TableHead>
-                  <TableHead className="font-semibold">Khoa</TableHead>
+                  <TableHead className="font-semibold">Lớp</TableHead>
+                  <TableHead className="font-semibold">Giảng viên</TableHead>
                   <TableHead className="font-semibold">Tín chỉ</TableHead>
                   <TableHead className="font-semibold">Thời gian thi</TableHead>
                   <TableHead className="font-semibold">
@@ -171,7 +146,7 @@ const CoursesList = ({
               <TableBody>
                 {courses?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12">
+                    <TableCell colSpan={8} className="text-center py-12">
                       <div className="flex flex-col items-center gap-2">
                         <BookOpen className="h-12 w-12 text-gray-300" />
                         <p className="font-medium text-gray-500">
@@ -203,8 +178,13 @@ const CoursesList = ({
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="font-normal">
-                          {item.departmentName || "N/A"}
+                          {item.className || "N/A"}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-gray-600">
+                          {item.lecturerName || "N/A"}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{item.credits} TC</Badge>

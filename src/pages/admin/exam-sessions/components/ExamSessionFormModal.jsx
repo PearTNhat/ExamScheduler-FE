@@ -11,7 +11,6 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Search } from "lucide-react";
-import LocationPickerModal from "./LocationPickerModal";
 import AcademicYearPickerModal from "~/pages/admin/components/AcademicYearPickerModal";
 
 export default function ExamSessionFormModal({
@@ -27,12 +26,9 @@ export default function ExamSessionFormModal({
     end_date: "",
     is_active: true,
     description: "",
-    location_id: null,
     academicYearId: null,
   });
-  const [locationName, setLocationName] = useState("");
   const [academicYearName, setAcademicYearName] = useState("");
-  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showAcademicYearPicker, setShowAcademicYearPicker] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -49,10 +45,8 @@ export default function ExamSessionFormModal({
           : "",
         is_active: editingSession.is_active ?? true,
         description: editingSession.description || "",
-        location_id: editingSession.location_id || null,
         academicYearId: editingSession.academicYearId || null,
       });
-      setLocationName(editingSession.location?.name || "");
       setAcademicYearName(editingSession.academicYear?.name || "");
     } else {
       setFormData({
@@ -61,20 +55,12 @@ export default function ExamSessionFormModal({
         end_date: "",
         is_active: true,
         description: "",
-        location_id: null,
         academicYearId: null,
       });
-      setLocationName("");
       setAcademicYearName("");
     }
     setErrors({});
   }, [editingSession, open]);
-
-  const handleLocationSelect = (location) => {
-    setFormData({ ...formData, location_id: location.id });
-    setLocationName(location.name);
-    setShowLocationPicker(false);
-  };
 
   const handleAcademicYearSelect = (year) => {
     setFormData({ ...formData, academicYearId: year.id });
@@ -97,9 +83,6 @@ export default function ExamSessionFormModal({
       if (new Date(formData.start_date) >= new Date(formData.end_date)) {
         newErrors.end_date = "Ngày kết thúc phải sau ngày bắt đầu";
       }
-    }
-    if (!formData.location_id) {
-      newErrors.location_id = "Vui lòng chọn cơ sở";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -222,41 +205,6 @@ export default function ExamSessionFormModal({
               )}
             </div>
 
-            {/* Cơ sở - Location Picker */}
-            <div className="space-y-2">
-              <Label htmlFor="location" className="text-sm font-medium">
-                Cơ sở <span className="text-red-500">*</span>
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="location"
-                  placeholder="Chọn cơ sở..."
-                  value={locationName}
-                  readOnly
-                  className={`flex-1 cursor-pointer ${
-                    errors.location_id ? "border-red-500" : ""
-                  }`}
-                  onClick={() => setShowLocationPicker(true)}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowLocationPicker(true)}
-                  className="px-3"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
-              {errors.location_id && (
-                <p className="text-sm text-red-500">{errors.location_id}</p>
-              )}
-              {formData.location_id && (
-                <p className="text-xs text-gray-500">
-                  ID Cơ sở: {formData.location_id}
-                </p>
-              )}
-            </div>
-
             {/* Trạng thái */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Trạng thái</Label>
@@ -332,13 +280,6 @@ export default function ExamSessionFormModal({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Location Picker Modal */}
-      <LocationPickerModal
-        open={showLocationPicker}
-        onOpenChange={setShowLocationPicker}
-        onSelect={handleLocationSelect}
-      />
 
       {/* Academic Year Picker Modal */}
       <AcademicYearPickerModal

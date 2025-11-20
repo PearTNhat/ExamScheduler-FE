@@ -28,7 +28,9 @@ export default function ProctorPickerModal({
   open,
   onOpenChange,
   onConfirm,
-  selectedProctors,
+  onSelect,
+  selectedProctors = [],
+  multiSelect = true,
 }) {
   const { accessToken } = useSelector((state) => state.user);
   const [lecturers, setLecturers] = useState([]);
@@ -75,7 +77,10 @@ export default function ProctorPickerModal({
       setSearchTerm("");
 
       // Initialize with current selected proctors (no selectAll logic)
-      setTempSelectedProctors([...selectedProctors]);
+      const initialSelection = Array.isArray(selectedProctors)
+        ? [...selectedProctors]
+        : [];
+      setTempSelectedProctors(initialSelection);
     }
   }, [open, accessToken, selectedProctors]);
 
@@ -133,6 +138,23 @@ export default function ProctorPickerModal({
   };
 
   const handleToggleLecturer = (lecturer) => {
+    const lecturerData = {
+      id: lecturer.id,
+      proctorId: lecturer.id,
+      lecturerCode: lecturer.lecturerCode,
+      name: `${lecturer.firstName} ${lecturer.lastName}`,
+    };
+
+    // Single select mode - immediately select and close
+    if (!multiSelect) {
+      if (onSelect) {
+        onSelect(lecturerData);
+      }
+      onOpenChange(false);
+      return;
+    }
+
+    // Multi select mode - toggle selection
     const isSelected = tempSelectedProctors.some(
       (p) => p.proctorId === lecturer.id
     );
@@ -142,14 +164,7 @@ export default function ProctorPickerModal({
         tempSelectedProctors.filter((p) => p.proctorId !== lecturer.id)
       );
     } else {
-      setTempSelectedProctors([
-        ...tempSelectedProctors,
-        {
-          proctorId: lecturer.id,
-          lecturerCode: lecturer.lecturerCode,
-          name: `${lecturer.firstName} ${lecturer.lastName}`,
-        },
-      ]);
+      setTempSelectedProctors([...tempSelectedProctors, lecturerData]);
     }
   };
 
@@ -186,28 +201,30 @@ export default function ProctorPickerModal({
           />
         </div>
 
-        {/* Select All Current Page Checkbox */}
-        <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
-          <Checkbox
-            id="select-all-current-page-proctors"
-            checked={areAllCurrentPageLecturersSelected()}
-            onCheckedChange={handleSelectAllCurrentPage}
-          />
-          <label
-            htmlFor="select-all-current-page-proctors"
-            className="text-sm font-medium cursor-pointer"
-          >
-            Chọn tất cả trang hiện tại ({lecturers.length} giám thị) - Đã chọn:{" "}
-            {tempSelectedProctors.length} giám thị
-          </label>
-        </div>
+        {/* Select All Current Page Checkbox - Only in multi-select mode */}
+        {multiSelect && (
+          <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
+            <Checkbox
+              id="select-all-current-page-proctors"
+              checked={areAllCurrentPageLecturersSelected()}
+              onCheckedChange={handleSelectAllCurrentPage}
+            />
+            <label
+              htmlFor="select-all-current-page-proctors"
+              className="text-sm font-medium cursor-pointer"
+            >
+              Chọn tất cả trang hiện tại ({lecturers.length} giám thị) - Đã
+              chọn: {tempSelectedProctors.length} giám thị
+            </label>
+          </div>
+        )}
 
         {/* Table */}
         <div className="flex-1 overflow-auto border rounded-lg">
           <Table>
             <TableHeader className="bg-gray-50 sticky top-0">
               <TableRow>
-                <TableHead className="w-12"></TableHead>
+                {multiSelect && <TableHead className="w-12"></TableHead>}
                 <TableHead className="font-semibold">Mã GV</TableHead>
                 <TableHead className="font-semibold">Họ tên</TableHead>
                 <TableHead className="font-semibold">Khoa</TableHead>
@@ -250,13 +267,17 @@ export default function ProctorPickerModal({
                       }`}
                       onClick={() => handleToggleLecturer(lecturer)}
                     >
-                      <TableCell className="text-center">
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={() => handleToggleLecturer(lecturer)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </TableCell>
+                      {multiSelect && (
+                        <TableCell className="text-center">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() =>
+                              handleToggleLecturer(lecturer)
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-green-100 rounded">
@@ -300,18 +321,36 @@ export default function ProctorPickerModal({
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t">
-          <div className="text-sm text-gray-500">
-            {tempSelectedProctors.length > 0 ? (
-              <span className="text-green-600 font-medium">
-                ✓ Đã chọn: <strong>{tempSelectedProctors.length}</strong> giám
-                thị
-              </span>
-            ) : (
-              <span>Chưa chọn giám thị nào</span>
-            )}
+        {multiSelect ? (
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div className="text-sm text-gray-500">
+              {tempSelectedProctors.length > 0 ? (
+                <span className="text-green-600 font-medium">
+                  ✓ Đã chọn: <strong>{tempSelectedProctors.length}</strong> giám
+                  thị
+                </span>
+              ) : (
+                <span>Chưa chọn giám thị nào</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={handleConfirm}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Xác nhận
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
+        ) : (
+          <div className="flex justify-end pt-4 border-t">
             <Button
               type="button"
               variant="outline"
@@ -319,14 +358,8 @@ export default function ProctorPickerModal({
             >
               Hủy
             </Button>
-            <Button
-              onClick={handleConfirm}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Xác nhận
-            </Button>
           </div>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );

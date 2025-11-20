@@ -18,9 +18,10 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Checkbox } from "~/components/ui/checkbox";
-import { BookOpen, Building2, Calendar, Plus } from "lucide-react";
-import DepartmentPickerModal from "~/pages/admin/classes/components/DepartmentPickerModal";
+import { BookOpen, Building2, Calendar, Plus, Users } from "lucide-react";
+import ClassPickerModal from "~/pages/admin/components/ClassPickerModal";
 import CoursePickerModal from "~/pages/admin/components/CoursePickerModal";
+import ProctorPickerModal from "~/pages/admin/components/ProctorPickerModal";
 
 const AddCourseDepartmentModal = ({
   open,
@@ -29,17 +30,19 @@ const AddCourseDepartmentModal = ({
   loading,
   examSessions,
 }) => {
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [selectedClass, setSelectedClass] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedLecturer, setSelectedLecturer] = useState(null);
   const [selectedExamSession, setSelectedExamSession] = useState("");
   const [isCompulsory, setIsCompulsory] = useState(false);
 
-  const [showDepartmentPicker, setShowDepartmentPicker] = useState(false);
+  const [showClassPicker, setShowClassPicker] = useState(false);
   const [showCoursePicker, setShowCoursePicker] = useState(false);
+  const [showProctorPicker, setShowProctorPicker] = useState(false);
 
-  const handleDepartmentSelect = (department) => {
-    setSelectedDepartment(department);
-    setShowDepartmentPicker(false);
+  const handleClassSelect = (classData) => {
+    setSelectedClass(classData);
+    setShowClassPicker(false);
   };
 
   const handleCourseSelect = (course) => {
@@ -47,14 +50,25 @@ const AddCourseDepartmentModal = ({
     setShowCoursePicker(false);
   };
 
+  const handleLecturerSelect = (lecturer) => {
+    setSelectedLecturer(lecturer);
+    setShowProctorPicker(false);
+  };
+
   const handleSubmit = () => {
-    if (!selectedDepartment || !selectedCourse || !selectedExamSession) {
+    if (
+      !selectedClass ||
+      !selectedCourse ||
+      !selectedLecturer ||
+      !selectedExamSession
+    ) {
       return;
     }
 
     const data = {
       courseId: selectedCourse.id,
-      departmentId: selectedDepartment.id,
+      classId: selectedClass.id,
+      lecturerId: selectedLecturer.id,
       examSessionId: parseInt(selectedExamSession),
       isCompulsory,
     };
@@ -63,8 +77,9 @@ const AddCourseDepartmentModal = ({
   };
 
   const handleReset = () => {
-    setSelectedDepartment(null);
+    setSelectedClass(null);
     setSelectedCourse(null);
+    setSelectedLecturer(null);
     setSelectedExamSession("");
     setIsCompulsory(false);
   };
@@ -75,7 +90,7 @@ const AddCourseDepartmentModal = ({
   };
 
   const isFormValid =
-    selectedDepartment && selectedCourse && selectedExamSession;
+    selectedClass && selectedCourse && selectedLecturer && selectedExamSession;
 
   return (
     <>
@@ -128,33 +143,33 @@ const AddCourseDepartmentModal = ({
               </Select>
             </div>
 
-            {/* Department Picker */}
+            {/* Class Picker */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-medium">
-                <Building2 className="h-4 w-4 text-indigo-600" />
-                Khoa
+                <Building2 className="h-4 w-4 text-purple-600" />
+                Lớp học
                 <span className="text-red-500">*</span>
               </Label>
               <div className="flex items-center gap-2">
-                {selectedDepartment ? (
-                  <div className="flex-1 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                {selectedClass ? (
+                  <div className="flex-1 p-3 bg-purple-50 border border-purple-200 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Building2 className="h-5 w-5 text-indigo-600" />
+                        <Building2 className="h-5 w-5 text-purple-600" />
                         <div>
-                          <p className="font-medium text-indigo-900">
-                            {selectedDepartment.departmentName}
+                          <p className="font-medium text-purple-900">
+                            {selectedClass.className}
                           </p>
-                          <p className="text-sm text-indigo-600">
-                            Mã: {selectedDepartment.departmentCode}
+                          <p className="text-sm text-purple-600">
+                            Mã: {selectedClass.classCode}
                           </p>
                         </div>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedDepartment(null)}
-                        className="text-indigo-600 hover:text-indigo-700"
+                        onClick={() => setSelectedClass(null)}
+                        className="text-purple-600 hover:text-purple-700"
                       >
                         Thay đổi
                       </Button>
@@ -165,10 +180,10 @@ const AddCourseDepartmentModal = ({
                     type="button"
                     variant="outline"
                     className="flex-1"
-                    onClick={() => setShowDepartmentPicker(true)}
+                    onClick={() => setShowClassPicker(true)}
                   >
                     <Building2 className="h-4 w-4 mr-2" />
-                    Chọn Khoa
+                    Chọn Lớp
                   </Button>
                 )}
               </div>
@@ -221,6 +236,52 @@ const AddCourseDepartmentModal = ({
               </div>
             </div>
 
+            {/* Lecturer Picker */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-sm font-medium">
+                <Users className="h-4 w-4 text-green-600" />
+                Giảng viên
+                <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex items-center gap-2">
+                {selectedLecturer ? (
+                  <div className="flex-1 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-green-600" />
+                        <div>
+                          <p className="font-medium text-green-900">
+                            {selectedLecturer.name}
+                          </p>
+                          <p className="text-sm text-green-600">
+                            Mã: {selectedLecturer.lecturerCode}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedLecturer(null)}
+                        className="text-green-600 hover:text-green-700"
+                      >
+                        Thay đổi
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowProctorPicker(true)}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Chọn Giảng viên
+                  </Button>
+                )}
+              </div>
+            </div>
+
             {/* Is Compulsory Checkbox */}
             <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border">
               <Checkbox
@@ -262,11 +323,11 @@ const AddCourseDepartmentModal = ({
         </DialogContent>
       </Dialog>
 
-      {/* Department Picker Modal */}
-      <DepartmentPickerModal
-        open={showDepartmentPicker}
-        onOpenChange={setShowDepartmentPicker}
-        onSelect={handleDepartmentSelect}
+      {/* Class Picker Modal */}
+      <ClassPickerModal
+        open={showClassPicker}
+        onOpenChange={setShowClassPicker}
+        onSelect={handleClassSelect}
       />
 
       {/* Course Picker Modal */}
@@ -274,6 +335,15 @@ const AddCourseDepartmentModal = ({
         open={showCoursePicker}
         onOpenChange={setShowCoursePicker}
         onSelect={handleCourseSelect}
+      />
+
+      {/* Lecturer Picker Modal */}
+      <ProctorPickerModal
+        open={showProctorPicker}
+        onOpenChange={setShowProctorPicker}
+        onSelect={handleLecturerSelect}
+        multiSelect={false}
+        selectedProctors={[]}
       />
     </>
   );

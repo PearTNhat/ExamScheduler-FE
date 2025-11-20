@@ -47,7 +47,7 @@ import {
 import { apiGetRooms } from "~/apis/roomsApi";
 import { apiGetExamSlots } from "~/apis/exam-slotApi";
 import { showToastError, showToastSuccess } from "~/utils/alert";
-import ProctorPickerModal from "~/pages/admin/auto-schedule/components/ProctorPickerModal";
+import ProctorPickerModal from "~/pages/admin/components/ProctorPickerModal";
 import StudentPickerModal from "./StudentPickerModal";
 
 const ExamEditModal = ({

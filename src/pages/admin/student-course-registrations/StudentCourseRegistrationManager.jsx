@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "~/utils/alert";
 import { apiGetExamSessions } from "~/apis/exam-sessionsApi";
-import { apiGetDepartments } from "~/apis/departmentsApi";
 import {
   apiGetCoursesByExamSession,
   apiGetStudentsByCourse,
@@ -21,9 +20,7 @@ const StudentCourseRegistrationManager = () => {
 
   // State quản lý chính
   const [examSessions, setExamSessions] = useState([]);
-  const [departments, setDepartments] = useState([]);
   const [selectedExamSession, setSelectedExamSession] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [students, setStudents] = useState([]);
@@ -64,20 +61,6 @@ const StudentCourseRegistrationManager = () => {
     }
   }, [accessToken]);
 
-  const loadDepartments = useCallback(async () => {
-    try {
-      const response = await apiGetDepartments({ accessToken });
-      if (response.code === 200) {
-        setDepartments(response.data.data || []);
-      } else {
-        toast.error(response.message || "Lỗi khi tải khoa");
-      }
-    } catch (error) {
-      console.error("Error loading departments:", error);
-      toast.error("Không thể tải danh sách khoa");
-    }
-  }, [accessToken]);
-
   const loadCourses = useCallback(async () => {
     setLoading(true);
     try {
@@ -88,9 +71,6 @@ const StudentCourseRegistrationManager = () => {
           page: coursesPage,
           limit: coursesLimit,
           search: courseSearch,
-          departmentId: selectedDepartment
-            ? parseInt(selectedDepartment)
-            : undefined,
         }
       );
 
@@ -114,7 +94,6 @@ const StudentCourseRegistrationManager = () => {
     coursesPage,
     coursesLimit,
     courseSearch,
-    selectedDepartment,
   ]);
   console.log("ssss", coursesTotalPages);
   const loadStudents = useCallback(async () => {
@@ -159,9 +138,8 @@ const StudentCourseRegistrationManager = () => {
   useEffect(() => {
     if (accessToken) {
       loadExamSessions();
-      loadDepartments();
     }
-  }, [accessToken, loadExamSessions, loadDepartments]);
+  }, [accessToken, loadExamSessions]);
 
   // Load courses khi exam session thay đổi
   useEffect(() => {
@@ -202,11 +180,6 @@ const StudentCourseRegistrationManager = () => {
     setCoursesPage(1);
     setCourseSearch("");
     setCourses([]);
-  }, []);
-
-  const handleDepartmentChange = useCallback((departmentId) => {
-    setSelectedDepartment(departmentId);
-    setCoursesPage(1);
   }, []);
 
   const handleStudentSelect = useCallback((studentId, isChecked) => {
@@ -357,10 +330,6 @@ const StudentCourseRegistrationManager = () => {
         examSessions={examSessions}
         selectedExamSession={selectedExamSession}
         onSelectExamSession={handleExamSessionChange}
-        // Props cho department filter
-        departments={departments}
-        selectedDepartment={selectedDepartment}
-        onSelectDepartment={handleDepartmentChange}
       />
 
       <StudentManagementModal

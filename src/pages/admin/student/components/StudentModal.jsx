@@ -29,7 +29,7 @@ import {
   Users,
   Search,
 } from "lucide-react";
-import ClassPickerModal from "./ClassPickerModal";
+import ClassPickerModal from "~/pages/admin/components/ClassPickerModal"; // Điều chỉnh đường dẫn nếu cần
 
 const StudentFormModal = ({
   open,

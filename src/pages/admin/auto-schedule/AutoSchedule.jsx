@@ -78,8 +78,9 @@ const AutoSchedule = () => {
             const historyRooms = data.rooms.map((room) => ({
               roomId: room.id,
               capacity: room.capacity,
-              location: room.location?.locationName || "N/A",
+              location: room?.locationName || "N/A",
               locationId: room.locationId,
+              roomType: room.roomType,
               code: room.roomCode,
             }));
             setSelectedRooms(historyRooms);
@@ -91,6 +92,11 @@ const AutoSchedule = () => {
               proctorId: lecturer.id,
               name: lecturer.name,
               lecturerCode: lecturer.lectureCode,
+              unavailable_dates:
+                lecturer.unavailable_dates?.map((d) => ({
+                  date: d.date,
+                  slotId: d.slotId,
+                })) || [],
             }));
             setSelectedProctors(historyProctors);
           } else {
@@ -143,7 +149,6 @@ const AutoSchedule = () => {
           id: proctor.proctorId,
           name: proctor.name,
           lecturerCode: proctor.lecturerCode,
-          // ✅ Chỉ gửi date và slotId (bỏ slots)
           unavailable_dates:
             proctor.unavailable_dates?.map((d) => ({
               date: d.date,

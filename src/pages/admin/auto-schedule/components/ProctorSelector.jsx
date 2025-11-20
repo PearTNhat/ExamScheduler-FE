@@ -3,7 +3,7 @@ import { Users, Edit, Calendar, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import ProctorPickerModal from "./ProctorPickerModal";
+import ProctorPickerModal from "~/pages/admin/components/ProctorPickerModal";
 import UnavailableDatesModal from "./UnavailableDatesModal"; // ✅ THÊM
 
 const ProctorSelector = ({ selectedProctors, onProctorsChange }) => {
