@@ -75,10 +75,12 @@ export default function ExamSlotPickerModal({
     if (open && accessToken) {
       fetchExamSlots(1);
       setSearchTerm("");
-      setLocalSelectedSlots(selectedSlots); // ✅ THÊM: Đồng bộ từ props
+      if (multiSelect) {
+        setLocalSelectedSlots(selectedSlots); // ✅ Chỉ đồng bộ khi multi-select
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, accessToken, selectedSlots]);
+  }, [open, accessToken]);
 
   const handlePageChange = (page) => {
     fetchExamSlots(page);

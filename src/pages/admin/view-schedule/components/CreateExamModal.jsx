@@ -366,6 +366,7 @@ export default function CreateExamModal({ open, onOpenChange, onExamCreated }) {
         open={isExamSlotPickerOpen}
         onOpenChange={setIsExamSlotPickerOpen}
         onSelect={handleExamSlotSelect}
+        multiSelect={false}
       />
     </>
   );
