@@ -198,12 +198,6 @@ const RoomFormModal = ({
                         Thực hành (TH)
                       </div>
                     </SelectItem>
-                    <SelectItem value="HT">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                        Hỗn hợp (HT)
-                      </div>
-                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -45,7 +45,7 @@ export default function DepartmentPickerModal({
       const params = {
         page,
         limit: 10,
-        name: name.trim() || undefined,
+        departmentName: name.trim() || undefined,
       };
       const response = await apiGetDepartments({ accessToken, params });
       if (response.code === 200) {

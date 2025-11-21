@@ -34,7 +34,7 @@ import {
   apiUpdateExamGroup,
   apiDeleteExamGroup,
 } from "~/apis/exam-groupsApi";
-import { apiGetDepartments } from "~/apis/departmentsApi";
+import { apiGetClasses } from "~/apis/classesApi";
 import { apiGetExamSessions } from "~/apis/exam-sessionsApi";
 import {
   showToastSuccess,
@@ -61,9 +61,9 @@ const ExamGroupsManager = () => {
   );
 
   // Filter states
-  const [departments, setDepartments] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [examSessions, setExamSessions] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedClass, setSelectedClass] = useState("");
   const [selectedExamSession, setSelectedExamSession] = useState("");
 
   // State for modal
@@ -82,8 +82,8 @@ const ExamGroupsManager = () => {
       };
 
       // Add filters if selected (skip if 'all')
-      if (selectedDepartment && selectedDepartment !== "all") {
-        params.departmentId = parseInt(selectedDepartment);
+      if (selectedClass && selectedClass !== "all") {
+        params.classId = parseInt(selectedClass);
       }
       if (selectedExamSession && selectedExamSession !== "all") {
         params.examSessionId = parseInt(selectedExamSession);
@@ -104,26 +104,26 @@ const ExamGroupsManager = () => {
     } finally {
       setLoading(false);
     }
-  }, [accessToken, currentParams, selectedDepartment, selectedExamSession]);
+  }, [accessToken, currentParams, selectedClass, selectedExamSession]);
 
   useEffect(() => {
     if (accessToken) {
       fetchExamGroups();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, currentParams, selectedDepartment, selectedExamSession]);
+  }, [accessToken, currentParams, selectedClass, selectedExamSession]);
 
-  // Load departments and exam sessions
+  // Load classes and exam sessions
   useEffect(() => {
     const loadFilters = async () => {
       try {
-        const [deptRes, sessRes] = await Promise.all([
-          apiGetDepartments({ accessToken }),
+        const [classRes, sessRes] = await Promise.all([
+          apiGetClasses({ accessToken, params: { page: 1, limit: 1000 } }),
           apiGetExamSessions({ accessToken, params: { page: 1, limit: 100 } }),
         ]);
 
-        if (deptRes.code === 200) {
-          setDepartments(deptRes.data.data || []);
+        if (classRes.code === 200) {
+          setClasses(classRes.data.data || []);
         }
         if (sessRes.code === 200) {
           setExamSessions(sessRes.data || []);
@@ -139,8 +139,8 @@ const ExamGroupsManager = () => {
   }, [accessToken]);
 
   // Filter handlers
-  const handleDepartmentChange = (value) => {
-    setSelectedDepartment(value);
+  const handleClassChange = (value) => {
+    setSelectedClass(value);
     const params = new URLSearchParams(searchParams);
     params.set("page", "1");
     setSearchParams(params);
@@ -285,20 +285,17 @@ const ExamGroupsManager = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Building2 className="h-4 w-4 inline mr-1" />
-              Khoa
+              Lớp
             </label>
-            <Select
-              value={selectedDepartment}
-              onValueChange={handleDepartmentChange}
-            >
+            <Select value={selectedClass} onValueChange={handleClassChange}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Tất cả khoa" />
+                <SelectValue placeholder="Tất cả lớp" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả khoa</SelectItem>
-                {departments.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.id.toString()}>
-                    {dept.departmentName}
+                <SelectItem value="all">Tất cả lớp</SelectItem>
+                {classes.map((cls) => (
+                  <SelectItem key={cls.id} value={cls.id.toString()}>
+                    {cls.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -351,10 +348,16 @@ const ExamGroupsManager = () => {
                 Học phần
               </TableHead>
               <TableHead className="font-semibold text-amber-900">
-                Khoa
+                Lớp
+              </TableHead>
+              <TableHead className="font-semibold text-amber-900">
+                Giảng viên
               </TableHead>
               <TableHead className="font-semibold text-amber-900">
                 Đợt thi
+              </TableHead>
+              <TableHead className="font-semibold text-amber-900">
+                Loại phòng
               </TableHead>
               <TableHead className="font-semibold text-amber-900">
                 Số SV dự kiến
@@ -370,7 +373,7 @@ const ExamGroupsManager = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12">
+                <TableCell colSpan={9} className="text-center py-12">
                   <div className="flex flex-col items-center justify-center gap-3">
                     <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-amber-600"></div>
                     <p className="text-sm text-gray-500">Đang tải dữ liệu...</p>
@@ -380,7 +383,7 @@ const ExamGroupsManager = () => {
             ) : examGroups.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={9}
                   className="text-center py-12 text-gray-500"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -414,9 +417,15 @@ const ExamGroupsManager = () => {
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="font-normal">
-                      {group.courseDepartment?.department?.departmentName ||
-                        "N/A"}
+                      {group.courseDepartment?.classes?.name || "N/A"}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm">
+                      {group.courseDepartment?.lecturer?.firstName +
+                        " " +
+                        group.courseDepartment?.lecturer?.lastName || "N/A"}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -425,6 +434,19 @@ const ExamGroupsManager = () => {
                         {group.examSession?.name || "N/A"}
                       </span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        group.required_room_type === "LT"
+                          ? "default"
+                          : "secondary"
+                      }
+                    >
+                      {group.required_room_type === "LT"
+                        ? "Lý thuyết"
+                        : "Thực hành"}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

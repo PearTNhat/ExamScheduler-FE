@@ -70,7 +70,7 @@ const Rooms = () => {
   };
   useEffect(() => {
     fetchRooms();
-  }, []);
+  }, [currentParams.page, currentParams.code]);
   // Handle add room
   const handleAddRoom = () => {
     setEditingRoom(null);
@@ -291,16 +291,12 @@ const Rooms = () => {
                       variant={
                         room.type === "LT"
                           ? "default"
-                          : room.type === "TH"
+                          : room.type === "LAB"
                           ? "success"
                           : "secondary"
                       }
                     >
-                      {room.type === "LT"
-                        ? "Lý thuyết"
-                        : room.type === "TH"
-                        ? "Thực hành"
-                        : "Hỗn hợp"}
+                      {room.type === "LT" ? "Lý thuyết" : "Thực hành"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-gray-500 text-sm">

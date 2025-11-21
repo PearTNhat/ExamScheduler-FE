@@ -32,6 +32,7 @@ export default function ExamGroupFormModal({
     expected_student_count: "",
     course_department_id: null,
     exam_session_id: null,
+    required_room_type: "LT",
     status: "not_scheduled",
   });
   const [courseDepartmentName, setCourseDepartmentName] = useState("");
@@ -49,6 +50,7 @@ export default function ExamGroupFormModal({
           editingGroup.expected_student_count?.toString() || "",
         course_department_id: editingGroup.courseDepartment?.id || null,
         exam_session_id: editingGroup.examSession?.id || null,
+        required_room_type: editingGroup.required_room_type || "LT",
         status: editingGroup.status || "not_scheduled",
       });
 
@@ -56,9 +58,11 @@ export default function ExamGroupFormModal({
       if (editingGroup.courseDepartment) {
         const courseName =
           editingGroup.courseDepartment.course?.nameCourse || "";
-        const deptName =
-          editingGroup.courseDepartment.department?.departmentName || "";
-        setCourseDepartmentName(`${courseName} - ${deptName}`);
+        const className = editingGroup.courseDepartment.classes?.name || "";
+        const lecturerName = editingGroup.courseDepartment.lecturer?.name || "";
+        setCourseDepartmentName(
+          `${courseName} - ${className} - ${lecturerName}`
+        );
       } else {
         setCourseDepartmentName("");
       }
@@ -69,6 +73,7 @@ export default function ExamGroupFormModal({
         expected_student_count: "",
         course_department_id: null,
         exam_session_id: null,
+        required_room_type: "LT",
         status: "not_scheduled",
       });
       setCourseDepartmentName("");
@@ -80,8 +85,9 @@ export default function ExamGroupFormModal({
   const handleCourseDepartmentSelect = (courseDepartment) => {
     setFormData({ ...formData, course_department_id: courseDepartment.id });
     const courseName = courseDepartment.course?.nameCourse || "";
-    const deptName = courseDepartment.department?.departmentName || "";
-    setCourseDepartmentName(`${courseName} - ${deptName}`);
+    const className = courseDepartment.classes?.name || "";
+    const lecturerName = courseDepartment.lecturer?.name || "";
+    setCourseDepartmentName(`${courseName} - ${className} - ${lecturerName}`);
     setShowCourseDepartmentPicker(false);
   };
 
@@ -256,6 +262,40 @@ export default function ExamGroupFormModal({
               {errors.exam_session_id && (
                 <p className="text-sm text-red-500">{errors.exam_session_id}</p>
               )}
+            </div>
+
+            {/* Loại phòng */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="required_room_type"
+                className="text-sm font-medium"
+              >
+                Loại phòng <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.required_room_type}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, required_room_type: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn loại phòng" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LT">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      Lý thuyết (LT)
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="TH">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      Thực hành (TH)
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Trạng thái */}

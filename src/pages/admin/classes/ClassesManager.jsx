@@ -54,7 +54,7 @@ const ClassesManager = () => {
       const params = {
         page: currentParams.page || 1,
         limit: 10,
-        code: currentParams.code,
+        classCode: currentParams.code,
       };
       const response = await apiGetClasses({ accessToken, params });
       if (response.code === 200) {

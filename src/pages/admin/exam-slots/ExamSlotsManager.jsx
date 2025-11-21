@@ -236,9 +236,7 @@ const ExamSlotsManager = () => {
               <TableHead className="font-semibold text-teal-900">
                 Tên ca thi
               </TableHead>
-              <TableHead className="font-semibold text-teal-900">
-                Đợt thi
-              </TableHead>
+
               <TableHead className="font-semibold text-teal-900">
                 Giờ bắt đầu
               </TableHead>
@@ -292,14 +290,6 @@ const ExamSlotsManager = () => {
                 >
                   <TableCell className="font-medium text-gray-900">
                     {slot.slotName}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-purple-500" />
-                      <span className="text-sm">
-                        {slot.examSession?.description || "N/A"}
-                      </span>
-                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="font-mono">

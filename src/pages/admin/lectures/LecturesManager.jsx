@@ -64,34 +64,39 @@ const LecturesManager = () => {
 
   // Fetch lecturers
 
-  const fetchLecturers = useCallback(async ({ accessToken }) => {
-    try {
-      setLoading(true);
-      const params = {
-        page: currentParams.page,
-        limit: 10,
-        name: currentParams.name,
-      };
-      const response = await apiGetLecturers({ accessToken, params });
-      if (response.code === 200) {
-        setLecturers(response.data.data || []);
-        setPagination({
-          currentPage: response.data.meta.page,
-          totalPages: response.data.meta.totalPages,
-        });
-      } else {
-        showToastError(response.message || "Lỗi khi tải danh sách giảng viên");
+  const fetchLecturers = useCallback(
+    async ({ accessToken }) => {
+      try {
+        setLoading(true);
+        const params = {
+          page: currentParams.page,
+          limit: 10,
+          name: currentParams.name,
+        };
+        const response = await apiGetLecturers({ accessToken, params });
+        if (response.code === 200) {
+          setLecturers(response.data.data || []);
+          setPagination({
+            currentPage: response.data.meta.page,
+            totalPages: response.data.meta.totalPages,
+          });
+        } else {
+          showToastError(
+            response.message || "Lỗi khi tải danh sách giảng viên"
+          );
+        }
+      } catch (error) {
+        showToastError(error.message || "Lỗi khi tải danh sách giảng viên");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      showToastError(error.message || "Lỗi khi tải danh sách giảng viên");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [currentParams]
+  );
 
   useEffect(() => {
     fetchLecturers({ accessToken });
-  }, [accessToken]);
+  }, [accessToken, currentParams]);
 
   // Modal handlers
   const handleOpenAddModal = () => {

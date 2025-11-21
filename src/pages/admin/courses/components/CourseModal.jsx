@@ -12,7 +12,7 @@ import { Button } from "../../../../components/ui/button";
 import { Label } from "../../../../components/ui/label";
 import { Input } from "../../../../components/ui/input";
 import { Switch } from "../../../../components/ui/switch";
-import { BookOpen, Hash, Users, Star, FileText } from "lucide-react";
+import { BookOpen, Hash, Users, Star, FileText, Clock } from "lucide-react";
 
 const CourseFormModal = ({
   open,
@@ -46,6 +46,7 @@ const CourseFormModal = ({
       reset({
         codeCourse: editingCourse.codeCourse || "",
         nameCourse: editingCourse.nameCourse || "",
+        duration_course_exam: editingCourse.duration_course_exam || "",
         description: editingCourse.description || "",
         credits: editingCourse.credits || "",
         expected_students: editingCourse.expected_students || "",
@@ -55,6 +56,7 @@ const CourseFormModal = ({
       reset({
         codeCourse: "",
         nameCourse: "",
+        duration_course_exam: "",
         description: "",
         credits: "",
         expected_students: "",
@@ -68,6 +70,7 @@ const CourseFormModal = ({
       codeCourse: data.codeCourse,
       nameCourse: data.nameCourse,
       description: data.description,
+      duration_course_exam: parseInt(data.duration_course_exam),
       credits: parseInt(data.credits),
       expected_students: parseInt(data.expected_students),
       is_active: data.is_active,
@@ -190,8 +193,8 @@ const CourseFormModal = ({
             )}
           </div>
 
-          {/* Tín chỉ và Sinh viên dự kiến */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Tín chỉ, Thời gian thi và Sinh viên dự kiến */}
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label
                 htmlFor="credits"
@@ -223,6 +226,43 @@ const CourseFormModal = ({
                 <p className="text-sm text-red-500 flex items-center gap-1">
                   <span className="font-medium">⚠</span>{" "}
                   {errors.credits.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="duration_course_exam"
+                className="text-sm font-semibold flex items-center gap-2"
+              >
+                <Clock className="h-4 w-4 text-gray-500" />
+                Thời gian thi (phút) <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="duration_course_exam"
+                type="number"
+                placeholder="VD: 90"
+                className={`h-11 ${
+                  errors.duration_course_exam
+                    ? "border-red-500 focus:ring-red-500"
+                    : ""
+                }`}
+                {...register("duration_course_exam", {
+                  required: "Vui lòng nhập thời gian thi",
+                  min: {
+                    value: 30,
+                    message: "Thời gian thi phải ít nhất 30 phút",
+                  },
+                  max: {
+                    value: 180,
+                    message: "Thời gian thi không được quá 180 phút",
+                  },
+                })}
+              />
+              {errors.duration_course_exam && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <span className="font-medium">⚠</span>{" "}
+                  {errors.duration_course_exam.message}
                 </p>
               )}
             </div>

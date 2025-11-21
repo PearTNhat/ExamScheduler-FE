@@ -61,7 +61,7 @@ const Courses = () => {
       const params = {
         page: currentParams.page,
         limit: 10,
-        name: currentParams.name,
+        codeCourse: currentParams.code,
       };
       const response = await apiGetCourses({ accessToken, params });
       if (response.code === 200) {
@@ -85,7 +85,7 @@ const Courses = () => {
     if (accessToken) {
       fetchCourses({ accessToken });
     }
-  }, [accessToken]);
+  }, [accessToken, currentParams]);
 
   // Handle add course
   const handleAddCourse = () => {
