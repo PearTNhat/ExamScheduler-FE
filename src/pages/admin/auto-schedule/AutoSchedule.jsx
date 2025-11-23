@@ -299,187 +299,142 @@ const AutoSchedule = () => {
                 <CardTitle>Kết quả</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {results.success !== false ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      {results.success ? (
-                        <>
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                          <span className="text-sm font-medium text-green-700">
-                            {results.isOptimal
-                              ? "Xếp lịch tối ưu thành công!"
-                              : "Xếp lịch hoàn tất!"}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <AlertTriangle className="h-5 w-5 text-amber-500" />
-                          <span className="text-sm font-medium text-amber-700">
-                            Có conflicts cần xử lý
-                          </span>
-                        </>
-                      )}
+                <div className="flex items-center gap-2">
+                  {results.success ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-sm font-medium text-green-700">
+                        {results.isOptimal
+                          ? "Xếp lịch tối ưu thành công!"
+                          : "Xếp lịch hoàn tất!"}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                      <span className="text-sm font-medium text-amber-700">
+                        Có conflicts cần xử lý
+                      </span>
+                    </>
+                  )}
+                </div>
+                {/* Statistics Grid */}
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <div className="text-gray-600 text-xs">Fitness</div>
+                    <div className="text-xl font-bold text-blue-600">
+                      {results.fitness}
                     </div>
-
-                    {/* Statistics Grid */}
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="bg-blue-50 p-3 rounded-lg">
-                        <div className="text-gray-600 text-xs">Fitness</div>
-                        <div className="text-xl font-bold text-blue-600">
-                          {results.fitness}
-                        </div>
-                      </div>
-                      <div className="bg-green-50 p-3 rounded-lg">
-                        <div className="text-gray-600 text-xs">Môn thi</div>
-                        <div className="text-xl font-bold text-green-600">
-                          {results.statistics?.totalExams || 0}
-                        </div>
-                      </div>
-                      <div className="bg-red-50 p-3 rounded-lg">
-                        <div className="text-gray-600 text-xs">
-                          Hard Conflicts
-                        </div>
-                        <div className="text-xl font-bold text-red-600">
-                          {results.totalHardConflicts || 0}
-                        </div>
-                      </div>
-                      <div className="bg-amber-50 p-3 rounded-lg">
-                        <div className="text-gray-600 text-xs">
-                          Soft Conflicts
-                        </div>
-                        <div className="text-xl font-bold text-amber-600">
-                          {results.totalSoftConflicts || 0}
-                        </div>
-                      </div>
+                  </div>
+                  <div className="bg-green-50 p-3 rounded-lg">
+                    <div className="text-gray-600 text-xs">Môn thi</div>
+                    <div className="text-xl font-bold text-green-600">
+                      {results.statistics?.totalExams || 0}
                     </div>
-
-                    {/* Execution Time */}
-                    {results.executionTimeSeconds && (
-                      <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                        <div className="text-gray-600">Thời gian thực thi</div>
-                        <div className="font-semibold text-gray-800">
-                          {results.executionTimeSeconds}s
+                  </div>
+                  <div className="bg-red-50 p-3 rounded-lg">
+                    <div className="text-gray-600 text-xs">Hard Conflicts</div>
+                    <div className="text-xl font-bold text-red-600">
+                      {results.totalHardConflicts || 0}
+                    </div>
+                  </div>
+                  <div className="bg-amber-50 p-3 rounded-lg">
+                    <div className="text-gray-600 text-xs">Soft Conflicts</div>
+                    <div className="text-xl font-bold text-amber-600">
+                      {results.totalSoftConflicts || 0}
+                    </div>
+                  </div>
+                </div>
+                {/* Execution Time */}
+                {results.executionTimeSeconds && (
+                  <div className="bg-gray-50 p-3 rounded-lg text-sm">
+                    <div className="text-gray-600">Thời gian thực thi</div>
+                    <div className="font-semibold text-gray-800">
+                      {results.executionTimeSeconds}s
+                    </div>
+                  </div>
+                )}
+                {/* Success Message */}
+                {results.isOptimal && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
+                    ✅ Lịch thi tối ưu hoàn hảo (fitness = 0)!
+                  </div>
+                )}
+                {/* Hard Conflicts Warning */}
+                {results.totalHardConflicts > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-red-700 mb-2">
+                          {results.totalHardConflicts} Hard Conflicts
                         </div>
-                      </div>
-                    )}
-
-                    {/* Success Message */}
-                    {results.isOptimal && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
-                        ✅ Lịch thi tối ưu hoàn hảo (fitness = 0)!
-                      </div>
-                    )}
-
-                    {/* Hard Conflicts Warning */}
-                    {results.totalHardConflicts > 0 && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-                          <div className="flex-1">
-                            <div className="text-sm font-semibold text-red-700 mb-2">
-                              {results.totalHardConflicts} Hard Conflicts
-                            </div>
-                            <div className="space-y-1 max-h-40 overflow-y-auto">
-                              {results.hardConflicts
-                                ?.slice(0, 5)
-                                .map((conflict, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="text-xs text-red-600 bg-white p-2 rounded"
-                                  >
-                                    <div className="font-medium">
-                                      {conflict.constraintType}
-                                    </div>
-                                    <div className="text-red-500">
-                                      {conflict.description}
-                                    </div>
-                                    {conflict.suggestion && (
-                                      <div className="text-blue-600 mt-1">
-                                        💡 {conflict.suggestion}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              {results.hardConflicts?.length > 5 && (
-                                <div className="text-xs text-red-500 text-center py-1">
-                                  ... và {results.hardConflicts.length - 5}{" "}
-                                  conflicts khác
+                        <div className="space-y-1 max-h-100 overflow-y-auto">
+                          {results.hardConflicts.map((conflict, idx) => (
+                            <div
+                              key={idx}
+                              className="text-xs text-red-600 bg-white p-2 rounded"
+                            >
+                              <div className="font-medium">
+                                {conflict.constraintType}
+                              </div>
+                              <div className="text-red-500">
+                                {conflict.description}
+                              </div>
+                              {conflict.suggestion && (
+                                <div className="text-blue-600 mt-1">
+                                  💡 {conflict.suggestion}
                                 </div>
                               )}
                             </div>
-                          </div>
+                          ))}
                         </div>
                       </div>
-                    )}
-
-                    {/* Soft Conflicts Info */}
-                    {results.totalSoftConflicts > 0 && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                          <div className="flex-1">
-                            <div className="text-sm font-semibold text-amber-700 mb-1">
-                              {results.totalSoftConflicts} Soft Conflicts
-                            </div>
-                            <div className="text-xs text-amber-600">
-                              {Object.entries(
-                                results.statistics?.softConflictTypes || {}
-                              ).map(([type, count]) => (
-                                <div key={type}>
-                                  • {type}: {count}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Conflicted Exams Summary */}
-                    {results.conflictedExams?.length > 0 && (
-                      <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                        <div className="font-medium text-gray-700 mb-2">
-                          Môn thi có vấn đề: {results.conflictedExams.length}
-                        </div>
-                        <div className="space-y-1 max-h-32 overflow-y-auto">
-                          {results.conflictedExams
-                            .slice(0, 3)
-                            .map((exam, idx) => (
-                              <div
-                                key={idx}
-                                className="text-xs bg-white p-2 rounded"
-                              >
-                                <div className="font-medium">
-                                  ExamGroup #{exam.examGroupId}
-                                </div>
-                                <div className="text-gray-600">
-                                  {Object.entries(exam.conflicts)
-                                    .filter(([, val]) => val)
-                                    .map(([key]) => key)
-                                    .join(", ")}
-                                </div>
-                              </div>
-                            ))}
-                          {results.conflictedExams.length > 3 && (
-                            <div className="text-xs text-gray-500 text-center">
-                              ... và {results.conflictedExams.length - 3} môn
-                              khác
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-red-500" />
-                      <span className="text-sm font-medium text-red-700">
-                        Xếp lịch thất bại
-                      </span>
                     </div>
-                    <div className="text-sm text-gray-600 bg-red-50 p-3 rounded-lg">
-                      {results.error || "Có lỗi xảy ra"}
+                  </div>
+                )}
+                {/* Soft Conflicts Info */}
+                {results.totalSoftConflicts > 0 && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-amber-700 mb-1">
+                          {results.totalSoftConflicts} Soft Conflicts
+                        </div>
+                        <div className="text-xs text-amber-600">
+                          {Object.entries(
+                            results.statistics?.softConflictTypes || {}
+                          ).map(([type, count]) => (
+                            <div key={type}>
+                              • {type}: {count}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {/* Conflicted Exams Summary */}
+                {results.conflictedExams?.length > 0 && (
+                  <div className="bg-gray-50 p-3 rounded-lg text-sm">
+                    <div className="font-medium text-gray-700 mb-2">
+                      Môn thi có vấn đề: {results.conflictedExams.length}
+                    </div>
+                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                      {results.conflictedExams.map((exam, idx) => (
+                        <div key={idx} className="text-xs bg-white p-2 rounded">
+                          <div className="font-medium">
+                            ExamGroup #{exam.examGroupId}
+                          </div>
+                          <div className="text-gray-600">
+                            {Object.entries(exam.conflicts)
+                              .filter(([, val]) => val)
+                              .map(([key]) => key)
+                              .join(", ")}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

@@ -95,11 +95,10 @@ const StudentCourseRegistrationManager = () => {
     coursesLimit,
     courseSearch,
   ]);
-  console.log("ssss", coursesTotalPages);
   const loadStudents = useCallback(async () => {
     setLoading(true);
     try {
-      console.log(selectedCourse);
+      console.log("select");
       const response = await apiGetStudentsByCourse(
         accessToken,
         selectedCourse.id,
@@ -108,6 +107,8 @@ const StudentCourseRegistrationManager = () => {
           page: studentsPage,
           limit: 1000,
           search: studentSearch,
+          lecturerId: selectedCourse.lecturerId,
+          classId: selectedCourse.classId,
         }
       );
       if (response.code === 200) {
@@ -354,6 +355,8 @@ const StudentCourseRegistrationManager = () => {
         examSessionId={selectedExamSession}
         onAddStudentToList={handleAddStudentToList}
         onRemoveStudentFromList={handleRemoveStudentFromList}
+        lecturerId={selectedCourse?.lecturerId}
+        classId={selectedCourse?.classId}
       />
 
       <AddCourseDepartmentModal
