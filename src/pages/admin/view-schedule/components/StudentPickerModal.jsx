@@ -103,10 +103,17 @@ export default function StudentPickerModal({
   const handleSelectAllCurrentPage = (checked) => {
     if (checked) {
       // Add all current page students to selection (if not already selected)
-      const newStudents = students.filter(
-        (student) =>
-          !tempSelectedStudents.some((selected) => selected.id === student.id)
-      );
+      const newStudents = students
+        .filter(
+          (student) =>
+            !tempSelectedStudents.some((selected) => selected.id === student.id)
+        )
+        .map((student) => ({
+          id: student.id,
+          studentCode: student.studentCode,
+          className: student.classes?.className,
+          fullName: `${student.firstName} ${student.lastName}`,
+        }));
 
       setTempSelectedStudents([...tempSelectedStudents, ...newStudents]);
     } else {

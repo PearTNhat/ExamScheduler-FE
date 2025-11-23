@@ -42,8 +42,6 @@ const StudentManagementModal = ({
   examSessionId,
   onAddStudentToList, // Thêm callback để add student vào list
   onRemoveStudentFromList, // Thêm callback để remove student khỏi list
-  lecturerId, // Thêm lecturerId
-  classId, // Thêm classId
 }) => {
   const [originalStudentIds, setOriginalStudentIds] = useState(new Set());
   const [showStudentPicker, setShowStudentPicker] = useState(false);

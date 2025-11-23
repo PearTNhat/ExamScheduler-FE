@@ -355,8 +355,6 @@ const StudentCourseRegistrationManager = () => {
         examSessionId={selectedExamSession}
         onAddStudentToList={handleAddStudentToList}
         onRemoveStudentFromList={handleRemoveStudentFromList}
-        lecturerId={selectedCourse?.lecturerId}
-        classId={selectedCourse?.classId}
       />
 
       <AddCourseDepartmentModal
