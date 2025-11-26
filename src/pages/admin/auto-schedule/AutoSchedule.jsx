@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux"; // <-- ĐÃ THÊM
-import { Play, Pause, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
+import {
+  Play,
+  Pause,
+  CheckCircle,
+  AlertTriangle,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import RoomSelector from "./components/RoomSelector";
@@ -14,7 +21,11 @@ import {
   showToastWarning,
   showToastSuccess,
 } from "~/utils/alert";
-import { apiGenerateExamSchedule, apiGetExamHistory } from "~/apis/examsApi";
+import {
+  apiGenerateExamSchedule,
+  apiGetExamHistory,
+  apiDeleteScheduleConfig,
+} from "~/apis/examsApi";
 
 const AutoSchedule = () => {
   const { accessToken } = useSelector((state) => state.user); // <-- ĐÃ THÊM
@@ -210,6 +221,44 @@ const AutoSchedule = () => {
       });
     }
   };
+
+  const handleDeleteConfig = async () => {
+    if (!selectedSessionId) {
+      showToastWarning("Vui lòng chọn đợt thi!");
+      return;
+    }
+
+    if (!examHistoryData) {
+      showToastWarning("Không có cấu hình để xóa!");
+      return;
+    }
+
+    try {
+      const confirmed = window.confirm(
+        "Bạn có chắc chắn muốn xóa cấu hình xếp lịch này?"
+      );
+      if (!confirmed) return;
+
+      const res = await apiDeleteScheduleConfig({
+        accessToken,
+        examSessionId: selectedSessionId,
+      });
+
+      if (res.message) {
+        showToastSuccess("Đã xóa cấu hình xếp lịch thành công!");
+        // Reset lại data
+        setExamHistoryData(null);
+        setSelectedRooms([]);
+        setSelectedProctors([]);
+      } else {
+        showToastError("Không thể xóa cấu hình!");
+      }
+    } catch (error) {
+      console.error("Delete config error:", error);
+      showAlertError(error.message || "Có lỗi xảy ra khi xóa cấu hình!");
+    }
+  };
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -262,15 +311,30 @@ const AutoSchedule = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               {!isRunning ? (
-                <Button
-                  onClick={handleStartScheduling}
-                  disabled={!selectedSessionId || !accessToken}
-                  className="w-full"
-                  size="lg"
-                >
-                  <Play className="mr-2 h-5 w-5" />
-                  Bắt đầu xếp lịch
-                </Button>
+                <>
+                  <Button
+                    onClick={handleStartScheduling}
+                    disabled={!selectedSessionId || !accessToken}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Play className="mr-2 h-5 w-5" />
+                    Bắt đầu xếp lịch
+                  </Button>
+
+                  {examHistoryData && (
+                    <Button
+                      onClick={handleDeleteConfig}
+                      disabled={!selectedSessionId || !accessToken}
+                      variant="destructive"
+                      className="w-full"
+                      size="lg"
+                    >
+                      <Trash2 className="mr-2 h-5 w-5" />
+                      Xóa cấu hình
+                    </Button>
+                  )}
+                </>
               ) : (
                 <div className="flex flex-col items-center gap-3 py-4">
                   <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -399,17 +463,39 @@ const AutoSchedule = () => {
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <div className="text-sm font-semibold text-amber-700 mb-1">
+                        <div className="text-sm font-semibold text-amber-700 mb-2">
                           {results.totalSoftConflicts} Soft Conflicts
                         </div>
-                        <div className="text-xs text-amber-600">
-                          {Object.entries(
-                            results.statistics?.softConflictTypes || {}
-                          ).map(([type, count]) => (
-                            <div key={type}>
-                              • {type}: {count}
+                        {/* Danh sách chi tiết Soft Conflicts */}
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                          {results.softConflicts &&
+                          results.softConflicts.length > 0 ? (
+                            results.softConflicts.map((conflict, idx) => (
+                              <div
+                                key={idx}
+                                className="text-xs bg-white p-2 rounded border border-amber-100 shadow-sm"
+                              >
+                                <div className="font-bold text-amber-600 mb-1">
+                                  [{conflict.constraintType}]
+                                </div>
+                                {/* Hiển thị Description */}
+                                <div className="text-gray-700">
+                                  {conflict.description}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            // Fallback nếu không có mảng chi tiết, hiển thị thống kê như cũ
+                            <div className="text-xs text-amber-600">
+                              {Object.entries(
+                                results.statistics?.softConflictTypes || {}
+                              ).map(([type, count]) => (
+                                <div key={type}>
+                                  • {type}: {count}
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
                         </div>
                       </div>
                     </div>

@@ -9,25 +9,25 @@ const Sidebar = () => {
   const navItems = [
     {
       title: "Thông tin cá nhân",
-      href: "/user",
+      href: "/",
       icon: User,
       description: "Quản lý thông tin tài khoản",
     },
     {
       title: "Đổi mật khẩu",
-      href: "/user/change-password",
+      href: "/change-password",
       icon: Lock,
       description: "Cập nhật mật khẩu bảo mật",
     },
     {
       title: "Lịch thi",
-      href: "/user/exam-schedule",
+      href: "/exam-schedule",
       icon: Calendar,
       description: "Xem lịch thi sắp tới",
     },
     {
       title: "Môn học đăng ký",
-      href: "/user/registered-courses",
+      href: "/registered-courses",
       icon: BookOpen,
       description: "Danh sách môn đã đăng ký",
     },

@@ -158,10 +158,10 @@ const AddCourseDepartmentModal = ({
                         <Building2 className="h-5 w-5 text-purple-600" />
                         <div>
                           <p className="font-medium text-purple-900">
-                            {selectedClass.className}
+                            {selectedClass.name}
                           </p>
                           <p className="text-sm text-purple-600">
-                            Mã: {selectedClass.classCode}
+                            Mã: {selectedClass.code}
                           </p>
                         </div>
                       </div>

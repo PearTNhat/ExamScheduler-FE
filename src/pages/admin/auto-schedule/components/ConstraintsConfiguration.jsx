@@ -111,18 +111,17 @@ const ConstraintsConfiguration = ({
     }
   };
 
-  // ✅ THÊM: Handler cho SAME_DEPT_COURSE_SLOT
-  const sameDeptCourseSlotConstraint = getConstraint("SAME_DEPT_COURSE_SLOT");
-  const sameDeptCourseSlotEnabled =
-    sameDeptCourseSlotConstraint?.rule?.same_dept_course_slot || false;
+  const maxSlotsPerCourseConstraint = getConstraint("MAX_SLOTS_PER_COURSE");
+  const maxSlotsPerCourse =
+    maxSlotsPerCourseConstraint?.rule?.max_slots_per_course || 0;
 
-  const handleSameDeptCourseSlotChange = (enabled) => {
-    if (enabled) {
-      updateConstraint("SAME_DEPT_COURSE_SLOT", {
-        same_dept_course_slot: true,
+  const handleMaxSlotsPerCourseChange = (value) => {
+    if (value > 0) {
+      updateConstraint("MAX_SLOTS_PER_COURSE", {
+        max_slots_per_course: value,
       });
     } else {
-      removeConstraint("SAME_DEPT_COURSE_SLOT");
+      removeConstraint("MAX_SLOTS_PER_COURSE");
     }
   };
 
@@ -177,15 +176,17 @@ const ConstraintsConfiguration = ({
       onChange: handleMaxExamsPerLecturerChange,
     },
     {
-      code: "SAME_DEPT_COURSE_SLOT",
-      name: "Xếp cùng ca thi cho môn cùng khoa",
+      code: "MAX_SLOTS_PER_COURSE",
+      name: "Giới hạn số ca thi/môn học",
       description:
-        "Các lớp học cùng môn, cùng khoa nên xếp cùng ca thi để tránh lộ đề",
+        "Giới hạn số ca thi khác nhau cho cùng một môn học (giảm số mã đề cần ra)",
       type: "MỀM",
-      hasParam: false,
-      value: sameDeptCourseSlotEnabled,
-      isEnabled: sameDeptCourseSlotEnabled,
-      onChange: handleSameDeptCourseSlotChange,
+      hasParam: true,
+      paramType: "number",
+      paramLabel: "Số ca tối đa:",
+      value: maxSlotsPerCourse,
+      isEnabled: maxSlotsPerCourse > 0,
+      onChange: handleMaxSlotsPerCourseChange,
     },
   ];
 

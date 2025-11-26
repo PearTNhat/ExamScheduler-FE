@@ -6,6 +6,7 @@ import {
   List,
   Grid3x3Icon,
   Plus,
+  X,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -16,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Badge } from "~/components/ui/badge";
 import { apiViewTimetableExams, apiDeleteExam } from "~/apis/examsApi";
 import { apiGetExamSessions } from "~/apis/exam-sessionsApi";
 import { showToastError, showToastSuccess, confirmAlert } from "~/utils/alert";
@@ -25,6 +27,7 @@ import ExamEditModal from "./components/ExamEditModal";
 import CreateExamModal from "./components/CreateExamModal";
 import TimetableGrid from "./components/TimetableGrid";
 import CalendarMonthView from "./components/CalendarMonthView";
+import ClassPickerModal from "../components/ClassPickerModal";
 import { getInitialDateRange } from "./utils/helper";
 
 // Tính toán giá trị ban đầu một lần
@@ -39,6 +42,8 @@ const ViewExamTimetable = () => {
   const [startDate, setStartDate] = useState(initialStartDate);
   const [endDate, setEndDate] = useState(initialEndDate);
   const [viewMode, setViewMode] = useState("timetable"); // "timetable", "calendar-month"
+  const [selectedClass, setSelectedClass] = useState(null);
+  const [isClassPickerOpen, setIsClassPickerOpen] = useState(false);
 
   const [selectedExamId, setSelectedExamId] = useState(null);
   const [selectedExam, setSelectedExam] = useState(null);
@@ -65,6 +70,9 @@ const ViewExamTimetable = () => {
       if (selectedSession && selectedSession !== "all") {
         params.examSessionId = selectedSession;
       }
+      if (selectedClass) {
+        params.classId = selectedClass.id;
+      }
 
       const response = await apiViewTimetableExams({ accessToken, params });
       if (response.code === 200) {
@@ -86,7 +94,17 @@ const ViewExamTimetable = () => {
     setStartDate(initialStartDate);
     setEndDate(initialEndDate);
     setSelectedSession("all");
+    setSelectedClass(null);
     fetchTimetable();
+  };
+
+  const handleClassSelect = (classItem) => {
+    setSelectedClass(classItem);
+    setIsClassPickerOpen(false);
+  };
+
+  const handleRemoveClass = () => {
+    setSelectedClass(null);
   };
 
   const handleViewExamDetail = (examId) => {
@@ -231,14 +249,43 @@ const ViewExamTimetable = () => {
             </Select>
           </div>
 
-          <div className="flex items-end gap-2">
-            <Button onClick={handleFilter} className="flex-1">
-              Áp dụng
-            </Button>
-            <Button onClick={handleResetFilter} variant="outline">
-              Đặt lại
-            </Button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Lớp học
+            </label>
+            {selectedClass ? (
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className="flex-1 justify-between py-2 px-3"
+                >
+                  <span className="truncate">{selectedClass.name}</span>
+                  <X
+                    className="h-4 w-4 cursor-pointer hover:text-red-600 ml-2"
+                    onClick={handleRemoveClass}
+                  />
+                </Badge>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsClassPickerOpen(true)}
+              >
+                <Users2 className="h-4 w-4 mr-2" />
+                Chọn lớp học
+              </Button>
+            )}
           </div>
+        </div>
+
+        <div className="flex items-end gap-2 mt-4">
+          <Button onClick={handleFilter} className="flex-1">
+            Áp dụng
+          </Button>
+          <Button onClick={handleResetFilter} variant="outline">
+            Đặt lại
+          </Button>
         </div>
       </div>
       {/* Stats */}
@@ -341,6 +388,12 @@ const ViewExamTimetable = () => {
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
         onExamCreated={handleExamCreated}
+      />
+
+      <ClassPickerModal
+        open={isClassPickerOpen}
+        onOpenChange={setIsClassPickerOpen}
+        onSelect={handleClassSelect}
       />
     </div>
   );

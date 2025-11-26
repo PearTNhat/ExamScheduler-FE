@@ -60,7 +60,7 @@ const Locations = () => {
       const response = await apiGetLocations({
         page: currentParams.page,
         limit: 10,
-        name: currentParams.name,
+        name: currentParams.code,
       });
       if (response.code === 200) {
         setLocations(response.data.data || []);
@@ -81,7 +81,7 @@ const Locations = () => {
 
   useEffect(() => {
     fetchLocations();
-  }, []);
+  }, [currentParams]);
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       setSearchParams((prev) => {

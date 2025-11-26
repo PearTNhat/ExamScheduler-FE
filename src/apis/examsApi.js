@@ -131,6 +131,23 @@ const apiGetExamHistory = async ({ examSessionId }) => {
     }
 };
 
+const apiDeleteScheduleConfig = async ({ accessToken, examSessionId }) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
+        const res = await http.delete(`/api/schedule/config/${examSessionId}`, config);
+        return res.data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
+
 const apiGenerateExamSchedule = async ({ body, accessToken }) => {
     try {
         const config = {
@@ -227,6 +244,7 @@ export {
     apiGetDetailExamById,
     apiViewTimetableExams,
     apiGetExamHistory,
+    apiDeleteScheduleConfig,
     apiRemoveStudentFromExam,
     apiRemoveSupervisorFromExam,
     apiAddStudentsToExam,

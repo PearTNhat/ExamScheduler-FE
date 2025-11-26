@@ -187,7 +187,7 @@ export default function ExamGroupPickerModal({ open, onOpenChange, onSelect }) {
             <TableHeader className="bg-gray-50 sticky top-0">
               <TableRow>
                 <TableHead className="font-semibold">Môn học</TableHead>
-                <TableHead className="font-semibold">Khoa</TableHead>
+                <TableHead className="font-semibold">Lớp</TableHead>
                 <TableHead className="font-semibold">Kỳ thi</TableHead>
                 <TableHead className="font-semibold">SL dự kiến</TableHead>
                 <TableHead className="font-semibold">Trạng thái</TableHead>
@@ -245,8 +245,7 @@ export default function ExamGroupPickerModal({ open, onOpenChange, onSelect }) {
                       <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-indigo-500" />
                         <Badge variant="outline">
-                          {eg.courseDepartment?.department?.departmentName ||
-                            "N/A"}
+                          {eg.courseDepartment?.classes?.name || "N/A"}
                         </Badge>
                       </div>
                     </TableCell>

@@ -43,7 +43,7 @@ export default function ClassPickerModal({ open, onOpenChange, onSelect }) {
         params: {
           page,
           limit: 10,
-          name: name.trim() || undefined,
+          className: name.trim() || undefined,
         },
       });
 
@@ -179,14 +179,14 @@ export default function ClassPickerModal({ open, onOpenChange, onSelect }) {
                         <div className="p-1.5 bg-indigo-100 rounded">
                           <Users className="h-4 w-4 text-indigo-600" />
                         </div>
-                        {classItem.classCode}
+                        {classItem.code}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
                       {classItem.name}
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">
-                      {classItem.department?.name || "Chưa có khoa"}
+                      {classItem.department?.departmentName || "Chưa có khoa"}
                     </TableCell>
                   </TableRow>
                 ))
