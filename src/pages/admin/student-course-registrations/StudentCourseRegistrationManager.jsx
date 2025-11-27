@@ -98,17 +98,13 @@ const StudentCourseRegistrationManager = () => {
   const loadStudents = useCallback(async () => {
     setLoading(true);
     try {
-      console.log("select");
       const response = await apiGetStudentsByCourse(
         accessToken,
-        selectedCourse.id,
-        selectedExamSession,
+        selectedCourse.courseDepartmentId,
         {
           page: studentsPage,
           limit: 1000,
           search: studentSearch,
-          lecturerId: selectedCourse.lecturerId,
-          classId: selectedCourse.classId,
         }
       );
       if (response.code === 200) {
@@ -128,13 +124,7 @@ const StudentCourseRegistrationManager = () => {
     } finally {
       setLoading(false);
     }
-  }, [
-    accessToken,
-    selectedCourse,
-    selectedExamSession,
-    studentsPage,
-    studentSearch,
-  ]);
+  }, [accessToken, selectedCourse, studentsPage, studentSearch]);
 
   useEffect(() => {
     if (accessToken) {
@@ -151,10 +141,10 @@ const StudentCourseRegistrationManager = () => {
 
   // Load students khi course thay đổi
   useEffect(() => {
-    if (selectedCourse && selectedExamSession && accessToken) {
+    if (selectedCourse && accessToken) {
       loadStudents();
     }
-  }, [selectedCourse, selectedExamSession, loadStudents, accessToken]);
+  }, [selectedCourse, loadStudents, accessToken]);
 
   // Reset course page khi search thay đổi
   useEffect(() => {
@@ -167,7 +157,6 @@ const StudentCourseRegistrationManager = () => {
   }, [studentSearch, registeredFilter]);
 
   const handleCourseSelect = useCallback((course) => {
-    console.log("Selected course:", course);
     setSelectedCourse(course);
     setShowStudentModal(true);
     setStudentsPage(1);

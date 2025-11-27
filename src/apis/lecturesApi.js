@@ -86,4 +86,35 @@ const apiDeleteLecturer = async ({ accessToken, id }) => {
     }
 };
 
-export { apiGetLecturers, apiCreateLecturer, apiUpdateLecturer, apiDeleteLecturer, apiGetLecturerById };
+// ✅ THÊM MỚI: Lấy lịch coi thi của giảng viên
+const apiExamLecturer = async ({ accessToken, lecturerId, examSessionId }) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
+
+        // Thêm examSessionId vào params nếu có
+        if (examSessionId) {
+            config.params = { examSessionId };
+        }
+
+        const { data } = await http.get(`/lecturers/lecturer/${lecturerId}/exams`, config);
+        return data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
+
+export {
+    apiGetLecturers,
+    apiCreateLecturer,
+    apiUpdateLecturer,
+    apiDeleteLecturer,
+    apiGetLecturerById,
+    apiExamLecturer
+};

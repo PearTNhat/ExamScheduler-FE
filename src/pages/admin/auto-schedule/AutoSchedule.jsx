@@ -33,8 +33,8 @@ const AutoSchedule = () => {
   // Exam Session
   const [selectedSessionId, setSelectedSessionId] = useState("");
   // Date Range
-  const [startDate, setStartDate] = useState("2025-05-01");
-  const [endDate, setEndDate] = useState("2025-05-31");
+  const [startDate, setStartDate] = useState("2025-11-01");
+  const [endDate, setEndDate] = useState("2025-11-30");
 
   // Data from API when session is selected
   const [examHistoryData, setExamHistoryData] = useState(null);
@@ -44,7 +44,7 @@ const AutoSchedule = () => {
     {
       constraintCode: "HOLIDAY",
       rule: {
-        holiday: ["2025-05-01", "2025-05-15"],
+        holiday: ["2025-11-01", "2025-11-15"],
       },
     },
     {

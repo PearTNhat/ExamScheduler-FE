@@ -93,7 +93,7 @@ const apiGetCoursesByExamSession = async (accessToken, examSessionId, params = {
 };
 
 // API lấy danh sách sinh viên theo môn học với phân trang và tìm kiếm
-const apiGetStudentsByCourse = async (accessToken, courseId, examSessionId, params = {}) => {
+const apiGetStudentsByCourse = async (accessToken, courseDepartmentId, params = {}) => {
     try {
         const config = {
             headers: {
@@ -102,7 +102,7 @@ const apiGetStudentsByCourse = async (accessToken, courseId, examSessionId, para
             params
         };
         const { data } = await http.get(
-            `/student-course-registrations/course/${courseId}/exam-session/${examSessionId}/students`,
+            `/student-course-registrations/course-department/${courseDepartmentId}/students`,
             config
         );
         return data;

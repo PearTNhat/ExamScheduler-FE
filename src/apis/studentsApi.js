@@ -19,14 +19,20 @@ const apiGetStudents = async ({ accessToken, params }) => {
 };
 
 
-const apiExamStudent = async ({ accessToken, examSessionId }) => {
+const apiExamStudent = async ({ accessToken, studentId, examSessionId }) => {
     try {
         const config = {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
         };
-        const { data } = await http.get(`/students/student/${examSessionId}`, config);
+
+        // Thêm examSessionId vào params nếu có
+        if (examSessionId) {
+            config.params = { examSessionId };
+        }
+
+        const { data } = await http.get(`/students/student/${studentId}/exams`, config);
         return data;
     } catch (error) {
         if (error.response && error.response.data) {

@@ -52,6 +52,7 @@ function App() {
             element={<StudentCourseRegistrationManager />}
           />
           <Route path="auto-schedule" element={<AutoSchedule />} />
+          <Route path="exam-student-lecturer" element={<AutoSchedule />} />
 
           <Route path="view-schedule" element={<ViewExamTimetable />} />
           <Route path="classes" element={<ClassesManager />} />
