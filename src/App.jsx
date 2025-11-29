@@ -24,6 +24,7 @@ import ExamSlotsManager from "./pages/admin/exam-slots/ExamSlotsManager";
 import ExamGroupsManager from "./pages/admin/exam-groups/ExamGroupsManager";
 import StudentCourseRegistrationManager from "./pages/admin/student-course-registrations/StudentCourseRegistrationManager";
 import AcademicYearManager from "./pages/admin/academic-years/AcademicYearManager";
+import ExamStudentLecture from "./pages/admin/examStudentLecture/ExamStudentLecture";
 
 function App() {
   return (
@@ -52,7 +53,7 @@ function App() {
             element={<StudentCourseRegistrationManager />}
           />
           <Route path="auto-schedule" element={<AutoSchedule />} />
-          <Route path="exam-student-lecturer" element={<AutoSchedule />} />
+          <Route path="view-schedule-s-l" element={<ExamStudentLecture />} />
 
           <Route path="view-schedule" element={<ViewExamTimetable />} />
           <Route path="classes" element={<ClassesManager />} />

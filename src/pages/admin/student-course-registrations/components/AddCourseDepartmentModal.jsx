@@ -10,6 +10,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { Badge } from "~/components/ui/badge";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ const AddCourseDepartmentModal = ({
   const [selectedLecturer, setSelectedLecturer] = useState(null);
   const [selectedExamSession, setSelectedExamSession] = useState("");
   const [isCompulsory, setIsCompulsory] = useState(false);
+  const [expectedStudents, setExpectedStudents] = useState(0);
 
   const [showClassPicker, setShowClassPicker] = useState(false);
   const [showCoursePicker, setShowCoursePicker] = useState(false);
@@ -71,6 +73,7 @@ const AddCourseDepartmentModal = ({
       lecturerId: selectedLecturer.id,
       examSessionId: parseInt(selectedExamSession),
       isCompulsory,
+      expected_students: parseInt(expectedStudents) || 0,
     };
 
     onSubmit(data);
@@ -82,6 +85,7 @@ const AddCourseDepartmentModal = ({
     setSelectedLecturer(null);
     setSelectedExamSession("");
     setIsCompulsory(false);
+    setExpectedStudents(0);
   };
 
   const handleClose = () => {
@@ -95,7 +99,7 @@ const AddCourseDepartmentModal = ({
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Plus className="h-6 w-6 text-green-600" />
@@ -106,7 +110,7 @@ const AddCourseDepartmentModal = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
+          <div className="space-y-6 py-4 overflow-y-auto flex-1">
             {/* Exam Session Selector */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-medium">
@@ -280,6 +284,25 @@ const AddCourseDepartmentModal = ({
                   </Button>
                 )}
               </div>
+            </div>
+
+            {/* Expected Students Input */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-sm font-medium">
+                <Users className="h-4 w-4 text-orange-600" />
+                Số sinh viên dự kiến
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                value={expectedStudents}
+                onChange={(e) => setExpectedStudents(e.target.value)}
+                placeholder="Nhập số sinh viên dự kiến..."
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500">
+                Số sinh viên dự kiến đăng ký môn học này
+              </p>
             </div>
 
             {/* Is Compulsory Checkbox */}

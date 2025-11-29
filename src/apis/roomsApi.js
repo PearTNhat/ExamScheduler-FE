@@ -1,14 +1,11 @@
 import { http } from "~/utils/http";
 
-const apiGetRooms = async ({ page, limit, code }) => {
+const apiGetRooms = async ({ params }) => {
     try {
         const config = {
-            params: {
-                page,
-                limit,
-                code,
-            }
+            params
         };
+        console.log(config)
         const { data } = await http.get("/rooms", config);
         return data;
     } catch (error) {

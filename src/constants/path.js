@@ -23,6 +23,7 @@ const adminPaths = {
     STUDENT_COURSE_REGISTRATIONS: '/admin/student-course-registrations',
     AUTO_SCHEDULE: '/admin/auto-schedule',
     VIEW_SCHEDULE: '/admin/view-schedule',
+    VIEW_SCHEDULE_S_L: '/admin/view-schedule-s-l',
 };
 
 export { publicPaths, adminPaths };

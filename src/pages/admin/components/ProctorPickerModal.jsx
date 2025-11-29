@@ -147,6 +147,7 @@ export default function ProctorPickerModal({
 
     // Single select mode - immediately select and close
     if (!multiSelect) {
+      console.log("data", lecturer);
       if (onSelect) {
         onSelect(lecturerData);
       }

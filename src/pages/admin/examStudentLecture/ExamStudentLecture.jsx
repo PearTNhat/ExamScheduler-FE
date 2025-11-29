@@ -33,7 +33,7 @@ import ProctorPickerModal from "../components/ProctorPickerModal";
 import { apiExamStudent } from "~/apis/studentsApi";
 import { apiExamLecturer } from "~/apis/lecturesApi";
 import { apiGetExamSessions } from "~/apis/exam-sessionsApi";
-import { showErrorToast, showSuccessToast } from "~/utils/alert";
+import { showToastError, showToastSuccess } from "~/utils/alert";
 import {
   Loader2,
   Search,
@@ -61,17 +61,17 @@ export default function ExamStudentLecture() {
       setLoadingSessions(true);
       try {
         const response = await apiGetExamSessions({ accessToken });
-        if (response.statusCode === 200 && response.data) {
+        if (response.code === 200) {
           setExamSessions(response.data);
           // Auto-select first exam session if available
           if (response.data.length > 0) {
             setSelectedExamSession(response.data[0].id);
           }
         } else {
-          showErrorToast("Không thể tải danh sách kỳ thi");
+          showToastError("Không thể tải danh sách kỳ thi");
         }
       } catch (error) {
-        showErrorToast("Có lỗi xảy ra khi tải danh sách kỳ thi");
+        showToastError("Có lỗi xảy ra khi tải danh sách kỳ thi");
         console.error(error);
       } finally {
         setLoadingSessions(false);
@@ -90,6 +90,7 @@ export default function ExamStudentLecture() {
   };
 
   const handleStudentSelect = (students) => {
+    console.log("student", students);
     if (students.length > 0) {
       setSelectedPerson(students[0]);
       setShowStudentModal(false);
@@ -97,20 +98,19 @@ export default function ExamStudentLecture() {
   };
 
   const handleLecturerSelect = (lecturers) => {
-    if (lecturers.length > 0) {
-      setSelectedPerson(lecturers[0]);
-      setShowLecturerModal(false);
-    }
+    console.log("lecturer", lecturers);
+    setSelectedPerson(lecturers);
+    setShowLecturerModal(false);
   };
 
   const handleFetchExamSchedule = async () => {
     if (!selectedExamSession) {
-      showErrorToast("Vui lòng chọn kỳ thi");
+      showToastError("Vui lòng chọn kỳ thi");
       return;
     }
 
     if (!selectedPerson) {
-      showErrorToast("Vui lòng chọn sinh viên hoặc giảng viên");
+      showToastError("Vui lòng chọn sinh viên hoặc giảng viên");
       return;
     }
 
@@ -131,18 +131,14 @@ export default function ExamStudentLecture() {
         });
       }
 
-      if (
-        response.statusCode === 200 ||
-        response.student ||
-        response.lecturer
-      ) {
-        setExamData(response);
-        showSuccessToast("Lấy lịch thi thành công!");
+      if (response.code === 200) {
+        setExamData(response.data);
+        showToastSuccess("Lấy lịch thi thành công!");
       } else {
-        showErrorToast(response.message || "Không thể lấy lịch thi");
+        showToastError(response.message || "Không thể lấy lịch thi");
       }
     } catch (error) {
-      showErrorToast("Có lỗi xảy ra khi lấy lịch thi");
+      showToastError("Có lỗi xảy ra khi lấy lịch thi");
       console.error(error);
     } finally {
       setLoading(false);
@@ -237,7 +233,7 @@ export default function ExamStudentLecture() {
                   selectedPerson
                     ? roleType === "student"
                       ? `${selectedPerson.studentCode} - ${selectedPerson.lastName} ${selectedPerson.firstName}`
-                      : `${selectedPerson.lecturerCode} - ${selectedPerson.lastName} ${selectedPerson.firstName}`
+                      : `${selectedPerson.lecturerCode} - ${selectedPerson.name} `
                     : ""
                 }
                 className="flex-1"
@@ -373,12 +369,13 @@ export default function ExamStudentLecture() {
         onOpenChange={setShowStudentModal}
         onConfirm={handleStudentSelect}
         selectedStudents={selectedPerson ? [selectedPerson] : []}
+        multiSelect={false}
       />
 
       <ProctorPickerModal
         open={showLecturerModal}
         onOpenChange={setShowLecturerModal}
-        onConfirm={handleLecturerSelect}
+        onSelect={handleLecturerSelect}
         selectedProctors={selectedPerson ? [selectedPerson] : []}
         multiSelect={false}
       />

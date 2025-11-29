@@ -121,7 +121,7 @@ const apiDeleteExam = async ({ accessToken, id }) => {
 };
 const apiGetExamHistory = async ({ examSessionId }) => {
     try {
-        const { data } = await http.get(`/api/schedule/config/${examSessionId}`);
+        const { data } = await http.get(`/exam-session-config/${examSessionId}`);
         return data;
     } catch (error) {
         if (error.response && error.response.data) {
@@ -138,7 +138,7 @@ const apiDeleteScheduleConfig = async ({ accessToken, examSessionId }) => {
                 Authorization: `Bearer ${accessToken}`,
             },
         };
-        const res = await http.delete(`/api/schedule/config/${examSessionId}`, config);
+        const res = await http.delete(`/exam-session-config/${examSessionId}`, config);
         return res.data;
     } catch (error) {
         if (error.response && error.response.data) {

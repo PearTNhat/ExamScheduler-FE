@@ -78,6 +78,11 @@ const navItems = [
     name: "Giảng viên",
     path: adminPaths.LECTURES,
   },
+  {
+    icon: <UserSquare size={20} className="text-emerald-500" />,
+    name: "Lịch thi sv-gv",
+    path: adminPaths.VIEW_SCHEDULE_S_L,
+  },
 
   {
     icon: <Notebook size={20} className="text-pink-500" />,

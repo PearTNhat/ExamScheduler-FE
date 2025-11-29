@@ -48,6 +48,7 @@ export default function RoomPickerModal({
         limit: 10,
         code: code.trim() || undefined,
       });
+      console.log("ơage rôm", page);
       if (response.data) {
         setRooms(response.data.data || []);
         setPagination({

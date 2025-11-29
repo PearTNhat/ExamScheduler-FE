@@ -57,7 +57,6 @@ const ExamEditModal = ({
   accessToken,
   onExamUpdated,
 }) => {
-  console.log("select exam", exam);
   const [examDetail, setExamDetail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -67,10 +66,11 @@ const ExamEditModal = ({
   const [slotId, setSlotId] = useState("");
   const [duration, setDuration] = useState("");
 
-  // Available options
   const [rooms, setRooms] = useState([]);
   const [slots, setSlots] = useState([]);
   const [roomSearchTerm, setRoomSearchTerm] = useState("");
+  const [roomsLoaded, setRoomsLoaded] = useState(false);
+  const [slotsLoaded, setSlotsLoaded] = useState(false);
 
   // Students and supervisors management
   const [students, setStudents] = useState([]);
@@ -95,8 +95,9 @@ const ExamEditModal = ({
       setDuration(examDetail.duration?.toString() || "");
       setStudents(examDetail.students || []);
       setSupervisors(examDetail.supervisors || []);
+      console.log("Room ID set to:", examDetail.room?.id?.toString());
     }
-  }, [examDetail]);
+  }, [examDetail, roomsLoaded, slotsLoaded]);
 
   const fetchExamDetail = async ({ accessToken, exam }) => {
     try {
@@ -123,6 +124,7 @@ const ExamEditModal = ({
       });
       if (response.code === 200) {
         setRooms(response.data.data || []);
+        setRoomsLoaded(true);
       }
     } catch (error) {
       console.error("Error fetching rooms:", error);
@@ -137,6 +139,7 @@ const ExamEditModal = ({
       });
       if (response.code === 200) {
         setSlots(response.data.data || []);
+        setSlotsLoaded(true);
       }
     } catch (error) {
       console.error("Error fetching slots:", error);
@@ -361,6 +364,7 @@ const ExamEditModal = ({
                   <Label htmlFor="room" className="text-sm font-medium">
                     Phòng thi
                   </Label>
+                  {console.log("room Id", roomId)}
                   <Select value={roomId} onValueChange={setRoomId}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Chọn phòng thi" />
@@ -389,7 +393,7 @@ const ExamEditModal = ({
                               key={room.id}
                               value={room.id.toString()}
                             >
-                              {room.code} - {room.location?.name} (SL:{" "}
+                              {room.code} - {room.locationName} (SL:{" "}
                               {room.capacity})
                             </SelectItem>
                           ))

@@ -216,7 +216,7 @@ const StudentCourseRegistrationManager = () => {
       const data = {
         ...changes,
         examSessionId: parseInt(selectedExamSession),
-        courseId: selectedCourse.id,
+        courseId: selectedCourse.courseDepartmentId,
       };
       const response = await apiBulkUpdateRegistrations({
         body: data,
@@ -278,7 +278,7 @@ const StudentCourseRegistrationManager = () => {
     setBulkLoading(true);
     try {
       const response = await apiDeleteCourseDepartment({
-        id: course.id,
+        id: course.courseDepartmentId,
         accessToken,
       });
 

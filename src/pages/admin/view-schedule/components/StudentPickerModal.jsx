@@ -29,6 +29,7 @@ export default function StudentPickerModal({
   onOpenChange,
   onConfirm,
   selectedStudents,
+  multiSelect = true,
 }) {
   const { accessToken } = useSelector((state) => state.user);
   const [students, setStudents] = useState([]);
@@ -134,15 +135,20 @@ export default function StudentPickerModal({
         tempSelectedStudents.filter((s) => s.id !== student.id)
       );
     } else {
-      setTempSelectedStudents([
-        ...tempSelectedStudents,
-        {
-          id: student.id,
-          studentCode: student.studentCode,
-          className: student.classes?.className,
-          fullName: `${student.firstName} ${student.lastName}`,
-        },
-      ]);
+      const newStudent = {
+        id: student.id,
+        studentCode: student.studentCode,
+        className: student.classes?.className,
+        fullName: `${student.firstName} ${student.lastName}`,
+        firstName: student.firstName,
+        lastName: student.lastName,
+      };
+
+      if (multiSelect) {
+        setTempSelectedStudents([...tempSelectedStudents, newStudent]);
+      } else {
+        setTempSelectedStudents([newStudent]);
+      }
     }
   };
 
@@ -180,20 +186,22 @@ export default function StudentPickerModal({
         </div>
 
         {/* Select All Current Page Checkbox */}
-        <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <Checkbox
-            id="select-all-current-page-students"
-            checked={areAllCurrentPageStudentsSelected()}
-            onCheckedChange={handleSelectAllCurrentPage}
-          />
-          <label
-            htmlFor="select-all-current-page-students"
-            className="text-sm font-medium cursor-pointer"
-          >
-            Chọn tất cả trang hiện tại ({students.length} sinh viên) - Đã chọn:{" "}
-            {tempSelectedStudents.length} sinh viên
-          </label>
-        </div>
+        {multiSelect && (
+          <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <Checkbox
+              id="select-all-current-page-students"
+              checked={areAllCurrentPageStudentsSelected()}
+              onCheckedChange={handleSelectAllCurrentPage}
+            />
+            <label
+              htmlFor="select-all-current-page-students"
+              className="text-sm font-medium cursor-pointer"
+            >
+              Chọn tất cả trang hiện tại ({students.length} sinh viên) - Đã
+              chọn: {tempSelectedStudents.length} sinh viên
+            </label>
+          </div>
+        )}
 
         {/* Table */}
         <div className="flex-1 overflow-auto border rounded-lg">
@@ -296,7 +304,7 @@ export default function StudentPickerModal({
             {tempSelectedStudents.length > 0 ? (
               <span className="text-blue-600 font-medium">
                 ✓ Đã chọn: <strong>{tempSelectedStudents.length}</strong> sinh
-                viên
+                viên{multiSelect ? "" : " (Chế độ chọn 1)"}
               </span>
             ) : (
               <span>Chưa chọn sinh viên nào</span>
