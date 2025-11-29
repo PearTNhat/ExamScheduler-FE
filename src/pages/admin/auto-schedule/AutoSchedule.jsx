@@ -112,13 +112,19 @@ const AutoSchedule = () => {
             const historyProctors = data.lecturers.map((lecturer) => ({
               proctorId: lecturer.id,
               name: lecturer.name,
-              lecturerCode: lecturer.lectureCode,
+              lecturerCode: lecturer.lecturerCode,
               unavailable_dates:
                 lecturer.unavailable_dates?.map((d) => ({
                   date: d.date,
-                  slotId: d.slotId,
+                  slotId: d.slotIds.map((item) => item.slotId),
+                  slots: d.slotIds.map((item) => ({
+                    slotName: item.slotName,
+                    startTime: item.startTime,
+                    endTime: item.endTime,
+                  })),
                 })) || [],
             }));
+            console.log(historyProctors);
             setSelectedProctors(historyProctors);
           } else {
             setSelectedProctors([]); // Xóa nếu lịch sử không có giám thị
@@ -173,7 +179,7 @@ const AutoSchedule = () => {
           unavailable_dates:
             proctor.unavailable_dates?.map((d) => ({
               date: d.date,
-              slotId: d.slotId,
+              slotIds: d.slotId,
             })) || [],
         }));
       }

@@ -122,7 +122,7 @@ export default function UnavailableDatesModal({
               Thêm ca bận
             </Button>
           </div>
-
+          {console.log("sss", unavailableDates)}
           {/* List of Unavailable Dates */}
           <div className="flex-1 overflow-auto space-y-3">
             {unavailableDates.length === 0 ? (

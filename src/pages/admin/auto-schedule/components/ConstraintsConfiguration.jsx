@@ -38,7 +38,15 @@ const ConstraintsConfiguration = ({
 
     onConstraintsChange(newConstraints);
   };
-
+  const avoidWeekend = getConstraint("AVOID_WEEKEND");
+  const avoidWeekendEnabled = avoidWeekend?.rule?.avoid_weekend || false;
+  const handleAvoidWeekendChange = (enabled) => {
+    if (enabled) {
+      updateConstraint("AVOID_WEEKEND", { avoid_weekend: true });
+    } else {
+      removeConstraint("AVOID_WEEKEND");
+    }
+  };
   // Helper để xóa constraint
   const removeConstraint = (code) => {
     const newConstraints = constraints.filter((c) => c.constraintCode !== code);
@@ -127,10 +135,21 @@ const ConstraintsConfiguration = ({
 
   const constraintsList = [
     {
+      code: "AVOID_WEEKEND",
+      name: "Tránh thi cuối tuần",
+      description: "Không lên lịch thi vào  Chủ Nhật",
+      type: "CỨNG",
+      hasParam: false,
+      paramLabel: "Không thi vào chủ nhật",
+      value: avoidWeekendEnabled,
+      isEnabled: avoidWeekendEnabled,
+      onChange: handleAvoidWeekendChange,
+    },
+    {
       code: "MAX_EXAMS_PER_DAY",
       name: "Giới hạn số ca thi/ngày",
       description: "Sinh viên không thi quá X ca trong 1 ngày",
-      type: "CỨNG",
+      type: "MỀM",
       hasParam: true,
       paramType: "number",
       paramLabel: "Số ca thi tối đa:",

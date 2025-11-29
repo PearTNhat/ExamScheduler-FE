@@ -92,7 +92,6 @@ const ProctorSelector = ({ selectedProctors, onProctorsChange }) => {
                       </Badge>
                     </div>
 
-                    {/* ✅ THÊM: Nút cấu hình lịch bận */}
                     <div className="pt-2 border-t border-green-200 space-y-2">
                       {proctor.unavailable_dates?.length > 0 ? (
                         <div className="space-y-1">
