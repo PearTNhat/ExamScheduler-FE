@@ -44,9 +44,11 @@ export default function RoomPickerModal({
     try {
       setLoading(true);
       const response = await apiGetRooms({
-        page,
-        limit: 10,
-        code: code.trim() || undefined,
+        params: {
+          page: page,
+          limit: 20,
+          code: code.trim() || undefined,
+        },
       });
       console.log("ơage rôm", page);
       if (response.data) {

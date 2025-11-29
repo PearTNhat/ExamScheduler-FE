@@ -55,7 +55,7 @@ const ExamFormModal = ({
     try {
       setLoading(true);
       const [roomsRes, slotsRes, groupsRes] = await Promise.all([
-        apiGetRooms({ page: 1, limit: 100 }),
+        apiGetRooms({ params: { page: 1, limit: 1000 } }),
         apiGetExamSlots({ accessToken, params: { page: 1, limit: 100 } }),
         apiGetExamGroups({ accessToken, params: { page: 1, limit: 100 } }),
       ]);

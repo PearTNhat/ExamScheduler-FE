@@ -49,9 +49,11 @@ const Rooms = () => {
     try {
       setLoading(true);
       const response = await apiGetRooms({
-        page: currentParams.page,
-        limit: 10,
-        code: currentParams.code,
+        params: {
+          page: currentParams.page,
+          limit: 1000,
+          code: currentParams.code,
+        },
       });
       if (response.code == 200) {
         setRooms(response.data.data || []);

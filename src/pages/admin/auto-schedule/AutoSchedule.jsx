@@ -30,6 +30,16 @@ import {
 const AutoSchedule = () => {
   const { accessToken } = useSelector((state) => state.user); // <-- ĐÃ THÊM
 
+  // Helper function to format ISO date to YYYY-MM-DD
+  const formatDateToInput = (isoString) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   // Exam Session
   const [selectedSessionId, setSelectedSessionId] = useState("");
   // Date Range
@@ -82,9 +92,9 @@ const AutoSchedule = () => {
           const data = response.data;
           setExamHistoryData(data);
 
-          // Update date range from API
-          if (data.startDate) setStartDate(data.startDate);
-          if (data.endDate) setEndDate(data.endDate);
+          // Update date range from API - format ISO to YYYY-MM-DD
+          if (data.startDate) setStartDate(formatDateToInput(data.startDate));
+          if (data.endDate) setEndDate(formatDateToInput(data.endDate));
           if (data.rooms && data.rooms.length > 0) {
             const historyRooms = data.rooms.map((room) => ({
               roomId: room.id,

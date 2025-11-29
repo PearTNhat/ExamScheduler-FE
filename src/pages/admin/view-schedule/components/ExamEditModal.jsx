@@ -119,7 +119,6 @@ const ExamEditModal = ({
   const fetchRooms = async ({ accessToken }) => {
     try {
       const response = await apiGetRooms({
-        accessToken,
         params: { page: 1, limit: 1000 },
       });
       if (response.code === 200) {
