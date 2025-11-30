@@ -26,7 +26,7 @@ export default function ExamSessionFormModal({
     end_date: "",
     is_active: true,
     description: "",
-    academicYearId: null,
+    academic_year_id: null,
   });
   const [academicYearName, setAcademicYearName] = useState("");
   const [showAcademicYearPicker, setShowAcademicYearPicker] = useState(false);
@@ -45,7 +45,7 @@ export default function ExamSessionFormModal({
           : "",
         is_active: editingSession.is_active ?? true,
         description: editingSession.description || "",
-        academicYearId: editingSession.academicYearId || null,
+        academic_year_id: editingSession.academic_year_id || null,
       });
       setAcademicYearName(editingSession.academicYear?.name || "");
     } else {
@@ -55,7 +55,7 @@ export default function ExamSessionFormModal({
         end_date: "",
         is_active: true,
         description: "",
-        academicYearId: null,
+        academic_year_id: null,
       });
       setAcademicYearName("");
     }
@@ -63,9 +63,9 @@ export default function ExamSessionFormModal({
   }, [editingSession, open]);
 
   const handleAcademicYearSelect = (year) => {
-    setFormData({ ...formData, academicYearId: year.id });
+    setFormData({ ...formData, academic_year_id: year.id });
     setAcademicYearName(year.name);
-    setErrors({ ...errors, academicYearId: "" });
+    setErrors({ ...errors, academic_year_id: "" });
   };
 
   const validate = () => {
@@ -187,7 +187,7 @@ export default function ExamSessionFormModal({
                   value={academicYearName}
                   readOnly
                   className={`flex-1 cursor-pointer ${
-                    errors.academicYearId ? "border-red-500" : ""
+                    errors.academic_year_id ? "border-red-500" : ""
                   }`}
                   onClick={() => setShowAcademicYearPicker(true)}
                 />
@@ -200,8 +200,10 @@ export default function ExamSessionFormModal({
                   <Search className="h-4 w-4" />
                 </Button>
               </div>
-              {errors.academicYearId && (
-                <p className="text-sm text-red-500">{errors.academicYearId}</p>
+              {errors.academic_year_id && (
+                <p className="text-sm text-red-500">
+                  {errors.academic_year_id}
+                </p>
               )}
             </div>
 
