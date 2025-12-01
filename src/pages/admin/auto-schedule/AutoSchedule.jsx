@@ -407,7 +407,7 @@ const AutoSchedule = () => {
                     </div>
                   </div>
                   <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="text-gray-600 text-xs">Môn thi</div>
+                    <div className="text-gray-600 text-xs">Nhóm thi</div>
                     <div className="text-xl font-bold text-green-600">
                       {results.statistics?.totalExams || 0}
                     </div>
