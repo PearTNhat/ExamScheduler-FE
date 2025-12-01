@@ -98,18 +98,7 @@ function Header({ user, isLoggedIn, accessToken }) {
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild>
-                    <Link to="/user" className="cursor-pointer">
-                      <UserCircle className="mr-2 h-4 w-4" />
-                      <span>Thông tin cá nhân</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/change-password" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Đổi mật khẩu</span>
-                    </Link>
-                  </DropdownMenuItem>
+
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleLogout}

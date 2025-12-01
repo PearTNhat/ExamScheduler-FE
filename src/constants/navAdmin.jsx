@@ -19,11 +19,6 @@ import { adminPaths } from "./path";
 
 const navItems = [
   {
-    icon: <LayoutDashboard size={20} className="text-blue-500" />,
-    name: "Tổng quan",
-    path: adminPaths.DASHBOARD,
-  },
-  {
     icon: <GraduationCap size={20} className="text-blue-500" />,
     name: "Đợt thi",
     path: adminPaths.EXAM_SESSIONS,

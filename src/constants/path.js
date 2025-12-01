@@ -6,8 +6,8 @@ const publicPaths = {
 };
 
 const adminPaths = {
-    DASHBOARD: '/admin',
-    EXAM_SESSIONS: '/admin/exam-sessions',
+    // DASHBOARD: '/admin',
+    EXAM_SESSIONS: '/admin',
     ACADEMIC_YEARS: '/admin/academic-years',
     EXAM_SLOTS: '/admin/exam-slots',
     COURSES: '/admin/courses',

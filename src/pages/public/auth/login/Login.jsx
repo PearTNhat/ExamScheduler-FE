@@ -115,8 +115,8 @@ function Login() {
                   {...register("password", {
                     required: "Mật khẩu là bắt buộc",
                     minLength: {
-                      value: 6,
-                      message: "Mật khẩu phải có ít nhất 6 ký tự",
+                      value: 5,
+                      message: "Mật khẩu phải có ít nhất 5 ký tự",
                     },
                   })}
                   className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"

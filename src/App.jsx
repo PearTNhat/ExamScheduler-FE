@@ -12,7 +12,6 @@ import AutoSchedule from "./pages/admin/auto-schedule/AutoSchedule";
 import ViewExamTimetable from "./pages/admin/view-schedule/ViewExamTimetable";
 import UserLayout from "./pages/public/user/UserLayout";
 import UserProfile from "./pages/public/user/userProfile/UserProfile";
-import ChangePassword from "./pages/public/user/changePassword/ChangePassword";
 import ExamSchedule from "./pages/public/user/examSchedule/ExamSchedule";
 import RegisteredCourses from "./pages/public/user/registeredCourses/RegisteredCourses";
 import Departments from "./pages/admin/departments/Departments";
@@ -34,13 +33,12 @@ function App() {
           <Route index element={<UserProfile />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
-          <Route path="change-password" element={<ChangePassword />} />
           <Route path="exam-schedule" element={<ExamSchedule />} />
           <Route path="registered-courses" element={<RegisteredCourses />} />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="exam-sessions" element={<ExamSessions />} />
+          {/* <Route index element={<Dashboard />} /> */}
+          <Route index element={<ExamSessions />} />
           <Route path="academic-years" element={<AcademicYearManager />} />
           <Route path="courses" element={<Courses />} />
           <Route path="rooms" element={<Rooms />} />

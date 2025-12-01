@@ -8,6 +8,7 @@ import { sideBarActions } from "~/stores/slice/sideBar";
 import { navItems } from "~/constants/navAdmin";
 import { showToastSuccess } from "~/utils/alert";
 import { userActions } from "~/stores/slice/userSlice";
+import { LaptopLogo, Logo } from "~/assets/images";
 
 const SideBar = () => {
   const navigate = useNavigate();
@@ -233,21 +234,21 @@ const SideBar = () => {
           <button>
             {isExpanded || isHovered || isMobileOpen ? (
               <div className="">
-                <Link to="/user">
+                <Link to="/">
                   <img
                     className="rounded-full w-10 h-10"
-                    src="/images/logo_stationery.svg"
+                    src={Logo}
                     alt="Logo"
-                    width={150}
+                    width={40}
                     height={40}
                   />
                 </Link>
               </div>
             ) : (
-              <Link to="/user">
+              <Link to="/">
                 <img
                   className="rounded-full w-10 h-10"
-                  src="/images/logo_stationery.svg"
+                  src={Logo}
                   alt="Logo"
                   width={32}
                   height={32}
