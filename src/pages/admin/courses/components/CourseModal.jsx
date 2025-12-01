@@ -34,7 +34,6 @@ const CourseFormModal = ({
       nameCourse: "",
       description: "",
       credits: "",
-      expected_students: "",
       is_active: true,
     },
   });
@@ -49,7 +48,6 @@ const CourseFormModal = ({
         duration_course_exam: editingCourse.duration_course_exam || "",
         description: editingCourse.description || "",
         credits: editingCourse.credits || "",
-        expected_students: editingCourse.expected_students || "",
         is_active: editingCourse.is_active ?? true,
       });
     } else {
@@ -59,7 +57,6 @@ const CourseFormModal = ({
         duration_course_exam: "",
         description: "",
         credits: "",
-        expected_students: "",
         is_active: true,
       });
     }
@@ -72,7 +69,6 @@ const CourseFormModal = ({
       description: data.description,
       duration_course_exam: parseInt(data.duration_course_exam),
       credits: parseInt(data.credits),
-      expected_students: parseInt(data.expected_students),
       is_active: data.is_active,
     };
     onSubmit(formattedData);
@@ -263,43 +259,6 @@ const CourseFormModal = ({
                 <p className="text-sm text-red-500 flex items-center gap-1">
                   <span className="font-medium">⚠</span>{" "}
                   {errors.duration_course_exam.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="expected_students"
-                className="text-sm font-semibold flex items-center gap-2"
-              >
-                <Users className="h-4 w-4 text-gray-500" />
-                Sinh viên dự kiến <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="expected_students"
-                type="number"
-                placeholder="VD: 50"
-                className={`h-11 ${
-                  errors.expected_students
-                    ? "border-red-500 focus:ring-red-500"
-                    : ""
-                }`}
-                {...register("expected_students", {
-                  required: "Vui lòng nhập số sinh viên dự kiến",
-                  min: {
-                    value: 1,
-                    message: "Số sinh viên dự kiến phải lớn hơn 0",
-                  },
-                  max: {
-                    value: 1000,
-                    message: "Số sinh viên dự kiến không được quá 1000",
-                  },
-                })}
-              />
-              {errors.expected_students && (
-                <p className="text-sm text-red-500 flex items-center gap-1">
-                  <span className="font-medium">⚠</span>{" "}
-                  {errors.expected_students.message}
                 </p>
               )}
             </div>

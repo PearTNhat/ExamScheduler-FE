@@ -36,10 +36,8 @@ function ExamSchedule() {
   const [loadingSessions, setLoadingSessions] = useState(false);
 
   // Determine user role
-  const isStudent = userData?.roles?.some((role) => role.name === "SINH_VIEN");
-  const isLecturer = userData?.roles?.some(
-    (role) => role.name === "GIANG_VIEN"
-  );
+  const isStudent = userData?.roles?.some((role) => role === "SINH_VIEN");
+  const isLecturer = userData?.roles?.some((role) => role === "GIANG_VIEN");
 
   const fetchExamSessions = useCallback(async () => {
     try {

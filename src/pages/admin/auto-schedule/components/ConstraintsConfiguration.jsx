@@ -300,7 +300,7 @@ const ConstraintsConfiguration = ({
                   id={`${constraint.code}-param`}
                   type={constraint.paramType}
                   min="1"
-                  max="5"
+                  max="100"
                   value={constraint.value}
                   onChange={(e) => {
                     const value = parseInt(e.target.value) || 1;
