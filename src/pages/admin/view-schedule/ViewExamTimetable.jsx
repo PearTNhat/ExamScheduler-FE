@@ -50,11 +50,24 @@ const ViewExamTimetable = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   useEffect(() => {
     if (accessToken) {
       fetchTimetable();
+      fetchExamSessions();
     }
   }, [accessToken]);
+
+  const fetchExamSessions = async () => {
+    try {
+      const response = await apiGetExamSessions({ accessToken });
+      if (response.code === 200) {
+        setSessions(response.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching exam sessions:", error);
+    }
+  };
 
   const fetchTimetable = async () => {
     try {
