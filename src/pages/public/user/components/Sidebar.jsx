@@ -13,24 +13,12 @@ const Sidebar = () => {
       icon: User,
       description: "Quản lý thông tin tài khoản",
     },
-    // {
-    //   title: "Đổi mật khẩu",
-    //   href: "/change-password",
-    //   icon: Lock,
-    //   description: "Cập nhật mật khẩu bảo mật",
-    // },
     {
       title: "Lịch thi",
       href: "/exam-schedule",
       icon: Calendar,
       description: "Xem lịch thi sắp tới",
     },
-    // {
-    //   title: "Môn học đăng ký",
-    //   href: "/registered-courses",
-    //   icon: BookOpen,
-    //   description: "Danh sách môn đã đăng ký",
-    // },
   ];
 
   return (

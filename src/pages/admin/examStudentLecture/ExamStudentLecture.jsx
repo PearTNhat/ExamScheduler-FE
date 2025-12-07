@@ -325,7 +325,6 @@ export default function ExamStudentLecture() {
                     </TableHead>
                     <TableHead>Địa điểm</TableHead>
                     <TableHead>Thời gian</TableHead>
-                    <TableHead>Trạng thái</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -345,11 +344,6 @@ export default function ExamStudentLecture() {
                       <TableCell className="font-mono">{exam.room}</TableCell>
                       <TableCell>{exam.location}</TableCell>
                       <TableCell>{exam.duration} phút</TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(exam.status)}>
-                          {exam.status}
-                        </Badge>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -31,6 +31,11 @@ function Login() {
             userData: d.profile,
           })
         );
+        console.log("dssss", d);
+        if (d.profile.roles.includes("ADMIN")) {
+          navigate("/admin");
+          return;
+        }
         navigate("/");
       } else {
         showToastError(response.message || "Đăng nhập thất bại!");

@@ -223,10 +223,12 @@ const ClassesManager = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold">ID</TableHead>
               <TableHead className="font-semibold">Mã lớp</TableHead>
               <TableHead className="font-semibold">Tên lớp</TableHead>
               <TableHead className="font-semibold">Khoa</TableHead>
-              <TableHead className="font-semibold">Ngày tạo</TableHead>
+              <TableHead className="font-semibold">Năm nhập học</TableHead>
+              {/* <TableHead className="font-semibold">Ngày tạo</TableHead> */}
               <TableHead className="text-right font-semibold">
                 Thao tác
               </TableHead>
@@ -235,7 +237,7 @@ const ClassesManager = () => {
           <TableBody>
             {loading && classes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12">
+                <TableCell colSpan={7} className="text-center py-12">
                   <div className="flex flex-col items-center justify-center gap-3">
                     <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-indigo-600"></div>
                     <p className="text-sm text-gray-500">Đang tải dữ liệu...</p>
@@ -245,7 +247,7 @@ const ClassesManager = () => {
             ) : classes.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={7}
                   className="text-center py-12 text-gray-500"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -266,6 +268,9 @@ const ClassesManager = () => {
             ) : (
               classes?.map((classItem) => (
                 <TableRow key={classItem.id} className="hover:bg-gray-50">
+                  <TableCell className="font-medium text-gray-700">
+                    {classItem.id}
+                  </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-indigo-100 rounded">
@@ -282,9 +287,14 @@ const ClassesManager = () => {
                       {classItem.department?.departmentName || "Chưa có khoa"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-gray-500 text-sm">
-                    {formatDate(classItem.createdAt)}
+                  <TableCell>
+                    <Badge variant="secondary" className="gap-1">
+                      {classItem.nam_nhap_hoc?.name || "Chưa có năm"}
+                    </Badge>
                   </TableCell>
+                  {/* <TableCell className="text-gray-500 text-sm">
+                    {formatDate(classItem.createdAt)}
+                  </TableCell> */}
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Button

@@ -219,8 +219,7 @@ const Rooms = () => {
               <TableHead className="font-semibold">Sức chứa</TableHead>
               <TableHead className="font-semibold">Cơ sở</TableHead>
               <TableHead className="font-semibold">Loại phòng</TableHead>
-              <TableHead className="font-semibold">Ngày tạo</TableHead>
-              <TableHead className="font-semibold">Trạng thái</TableHead>
+              {/* <TableHead className="font-semibold">Trạng thái</TableHead> */}
               <TableHead className="text-right font-semibold">
                 Thao tác
               </TableHead>
@@ -300,22 +299,6 @@ const Rooms = () => {
                     >
                       {room.type === "LT" ? "Lý thuyết" : "Thực hành"}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-gray-500 text-sm">
-                    {formatDate(room.createdAt)}
-                  </TableCell>
-                  <TableCell>
-                    {room.is_active ? (
-                      <Badge variant="success" className="gap-1">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-600"></div>
-                        Hoạt động
-                      </Badge>
-                    ) : (
-                      <Badge variant="destructive" className="gap-1">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-600"></div>
-                        Ngừng hoạt động
-                      </Badge>
-                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">

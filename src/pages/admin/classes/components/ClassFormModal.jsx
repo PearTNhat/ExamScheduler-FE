@@ -40,11 +40,11 @@ export default function ClassFormModal({
       setFormData({
         name: editingClass.name || "",
         code: editingClass.code || "",
-        departmentId: editingClass.departmentId || null,
-        id_nam_nhap_hoc: editingClass.id_nam_nhap_hoc || null,
+        departmentId: editingClass.department.id || null,
+        id_nam_nhap_hoc: editingClass.nam_nhap_hoc.id || null,
       });
-      setDepartmentName(editingClass.department?.name || "");
-      setAcademicYearName(editingClass.academicYear?.name || "");
+      setDepartmentName(editingClass.department?.departmentName || "");
+      setAcademicYearName(editingClass.nam_nhap_hoc?.name || "");
     } else {
       setFormData({
         name: "",

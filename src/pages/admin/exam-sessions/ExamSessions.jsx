@@ -208,13 +208,16 @@ const ExamSessions = () => {
             <TableHeader>
               <TableRow className="bg-gradient-to-r from-purple-50 to-purple-100/50 hover:from-purple-50 hover:to-purple-100/50">
                 <TableHead className="font-semibold text-purple-900">
+                  ID
+                </TableHead>
+                <TableHead className="font-semibold text-purple-900">
                   Tên đợt thi
                 </TableHead>
                 <TableHead className="font-semibold text-purple-900">
-                  Thời gian
+                  Niên khóa
                 </TableHead>
                 <TableHead className="font-semibold text-purple-900">
-                  Địa điểm
+                  Thời gian
                 </TableHead>
                 <TableHead className="font-semibold text-purple-900">
                   Trạng thái
@@ -233,8 +236,14 @@ const ExamSessions = () => {
                   key={session.id}
                   className="hover:bg-purple-50/30 transition-colors"
                 >
+                  <TableCell className="font-medium text-gray-700">
+                    #{session.id}
+                  </TableCell>
                   <TableCell className="font-medium text-gray-900">
                     {session.name}
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-600">
+                    {session.academicYear?.name || "-"}
                   </TableCell>
                   <TableCell className="text-sm text-gray-600">
                     <div className="flex flex-col space-y-1">
@@ -246,12 +255,6 @@ const ExamSessions = () => {
                         <span className="text-xs text-gray-500">Kết thúc:</span>
                         {formatDate(session.end_date)}
                       </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <MapPin className="h-4 w-4 text-purple-500" />
-                      <span>{session.location?.name || "N/A"}</span>
                     </div>
                   </TableCell>
                   <TableCell>

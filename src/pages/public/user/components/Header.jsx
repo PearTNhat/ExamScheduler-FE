@@ -33,6 +33,8 @@ function Header({ user, isLoggedIn, accessToken }) {
   useEffect(() => {
     if (accessToken) {
       dispatch(fetchCurrentUser({ accessToken }));
+    } else {
+      navigate("/login");
     }
   }, [accessToken]);
   return (

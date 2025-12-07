@@ -57,8 +57,8 @@ const RoomFormModal = ({
       try {
         // Dùng chính apiGetLocations để tìm theo ID, dù không tối ưu bằng getById
         const response = await apiGetLocations({ page: 1, limit: 1, id: id });
-        if (response.code === 200 && response.data.rows.length > 0) {
-          setSelectedLocationName(response.data.rows[0].name);
+        if (response.code === 200) {
+          setSelectedLocationName(response.data.data[0].name);
         } else {
           setSelectedLocationName(`Không tìm thấy ID: ${id}`);
         }
@@ -71,12 +71,13 @@ const RoomFormModal = ({
       reset({
         code: editingRoom.code || "",
         capacity: editingRoom.capacity || "",
-        location_id: editingRoom.location_id || "",
+        location_id: editingRoom.location.id || "",
         type: editingRoom.type || "LT",
         is_active: editingRoom.is_active ?? true,
       });
-      if (editingRoom.location_id) {
-        fetchInitialLocationName(editingRoom.location_id);
+      if (editingRoom.location?.id) {
+        fetchInitialLocationName(editingRoom.location.id);
+        // setSelectedLocationName(editingRoom.location.name);
       } else {
         setSelectedLocationName("");
       }

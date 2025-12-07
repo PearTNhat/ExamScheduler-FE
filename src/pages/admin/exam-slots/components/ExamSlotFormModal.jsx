@@ -28,7 +28,6 @@ export default function ExamSlotFormModal({
     examSessionId: null,
     description: "",
   });
-  const [examSessionName, setExamSessionName] = useState("");
   const [showSessionPicker, setShowSessionPicker] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -39,19 +38,15 @@ export default function ExamSlotFormModal({
         slotName: editingSlot.slotName || "",
         startTime: editingSlot.startTime || "",
         endTime: editingSlot.endTime || "",
-        examSessionId: editingSlot.examSessionId || null,
         description: editingSlot.description || "",
       });
-      setExamSessionName(editingSlot.examSession?.name || "");
     } else {
       setFormData({
         slotName: "",
         startTime: "",
         endTime: "",
-        examSessionId: null,
         description: "",
       });
-      setExamSessionName("");
     }
     setErrors({});
   }, [editingSlot, open]);
@@ -83,9 +78,9 @@ export default function ExamSlotFormModal({
       }
     }
 
-    if (!formData.examSessionId) {
-      newErrors.examSessionId = "Vui lòng chọn đợt thi";
-    }
+    // if (!formData.examSessionId) {
+    //   newErrors.examSessionId = "Vui lòng chọn đợt thi";
+    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -172,42 +167,6 @@ export default function ExamSlotFormModal({
               )}
             </div>
 
-            {/* Đợt thi - Session Picker */}
-            <div className="space-y-2">
-              <Label htmlFor="exam_session" className="text-sm font-medium">
-                Đợt thi <span className="text-red-500">*</span>
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="exam_session"
-                  placeholder="Chọn đợt thi..."
-                  value={examSessionName}
-                  readOnly
-                  onClick={() => setShowSessionPicker(true)}
-                  className={`flex-1 cursor-pointer ${
-                    errors.examSessionId ? "border-red-500" : ""
-                  }`}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowSessionPicker(true)}
-                  className="shrink-0"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
-              {formData.examSessionId && (
-                <p className="text-xs text-gray-500">
-                  ID: {formData.examSessionId}
-                </p>
-              )}
-              {errors.examSessionId && (
-                <p className="text-sm text-red-500">{errors.examSessionId}</p>
-              )}
-            </div>
-
             {/* Mô tả */}
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium">
@@ -254,13 +213,6 @@ export default function ExamSlotFormModal({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Exam Session Picker Modal */}
-      <ExamSessionPickerModal
-        open={showSessionPicker}
-        onOpenChange={setShowSessionPicker}
-        onSelect={handleSessionSelect}
-      />
     </>
   );
 }

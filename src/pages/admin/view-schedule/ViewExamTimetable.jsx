@@ -36,6 +36,7 @@ const ViewExamTimetable = () => {
   const [timetable, setTimetable] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalExams, setTotalExams] = useState(0);
+  const [totalStudents, setTotalStudents] = useState(0);
   const { accessToken } = useSelector((state) => state.user);
   const [sessions, setSessions] = useState([]);
   const [selectedSession, setSelectedSession] = useState("all");
@@ -91,6 +92,7 @@ const ViewExamTimetable = () => {
       if (response.code === 200) {
         setTimetable(response.data.timetable || []);
         setTotalExams(response.data.totalExams || 0);
+        setTotalStudents(response.data.totalStudents || 0);
       }
     } catch (error) {
       showToastError(error.message || "Lỗi khi tải lịch thi");
@@ -252,7 +254,7 @@ const ViewExamTimetable = () => {
                 <SelectValue placeholder="Chọn đợt thi" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value={"all"}>Tất cả</SelectItem>
                 {sessions.map((session) => (
                   <SelectItem key={session.id} value={session.id.toString()}>
                     {session.name}
@@ -306,7 +308,7 @@ const ViewExamTimetable = () => {
         <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Tổng số kỳ thi</p>
+              <p className="text-sm text-gray-600">Tổng số nhóm thi</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">
                 {totalExams}
               </p>
@@ -336,19 +338,7 @@ const ViewExamTimetable = () => {
             <div>
               <p className="text-sm text-gray-600">Tổng sinh viên</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">
-                {timetable.reduce(
-                  (sum, day) =>
-                    sum +
-                    day.morning.reduce(
-                      (s, exam) => s + (exam.studentCount || 0),
-                      0
-                    ) +
-                    day.afternoon.reduce(
-                      (s, exam) => s + (exam.studentCount || 0),
-                      0
-                    ),
-                  0
-                )}
+                {totalStudents}
               </p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">

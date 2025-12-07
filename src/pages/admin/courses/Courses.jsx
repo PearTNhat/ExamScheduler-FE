@@ -233,9 +233,10 @@ const Courses = () => {
               <TableHead className="font-semibold">Mã môn học</TableHead>
               <TableHead className="font-semibold">Tên môn học</TableHead>
               <TableHead className="font-semibold">Tín chỉ</TableHead>
-              <TableHead className="font-semibold">Sinh viên dự kiến</TableHead>
-              <TableHead className="font-semibold">Ngày tạo</TableHead>
-              <TableHead className="font-semibold">Trạng thái</TableHead>
+              <TableHead className="font-semibold">
+                Thời gian thi (phút)
+              </TableHead>
+              {/* <TableHead className="font-semibold">Trạng thái</TableHead>  */}
               <TableHead className="text-right font-semibold">
                 Thao tác
               </TableHead>
@@ -309,14 +310,11 @@ const Courses = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4 text-gray-400" />
-                      <span>{course.expected_students}</span>
+                      <span>{course.duration_course_exam}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-gray-500 text-sm">
-                    {formatDate(course.createdAt)}
-                  </TableCell>
-                  <TableCell>
+
+                  {/* <TableCell>
                     {course.is_active ? (
                       <Badge variant="success" className="gap-1">
                         <div className="w-1.5 h-1.5 rounded-full bg-green-600"></div>
@@ -328,7 +326,7 @@ const Courses = () => {
                         Ngừng hoạt động
                       </Badge>
                     )}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Button
