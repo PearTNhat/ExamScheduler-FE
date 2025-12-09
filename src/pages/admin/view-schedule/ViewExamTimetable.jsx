@@ -7,6 +7,7 @@ import {
   Grid3x3Icon,
   Plus,
   X,
+  ShieldAlert,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -18,7 +19,11 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
-import { apiViewTimetableExams, apiDeleteExam } from "~/apis/examsApi";
+import {
+  apiViewTimetableExams,
+  apiDeleteExam,
+  apiCheckExamConflicts,
+} from "~/apis/examsApi";
 import { apiGetExamSessions } from "~/apis/exam-sessionsApi";
 import { showToastError, showToastSuccess, confirmAlert } from "~/utils/alert";
 import { useSelector } from "react-redux";
@@ -28,6 +33,7 @@ import CreateExamModal from "./components/CreateExamModal";
 import TimetableGrid from "./components/TimetableGrid";
 import CalendarMonthView from "./components/CalendarMonthView";
 import ClassPickerModal from "../components/ClassPickerModal";
+import ConflictCheckModal from "./components/ConflictCheckModal";
 import { getInitialDateRange } from "./utils/helper";
 
 // Tính toán giá trị ban đầu một lần
@@ -51,6 +57,9 @@ const ViewExamTimetable = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isConflictCheckOpen, setIsConflictCheckOpen] = useState(false);
+  const [conflictCheckLoading, setConflictCheckLoading] = useState(false);
+  const [conflictCheckResult, setConflictCheckResult] = useState(null);
 
   useEffect(() => {
     if (accessToken) {
@@ -138,6 +147,37 @@ const ViewExamTimetable = () => {
 
   const handleExamCreated = () => {
     fetchTimetable();
+  };
+
+  const handleCheckConflicts = async () => {
+    if (!selectedSession || selectedSession === "all") {
+      showToastError("Vui lòng chọn đợt thi để kiểm tra xung đột");
+      return;
+    }
+
+    try {
+      setConflictCheckLoading(true);
+      setIsConflictCheckOpen(true);
+
+      const response = await apiCheckExamConflicts({
+        accessToken,
+        examSessionId: parseInt(selectedSession),
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+      });
+
+      if (response.code === 200) {
+        setConflictCheckResult(response.data);
+      } else {
+        showToastError(response.message || "Lỗi khi kiểm tra xung đột");
+        setIsConflictCheckOpen(false);
+      }
+    } catch (error) {
+      showToastError(error.message || "Lỗi khi kiểm tra xung đột");
+      setIsConflictCheckOpen(false);
+    } finally {
+      setConflictCheckLoading(false);
+    }
   };
 
   const handleDeleteExam = async (examId) => {
@@ -298,6 +338,14 @@ const ViewExamTimetable = () => {
           <Button onClick={handleFilter} className="flex-1">
             Áp dụng
           </Button>
+          <Button
+            onClick={handleCheckConflicts}
+            variant="outline"
+            className="gap-2 border-orange-300 text-orange-700 hover:bg-orange-50"
+          >
+            <ShieldAlert className="h-4 w-4" />
+            Kiểm tra xung đột
+          </Button>
           <Button onClick={handleResetFilter} variant="outline">
             Đặt lại
           </Button>
@@ -397,6 +445,13 @@ const ViewExamTimetable = () => {
         open={isClassPickerOpen}
         onOpenChange={setIsClassPickerOpen}
         onSelect={handleClassSelect}
+      />
+
+      <ConflictCheckModal
+        open={isConflictCheckOpen}
+        onOpenChange={setIsConflictCheckOpen}
+        conflicts={conflictCheckResult}
+        loading={conflictCheckLoading}
       />
     </div>
   );

@@ -233,7 +233,25 @@ const apiAddSupervisorsToExam = async ({ accessToken, examId, supervisorIds }) =
         throw new Error(error.message);
     }
 };
-
+const apiCheckExamConflicts = async ({ accessToken, examSessionId, startDate, endDate }) => {
+    try {
+        const { data } = await http.post("/exams/check-conflicts", {
+            examSessionId,
+            startDate,
+            endDate,
+        }, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+        return data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        throw new Error(error.message);
+    }
+};
 export {
     apiGetExams,
     apiGetExamById,
@@ -249,4 +267,7 @@ export {
     apiRemoveSupervisorFromExam,
     apiAddStudentsToExam,
     apiAddSupervisorsToExam,
+    apiCheckExamConflicts,
 };
+
+
