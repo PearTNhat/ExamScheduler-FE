@@ -60,36 +60,40 @@ const StudentManager = () => {
   const [editingStudent, setEditingStudent] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchStudents = useCallback(async () => {
-    if (!accessToken) return;
-    try {
-      setLoading(true);
-      const params = {
-        page: currentParams.page,
-        limit: 10,
-        name: currentParams.name,
-      };
-      const res = await apiGetStudents({ accessToken, params });
-      if (res.code === 200) {
-        setStudents(res.data.data || []);
-        setPagination({
-          currentPage: res.data.meta.page,
-          totalPages: res.data.meta.totalPages,
-        });
-      } else {
-        showToastError(res.message || "Lỗi khi tải danh sách sinh viên");
+  const fetchStudents = useCallback(
+    async ({ currentParams }) => {
+      if (!accessToken) return;
+      try {
+        setLoading(true);
+        console.log("currentParams", currentParams);
+        const params = {
+          page: currentParams.page,
+          limit: 10,
+          search: currentParams.code,
+        };
+        const res = await apiGetStudents({ accessToken, params });
+        if (res.code === 200) {
+          setStudents(res.data.data || []);
+          setPagination({
+            currentPage: res.data.meta.page,
+            totalPages: res.data.meta.totalPages,
+          });
+        } else {
+          showToastError(res.message || "Lỗi khi tải danh sách sinh viên");
+        }
+      } catch (err) {
+        showToastError("Không thể tải danh sách sinh viên");
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      showToastError("Không thể tải danh sách sinh viên");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [accessToken, currentParams.page, currentParams.name]);
+    },
+    [accessToken, currentParams.page, currentParams.name]
+  );
 
   useEffect(() => {
-    fetchStudents();
-  }, [fetchStudents]);
+    fetchStudents({ currentParams });
+  }, [fetchStudents, currentParams]);
   // Modal handlers
   const handleOpenAddModal = () => {
     setEditingStudent(null);

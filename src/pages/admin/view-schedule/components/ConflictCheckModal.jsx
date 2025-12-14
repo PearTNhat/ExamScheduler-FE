@@ -19,6 +19,7 @@ import {
   Building2,
   BookOpen,
 } from "lucide-react";
+import { formatConstraintType } from "~/utils/helper";
 
 const ConflictCheckModal = ({ open, onOpenChange, conflicts, loading }) => {
   const [hardConflicts, setHardConflicts] = useState([]);
@@ -50,46 +51,23 @@ const ConflictCheckModal = ({ open, onOpenChange, conflicts, loading }) => {
     return <Icon className="h-4 w-4" />;
   };
 
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case "CRITICAL":
-        return "destructive";
-      case "HIGH":
-        return "default";
-      case "MEDIUM":
-        return "secondary";
-      case "LOW":
-        return "outline";
-      default:
-        return "secondary";
-    }
-  };
-
-  const formatConstraintType = (type) => {
-    const typeMap = {
-      ROOM_CAPACITY: "Vượt sức chứa phòng",
-      ROOM_TYPE_MISMATCH: "Loại phòng không phù hợp",
-      MISSING_SECOND_PROCTOR: "Thiếu giám thị phụ",
-      PROCTOR_UNAVAILABLE: "Giám thị không có sẵn",
-      ROOM_CONFLICT: "Xung đột phòng thi",
-      PROCTOR_CONFLICT: "Xung đột giám thị",
-      STUDENT_CONFLICT: "Xung đột sinh viên",
-      MAX_EXAMS_PER_DAY: "Vượt số ca thi/ngày",
-      TOO_MANY_LOCATIONS: "Vượt giới hạn địa điểm",
-      LECTURER_OVERLOAD: "Vượt số ca giám thị",
-      TOO_MANY_SLOTS_PER_COURSE: "Vượt số ca thi/môn",
-      LECTURER_LOCATION_MOVEMENT: "Di chuyển địa điểm quá xa",
-    };
-    return typeMap[type] || type;
-  };
-
-  const ConflictItem = ({ conflict, isHard }) => (
+  // Cập nhật: Thêm prop 'index'
+  const ConflictItem = ({ conflict, isHard, index }) => (
     <div
       className={`p-4 rounded-lg border ${
         isHard ? "border-red-200 bg-red-50" : "border-yellow-200 bg-yellow-50"
       }`}
     >
       <div className="flex items-start gap-3">
+        {/* Cập nhật: Hiển thị số thứ tự */}
+        <div
+          className={`flex items-center justify-center h-8 w-6 font-bold text-sm ${
+            isHard ? "text-red-800" : "text-yellow-800"
+          }`}
+        >
+          {index}.
+        </div>
+
         <div
           className={`p-2 rounded-lg ${
             isHard ? "bg-red-100 text-red-600" : "bg-yellow-100 text-yellow-600"
@@ -103,6 +81,15 @@ const ConflictCheckModal = ({ open, onOpenChange, conflicts, loading }) => {
               <h4 className="font-semibold text-gray-900">
                 {formatConstraintType(conflict.constraintType)}
               </h4>
+              {conflict.description && (
+                <p
+                  className={`text-sm ${
+                    isHard ? "text-red-700" : "text-yellow-800"
+                  }`}
+                >
+                  {conflict.description}
+                </p>
+              )}
             </div>
           </div>
 
@@ -201,7 +188,12 @@ const ConflictCheckModal = ({ open, onOpenChange, conflicts, loading }) => {
                   </h3>
                   <div className="space-y-3">
                     {hardConflicts.map((conflict, idx) => (
-                      <ConflictItem key={idx} conflict={conflict} isHard />
+                      <ConflictItem
+                        key={idx}
+                        conflict={conflict}
+                        isHard
+                        index={idx + 1} // Cập nhật: Truyền index
+                      />
                     ))}
                   </div>
                 </div>
@@ -216,7 +208,11 @@ const ConflictCheckModal = ({ open, onOpenChange, conflicts, loading }) => {
                   </h3>
                   <div className="space-y-3">
                     {softConflicts.map((conflict, idx) => (
-                      <ConflictItem key={idx} conflict={conflict} />
+                      <ConflictItem
+                        key={idx}
+                        conflict={conflict}
+                        index={idx + 1} // Cập nhật: Truyền index
+                      />
                     ))}
                   </div>
                 </div>

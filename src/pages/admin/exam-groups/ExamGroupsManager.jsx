@@ -360,10 +360,7 @@ const ExamGroupsManager = () => {
                 Loại phòng
               </TableHead>
               <TableHead className="font-semibold text-amber-900">
-                Số SV dự kiến
-              </TableHead>
-              <TableHead className="font-semibold text-amber-900">
-                Trạng thái
+                Tổng sinh viên
               </TableHead>
               <TableHead className="text-right font-semibold text-amber-900">
                 Thao tác
@@ -452,11 +449,10 @@ const ExamGroupsManager = () => {
                     <div className="flex items-center gap-2">
                       <Users2 className="h-4 w-4 text-amber-500" />
                       <span className="font-medium">
-                        {group.expected_student_count || 0}
+                        {group.actual_student_count || 0}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>{getStatusBadge(group.status)}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
                       <Button

@@ -61,6 +61,7 @@ const CoursesList = ({
   onDeleteCourse,
   pagination,
   onPageChange,
+  sessionStats,
   // Props cho exam session selector
   examSessions,
   selectedExamSession,
@@ -72,6 +73,46 @@ const CoursesList = ({
         <BookOpen className="h-5 w-5" />
         Danh sách Môn học
       </CardTitle>
+      {/* Thống kê tổng quan */}
+      {sessionStats && selectedExamSession && (
+        <div className="flex items-center gap-4 mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-indigo-500 rounded-lg">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-600">Tổng lớp</p>
+              <p className="text-lg font-bold text-indigo-700">
+                {sessionStats.totalClasses || 0}
+              </p>
+            </div>
+          </div>
+          <div className="w-px h-12 bg-blue-300"></div>
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-purple-500 rounded-lg">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-600">Tổng khoa</p>
+              <p className="text-lg font-bold text-purple-700">
+                {sessionStats.totalDepartments || 0}
+              </p>
+            </div>
+          </div>
+          <div className="w-px h-12 bg-blue-300"></div>
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-green-500 rounded-lg">
+              <Users className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-600">Đã đăng ký</p>
+              <p className="text-lg font-bold text-green-700">
+                {sessionStats.totalRegistrations || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-gray-700">Kỳ thi:</label>

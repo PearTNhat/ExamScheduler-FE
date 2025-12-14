@@ -26,9 +26,9 @@ const TimetableGrid = ({
     }
   }, [startDate]);
 
-  // Tạo mảng 6 ngày (T2-T7) cho tuần hiện tại
+  // Tạo mảng 7 ngày (T2-CN) cho tuần hiện tại
   const weekDays = useMemo(() => {
-    return Array.from({ length: 6 }).map((_, i) =>
+    return Array.from({ length: 7 }).map((_, i) =>
       addDays(currentWeekStart, i)
     );
   }, [currentWeekStart]);
@@ -73,7 +73,7 @@ const TimetableGrid = ({
             <h2 className="text-xl font-bold text-white">Thời Khóa Biểu Thi</h2>
             <p className="text-blue-100 text-sm mt-1">
               Tuần: {format(weekDays[0], "dd/MM")} -{" "}
-              {format(weekDays[5], "dd/MM/yyyy")}
+              {format(weekDays[6], "dd/MM/yyyy")}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -107,9 +107,9 @@ const TimetableGrid = ({
         </div>
       </div>
 
-      {/* Giao diện Lịch Tuần - Grid 6 cột (T2-T7) */}
+      {/* Giao diện Lịch Tuần - Grid 7 cột (T2-CN) */}
       <div className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 lg:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-2 lg:gap-3">
           {weekDays.map((date) => {
             const dateString = format(date, "yyyy-MM-dd");
             const dayData = timetableMap[dateString] || {

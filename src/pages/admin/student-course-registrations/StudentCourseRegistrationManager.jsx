@@ -29,6 +29,7 @@ const StudentCourseRegistrationManager = () => {
   const [coursesLimit] = useState(10);
   const [courseSearch, setCourseSearch] = useState("");
   const [coursesTotalPages, setCoursesTotalPages] = useState(1);
+  const [sessionStats, setSessionStats] = useState(null);
 
   // State phân trang students
   const [studentsPage, setStudentsPage] = useState(1);
@@ -75,10 +76,9 @@ const StudentCourseRegistrationManager = () => {
       );
 
       if (response.code === 200) {
-        console.log(response.data.data);
         setCourses(response.data.data || []);
-        console.log("re", response.data);
         setCoursesTotalPages(response.data.meta.totalPages || 1);
+        setSessionStats(response.data.meta.sessionStats || null);
       } else {
         toast.error(response.message || "Lỗi khi tải môn học");
       }
@@ -316,6 +316,7 @@ const StudentCourseRegistrationManager = () => {
           totalPages: coursesTotalPages,
         }}
         onPageChange={setCoursesPage}
+        sessionStats={sessionStats}
         // Props cho exam session selector
         examSessions={examSessions}
         selectedExamSession={selectedExamSession}

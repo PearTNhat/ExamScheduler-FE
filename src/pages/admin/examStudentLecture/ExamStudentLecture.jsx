@@ -27,7 +27,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Badge } from "~/components/ui/badge";
 import StudentPickerModal from "../view-schedule/components/StudentPickerModal";
 import ProctorPickerModal from "../components/ProctorPickerModal";
 import { apiExamStudent } from "~/apis/studentsApi";
@@ -90,7 +89,6 @@ export default function ExamStudentLecture() {
   };
 
   const handleStudentSelect = (students) => {
-    console.log("student", students);
     if (students.length > 0) {
       setSelectedPerson(students[0]);
       setShowStudentModal(false);
@@ -98,7 +96,6 @@ export default function ExamStudentLecture() {
   };
 
   const handleLecturerSelect = (lecturers) => {
-    console.log("lecturer", lecturers);
     setSelectedPerson(lecturers);
     setShowLecturerModal(false);
   };
@@ -142,19 +139,6 @@ export default function ExamStudentLecture() {
       console.error(error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Đã công bố":
-        return "bg-green-500";
-      case "Chốt":
-        return "bg-blue-500";
-      case "Dự thảo":
-        return "bg-yellow-500";
-      default:
-        return "bg-gray-500";
     }
   };
 

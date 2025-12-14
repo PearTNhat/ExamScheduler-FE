@@ -4,66 +4,64 @@ import { Button } from "~/components/ui/button";
 // Exam Card Component
 const ExamCard = ({ exam, onViewDetail, onEdit, onDelete }) => {
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 space-y-2">
-          <div className="flex items-start gap-3">
-            <div className="flex-1">
-              <h4 className="font-semibold text-gray-900 text-sm">
-                {exam?.courseName}
-              </h4>
-            </div>
-          </div>
+    <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+      <div className="space-y-2">
+        {/* Course name */}
+        <h4 className="font-semibold text-gray-900 text-xs leading-tight line-clamp-2">
+          {exam?.courseName}
+        </h4>
 
-          <div className="mt-3">
-            <div className="flex items-center text-sm">
-              <Calendar className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-700 font-medium">
-                {exam?.slot.startTime}- {exam.slot.endTime}
-              </span>
-            </div>
-            <div className="flex items-center py-1 text-sm">
-              <Users2 className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-700 ">
-                <span className="font-medium">
-                  {exam?.examGroup.expected_student_count}
-                </span>{" "}
-                SV{" "}
-              </span>
-            </div>
-            <div className="flex items-center text-sm">
-              <span className="text-gray-500">Phòng:</span>
-              <span className="text-gray-900 font-medium">
-                {exam?.room.code}
-              </span>
-            </div>
+        {/* Time and Room info */}
+        <div className="space-y-1 text-xs">
+          <div className="flex items-center gap-1 text-gray-700">
+            <Calendar className="h-3 w-3 text-gray-400 flex-shrink-0" />
+            <span className="font-medium">
+              {exam?.slot.startTime} - {exam.slot.endTime}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Users2 className="h-3 w-3 text-gray-400 flex-shrink-0" />
+            <span className="text-gray-700">
+              <span className="font-medium">
+                {exam?.examGroup.expected_student_count}
+              </span>{" "}
+              SV
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-gray-600">
+            <span>Phòng:</span>
+            <span className="text-gray-900 font-medium">{exam?.room.code}</span>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
+        {/* Action buttons - Compact horizontal layout */}
+        <div className="flex items-center gap-1 pt-1 border-t border-gray-100">
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={() => onViewDetail(exam.examId)}
-            className="gap-2"
+            className="h-7 w-7 p-0 hover:bg-blue-50"
+            title="Xem chi tiết"
           >
-            <Eye className="h-4 w-4" />
+            <Eye className="h-3.5 w-3.5 text-blue-600" />
           </Button>
           <Button
             size="sm"
-            variant="default"
+            variant="ghost"
             onClick={() => onEdit(exam)}
-            className="gap-2"
+            className="h-7 w-7 p-0 hover:bg-green-50"
+            title="Sửa"
           >
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-3.5 w-3.5 text-green-600" />
           </Button>
           <Button
             size="sm"
-            variant="destructive"
+            variant="ghost"
             onClick={() => onDelete && onDelete(exam.examId)}
-            className="gap-2"
+            className="h-7 w-7 p-0 hover:bg-red-50"
+            title="Xóa"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5 text-red-600" />
           </Button>
         </div>
       </div>

@@ -13,7 +13,8 @@ import {
   Bot,
   CalendarRange,
   Users,
-  Clock3, // thêm mới cho "Ca thi"
+  Clock3,
+  CalendarSearch, // thêm mới cho "Ca thi"
 } from "lucide-react";
 import { adminPaths } from "./path";
 
@@ -74,8 +75,8 @@ const navItems = [
     path: adminPaths.LECTURES,
   },
   {
-    icon: <UserSquare size={20} className="text-emerald-500" />,
-    name: "Lịch thi sv-gv",
+    icon: <CalendarSearch size={20} className="text-teal-500" />,
+    name: "Lịch thi SV-GV",
     path: adminPaths.VIEW_SCHEDULE_S_L,
   },
 

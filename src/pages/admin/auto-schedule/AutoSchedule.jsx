@@ -21,6 +21,7 @@ import {
   showToastWarning,
   showToastSuccess,
 } from "~/utils/alert";
+import { formatConstraintType } from "~/utils/helper";
 import {
   apiGenerateExamSchedule,
   apiGetExamHistory,
@@ -456,7 +457,7 @@ const AutoSchedule = () => {
                               className="text-xs text-red-600 bg-white p-2 rounded"
                             >
                               <div className="font-medium">
-                                {conflict.constraintType}
+                                {formatConstraintType(conflict.constraintType)}
                               </div>
                               <div className="text-red-500">
                                 {conflict.description}
@@ -492,7 +493,11 @@ const AutoSchedule = () => {
                                 className="text-xs bg-white p-2 rounded border border-amber-100 shadow-sm"
                               >
                                 <div className="font-bold text-amber-600 mb-1">
-                                  [{conflict.constraintType}]
+                                  [
+                                  {formatConstraintType(
+                                    conflict.constraintType
+                                  )}
+                                  ]
                                 </div>
                                 {/* Hiển thị Description */}
                                 <div className="text-gray-700">
