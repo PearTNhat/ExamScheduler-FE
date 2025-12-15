@@ -228,7 +228,7 @@ export default function ProctorPickerModal({
                 {multiSelect && <TableHead className="w-12"></TableHead>}
                 <TableHead className="font-semibold">Mã GV</TableHead>
                 <TableHead className="font-semibold">Họ tên</TableHead>
-                <TableHead className="font-semibold">Khoa</TableHead>
+                {/* <TableHead className="font-semibold">Khoa</TableHead> */}
                 <TableHead className="font-semibold">Vai trò</TableHead>
               </TableRow>
             </TableHeader>
@@ -288,7 +288,7 @@ export default function ProctorPickerModal({
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{fullName}</TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         {lecturer.department ? (
                           <Badge variant="outline">
                             {lecturer.department.name}
@@ -296,7 +296,7 @@ export default function ProctorPickerModal({
                         ) : (
                           <span className="text-gray-400 text-sm">N/A</span>
                         )}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>
                         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
                           Giám thị

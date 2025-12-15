@@ -80,18 +80,18 @@ export default function ExamGroupFormModal({
   }, [editingGroup, open]);
 
   const handleCourseDepartmentSelect = (courseDepartment) => {
-    setFormData({ ...formData, course_department_id: courseDepartment.id });
+    setFormData({
+      ...formData,
+      course_department_id: courseDepartment.id,
+      exam_session_id: courseDepartment.examSession?.id || null,
+    });
     const courseName = courseDepartment.course?.nameCourse || "";
     const className = courseDepartment.classes?.name || "";
     const lecturerName = courseDepartment.lecturer?.name || "";
     setCourseDepartmentName(`${courseName} - ${className} - ${lecturerName}`);
+    // Auto fill session name from selected CourseDepartment
+    setSessionName(courseDepartment.examSession?.name || "");
     setShowCourseDepartmentPicker(false);
-  };
-
-  const handleSessionSelect = (session) => {
-    setFormData({ ...formData, exam_session_id: session.id });
-    setSessionName(session.name);
-    setShowSessionPicker(false);
   };
 
   const validate = () => {
@@ -126,7 +126,6 @@ export default function ExamGroupFormModal({
       onSubmit(submitData);
     }
   };
-
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -214,40 +213,17 @@ export default function ExamGroupFormModal({
               )}
             </div>
 
-            {/* Đợt thi - Session Picker */}
+            {/* Đợt thi - Auto-filled from CourseDepartment selection */}
             <div className="space-y-2">
               <Label htmlFor="exam_session" className="text-sm font-medium">
-                Đợt thi <span className="text-red-500">*</span>
+                Đợt thi
               </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="exam_session"
-                  placeholder="Chọn đợt thi..."
-                  value={sessionName}
-                  readOnly
-                  onClick={() => setShowSessionPicker(true)}
-                  className={`flex-1 cursor-pointer ${
-                    errors.exam_session_id ? "border-red-500" : ""
-                  }`}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowSessionPicker(true)}
-                  className="shrink-0"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
-              {formData.exam_session_id && (
-                <p className="text-xs text-gray-500">
-                  ID: {formData.exam_session_id}
-                </p>
-              )}
-              {errors.exam_session_id && (
-                <p className="text-sm text-red-500">{errors.exam_session_id}</p>
-              )}
+              <Input
+                id="exam_session"
+                value={sessionName}
+                readOnly
+                placeholder="Tự động theo đăng ký học phần"
+              />
             </div>
 
             {/* Loại phòng */}
@@ -321,12 +297,7 @@ export default function ExamGroupFormModal({
         onSelect={handleCourseDepartmentSelect}
       />
 
-      {/* Exam Session Picker Modal */}
-      <ExamSessionPickerModal
-        open={showSessionPicker}
-        onOpenChange={setShowSessionPicker}
-        onSelect={handleSessionSelect}
-      />
+      {/* Exam Session Picker Modal removed: session is derived from CourseDepartment */}
     </>
   );
 }

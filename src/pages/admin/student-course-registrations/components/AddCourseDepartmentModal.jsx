@@ -37,6 +37,7 @@ const AddCourseDepartmentModal = ({
   const [selectedExamSession, setSelectedExamSession] = useState("");
   const [isCompulsory, setIsCompulsory] = useState(false);
   const [expectedStudents, setExpectedStudents] = useState(0);
+  const [roomType, setRoomType] = useState("LT");
 
   const [showClassPicker, setShowClassPicker] = useState(false);
   const [showCoursePicker, setShowCoursePicker] = useState(false);
@@ -74,6 +75,7 @@ const AddCourseDepartmentModal = ({
       examSessionId: parseInt(selectedExamSession),
       isCompulsory,
       expected_students: parseInt(expectedStudents) || 0,
+      roomType,
     };
 
     onSubmit(data);
@@ -86,6 +88,7 @@ const AddCourseDepartmentModal = ({
     setSelectedExamSession("");
     setIsCompulsory(false);
     setExpectedStudents(0);
+    setRoomType("LT");
   };
 
   const handleClose = () => {
@@ -284,6 +287,27 @@ const AddCourseDepartmentModal = ({
                   </Button>
                 )}
               </div>
+            </div>
+
+            {/* Room Type Selector */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-sm font-medium">
+                <Building2 className="h-4 w-4 text-indigo-600" />
+                Loại phòng thi (ưu tiên)
+              </Label>
+              <Select value={roomType} onValueChange={setRoomType}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Chọn loại phòng" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LT">LT - Lý thuyết</SelectItem>
+                  <SelectItem value="Lab">Lab - Phòng máy</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500">
+                Hệ thống sẽ ưu tiên xếp phòng theo loại được chọn cho môn học
+                này.
+              </p>
             </div>
 
             {/* Expected Students Input */}

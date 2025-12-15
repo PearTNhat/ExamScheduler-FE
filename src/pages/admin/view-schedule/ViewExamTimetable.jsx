@@ -38,6 +38,17 @@ import { getInitialDateRange } from "./utils/helper";
 
 // Tính toán giá trị ban đầu một lần
 const { start: initialStartDate, end: initialEndDate } = getInitialDateRange();
+
+// Helper function to format ISO date to YYYY-MM-DD
+const formatDateToInput = (isoString) => {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const ViewExamTimetable = () => {
   const [timetable, setTimetable] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +78,23 @@ const ViewExamTimetable = () => {
       fetchExamSessions();
     }
   }, [accessToken]);
+
+  // Auto-set dates from selected exam session
+  useEffect(() => {
+    if (selectedSession && selectedSession !== "all" && sessions.length > 0) {
+      const session = sessions.find(
+        (s) => s.id.toString() === selectedSession.toString()
+      );
+      if (session) {
+        if (session.start_date_exam) {
+          setStartDate(formatDateToInput(session.start_date_exam));
+        }
+        if (session.end_date_exam) {
+          setEndDate(formatDateToInput(session.end_date_exam));
+        }
+      }
+    }
+  }, [selectedSession, sessions]);
 
   const fetchExamSessions = async () => {
     try {

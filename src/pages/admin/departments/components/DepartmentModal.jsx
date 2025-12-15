@@ -81,12 +81,12 @@ const DepartmentFormModal = ({
             </Label>
             <Input
               id="location_id"
-              placeholder="VD: Công Nghệ Thông Tin"
+              placeholder="VD: 1"
               className={`h-11 ${
                 errors.location_id ? "border-red-500 focus:ring-red-500" : ""
               }`}
               {...register("location_id", {
-                required: "Vui lòng nhập địa điểm",
+                required: "Vui lòng nhập id  địa điểm",
                 valueAsNumber: true,
                 validate: (value) =>
                   (!isNaN(value) && value > 0) ||

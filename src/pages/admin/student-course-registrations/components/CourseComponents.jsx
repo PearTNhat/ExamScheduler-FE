@@ -1,5 +1,13 @@
 import React from "react";
-import { Plus, Search, Users, BookOpen, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Users,
+  BookOpen,
+  Trash2,
+  Building2,
+  FileCheck,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -75,41 +83,57 @@ const CoursesList = ({
       </CardTitle>
       {/* Thống kê tổng quan */}
       {sessionStats && selectedExamSession && (
-        <div className="flex items-center gap-4 mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-indigo-500 rounded-lg">
-              <BookOpen className="h-5 w-5 text-white" />
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Card 1 */}
+          <div className="flex flex-col p-4 bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-blue-600/80">
+                Lớp học
+              </span>
+              <BookOpen className="h-5 w-5 text-blue-500" />
             </div>
-            <div>
-              <p className="text-xs text-gray-600">Tổng lớp</p>
-              <p className="text-lg font-bold text-indigo-700">
-                {sessionStats.totalClasses || 0}
-              </p>
-            </div>
+            <span className="text-2xl font-bold text-gray-800">
+              {sessionStats.totalClasses || 0}
+            </span>
           </div>
-          <div className="w-px h-12 bg-blue-300"></div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-purple-500 rounded-lg">
-              <BookOpen className="h-5 w-5 text-white" />
+
+          {/* Card 2 */}
+          <div className="flex flex-col p-4 bg-gradient-to-br from-purple-50 to-white border border-purple-100 rounded-xl shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-purple-600/80">
+                Khoa/Viện
+              </span>
+              <Building2 className="h-5 w-5 text-purple-500" />
             </div>
-            <div>
-              <p className="text-xs text-gray-600">Tổng khoa</p>
-              <p className="text-lg font-bold text-purple-700">
-                {sessionStats.totalDepartments || 0}
-              </p>
-            </div>
+            <span className="text-2xl font-bold text-gray-800">
+              {sessionStats.totalDepartments || 0}
+            </span>
           </div>
-          <div className="w-px h-12 bg-blue-300"></div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-green-500 rounded-lg">
-              <Users className="h-5 w-5 text-white" />
+
+          {/* Card 3 */}
+          <div className="flex flex-col p-4 bg-gradient-to-br from-orange-50 to-white border border-orange-100 rounded-xl shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-orange-600/80">
+                Lượt Đ.Ký
+              </span>
+              <FileCheck className="h-5 w-5 text-orange-500" />
             </div>
-            <div>
-              <p className="text-xs text-gray-600">Đã đăng ký</p>
-              <p className="text-lg font-bold text-green-700">
-                {sessionStats.totalRegistrations || 0}
-              </p>
+            <span className="text-2xl font-bold text-gray-800">
+              {sessionStats.totalRegistrations || 0}
+            </span>
+          </div>
+
+          {/* Card 4 */}
+          <div className="flex flex-col p-4 bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-xl shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-emerald-600/80">
+                Sinh viên
+              </span>
+              <Users className="h-5 w-5 text-emerald-500" />
             </div>
+            <span className="text-2xl font-bold text-gray-800">
+              {sessionStats.totalStudents || 0}
+            </span>
           </div>
         </div>
       )}
@@ -174,6 +198,7 @@ const CoursesList = ({
                   <TableHead className="font-semibold">Tên môn học</TableHead>
                   <TableHead className="font-semibold">Lớp</TableHead>
                   <TableHead className="font-semibold">Giảng viên</TableHead>
+                  <TableHead className="font-semibold">Loại phòng</TableHead>
                   <TableHead className="font-semibold">Tín chỉ</TableHead>
                   <TableHead className="font-semibold">Thời gian thi</TableHead>
                   <TableHead className="font-semibold">
@@ -226,6 +251,16 @@ const CoursesList = ({
                         <span className="text-sm text-gray-600">
                           {item.lecturerName || "N/A"}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const rt = item.roomType || item.room_type || "LT";
+                          const label =
+                            rt === "Lab" ? " Phòng máy" : "Lý thuyết";
+                          const variant =
+                            rt === "Lab" ? "secondary" : "outline";
+                          return <Badge variant={variant}>{label}</Badge>;
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{item.credits} TC</Badge>

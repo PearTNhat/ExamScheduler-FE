@@ -45,7 +45,7 @@ const Departments = () => {
     [searchParams]
   );
   // Fetch departments
-  const fetchDepartments = async ({ accessToken }) => {
+  const fetchDepartments = async ({ accessToken, currentParams }) => {
     try {
       setLoading(true);
       const params = {
@@ -73,9 +73,9 @@ const Departments = () => {
 
   useEffect(() => {
     if (accessToken) {
-      fetchDepartments({ accessToken });
+      fetchDepartments({ accessToken, currentParams });
     }
-  }, [accessToken]);
+  }, [accessToken, currentParams]);
   // Handle add department
   const handleAddDepartment = () => {
     setEditingDepartment(null);
@@ -113,7 +113,7 @@ const Departments = () => {
             : "Thêm khoa thành công"
         );
         setShowModal(false);
-        fetchDepartments({ accessToken });
+        fetchDepartments({ accessToken, currentParams });
       } else {
         showToastError(response.message || "Có lỗi xảy ra");
       }
@@ -140,7 +140,7 @@ const Departments = () => {
 
         if (response.code === 200) {
           showToastSuccess("Xóa khoa thành công");
-          fetchDepartments({ accessToken });
+          fetchDepartments({ accessToken, currentParams });
         } else {
           showToastError(response.message || "Có lỗi xảy ra khi xóa khoa");
         }

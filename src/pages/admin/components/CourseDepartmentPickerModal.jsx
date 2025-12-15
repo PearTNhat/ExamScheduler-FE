@@ -25,9 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { BookOpen, Search, Building2, Calendar } from "lucide-react";
-import { apiGetCourseDepartments } from "~/apis/course-departmentApi";
+import { BookOpen, Search, Building2, Calendar, Users } from "lucide-react";
 import { apiGetExamSessions } from "~/apis/exam-sessionsApi";
+import { apiGetCoursesByExamSession } from "~/apis/student-course-registrationsApi";
 import { showToastError } from "~/utils/alert";
 import Pagination from "~/components/pagination/Pagination";
 
@@ -59,7 +59,7 @@ export default function CourseDepartmentPickerModal({
     }
   };
 
-  // Fetch course departments with filters
+  // Fetch course departments via "courses by exam session" API
   const fetchCourseDepartments = async (
     page = 1,
     search = "",
@@ -67,29 +67,26 @@ export default function CourseDepartmentPickerModal({
   ) => {
     try {
       setLoading(true);
-      const params = {
-        page,
-        limit: 10,
-      };
-
-      if (search) {
-        params.search = search;
+      if (!examSessionId || examSessionId === "all") {
+        setCourseDepartments([]);
+        setPagination({ currentPage: 1, totalPages: 1 });
+        return;
       }
 
-      if (examSessionId) {
-        params.examSessionId = parseInt(examSessionId);
-      }
+      const params = { page, limit: 10 };
+      if (search) params.search = search;
 
-      const response = await apiGetCourseDepartments({
+      const response = await apiGetCoursesByExamSession(
         accessToken,
-        params,
-      });
+        parseInt(examSessionId),
+        params
+      );
 
       if (response.code === 200) {
-        setCourseDepartments(response.data.data || []);
+        setCourseDepartments(response.data?.data || []);
         setPagination({
-          currentPage: response.data.meta.page,
-          totalPages: response.data.meta.totalPages,
+          currentPage: response.data?.meta?.page || page,
+          totalPages: response.data?.meta?.totalPages || 1,
         });
       } else {
         showToastError(response.message || "Lỗi khi tải danh sách môn học");
@@ -104,13 +101,30 @@ export default function CourseDepartmentPickerModal({
   // Initialize when modal opens
   useEffect(() => {
     if (open && accessToken) {
-      fetchExamSessions();
-      fetchCourseDepartments(1, "", "");
-      setSearchTerm("");
-      setSelectedExamSession("");
+      (async () => {
+        await fetchExamSessions();
+        setSearchTerm("");
+        // Default select first session (if available) and fetch
+        setTimeout(() => {
+          // ensure state updated after fetchExamSessions resolves
+          // we cannot rely on immediate state, so compute directly
+        }, 0);
+      })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, accessToken]);
+
+  // When examSessions loaded, default to first session if none selected
+  useEffect(() => {
+    if (!open) return;
+    if (!selectedExamSession && examSessions.length > 0) {
+      const first = examSessions[0];
+      const idStr = first.id.toString();
+      setSelectedExamSession(idStr);
+      fetchCourseDepartments(1, "", idStr);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [examSessions, open]);
 
   // Handle search with debounce
   useEffect(() => {
@@ -126,7 +140,6 @@ export default function CourseDepartmentPickerModal({
 
   // Handle exam session change
   const handleExamSessionChange = (sessionId) => {
-    console.log("sessionId", sessionId);
     setSelectedExamSession(sessionId);
     fetchCourseDepartments(1, searchTerm, sessionId);
   };
@@ -135,8 +148,31 @@ export default function CourseDepartmentPickerModal({
     fetchCourseDepartments(page, searchTerm, selectedExamSession);
   };
 
-  const handleSelect = (courseDepartment) => {
-    onSelect(courseDepartment);
+  const handleSelect = (item) => {
+    // Normalize selected item to a CourseDepartment-like shape expected by callers
+    const pickedSession = examSessions.find(
+      (s) => s.id.toString() === selectedExamSession
+    );
+
+    const normalized = {
+      id: item.courseDepartmentId || item.id,
+      course: {
+        codeCourse: item.codeCourse || item.course?.codeCourse,
+        nameCourse: item.nameCourse || item.course?.nameCourse,
+        credits: item.credits || item.course?.credits,
+      },
+      classes: item.className ? { name: item.className } : item.classes,
+      lecturer: item.lecturerName ? { name: item.lecturerName } : item.lecturer,
+      department: item.departmentName
+        ? { departmentName: item.departmentName }
+        : item.department,
+      examSession: {
+        id: pickedSession?.id || item.examSession?.id,
+        name: pickedSession?.name || item.examSession?.name,
+      },
+    };
+
+    onSelect(normalized);
     onOpenChange(false);
   };
 
@@ -165,10 +201,9 @@ export default function CourseDepartmentPickerModal({
               onValueChange={handleExamSessionChange}
             >
               <SelectTrigger className="flex-1">
-                <SelectValue placeholder="Tất cả kỳ thi" />
+                <SelectValue placeholder="Chọn kỳ thi" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả kỳ thi</SelectItem>
                 {examSessions.map((session) => (
                   <SelectItem key={session.id} value={session.id.toString()}>
                     <div className="flex items-center gap-2">
@@ -202,6 +237,8 @@ export default function CourseDepartmentPickerModal({
                 <TableHead className="font-semibold">Mã môn học</TableHead>
                 <TableHead className="font-semibold">Tên môn học</TableHead>
                 <TableHead className="font-semibold">Khoa</TableHead>
+                <TableHead className="font-semibold">Lớp</TableHead>
+                <TableHead className="font-semibold">Giảng viên</TableHead>
                 <TableHead className="font-semibold">Kỳ thi</TableHead>
                 <TableHead className="font-semibold">Tín chỉ</TableHead>
                 <TableHead className="font-semibold">Bắt buộc</TableHead>
@@ -213,7 +250,7 @@ export default function CourseDepartmentPickerModal({
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={9} className="text-center py-8">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-blue-600"></div>
                       <p className="text-sm text-gray-500">Đang tải...</p>
@@ -222,13 +259,13 @@ export default function CourseDepartmentPickerModal({
                 </TableRow>
               ) : courseDepartments.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={9} className="text-center py-8">
                     <div className="flex flex-col items-center gap-2">
                       <BookOpen className="h-12 w-12 text-gray-300" />
                       <p className="text-sm text-gray-500">
                         {searchTerm || selectedExamSession
                           ? "Không tìm thấy môn học phù hợp"
-                          : "Chưa có môn học nào"}
+                          : "Hãy chọn kỳ thi và tìm kiếm môn học"}
                       </p>
                     </div>
                   </TableCell>
@@ -236,7 +273,7 @@ export default function CourseDepartmentPickerModal({
               ) : (
                 courseDepartments.map((cd) => (
                   <TableRow
-                    key={cd.id}
+                    key={cd.id || cd.courseDepartmentId}
                     className="cursor-pointer hover:bg-blue-50 transition-colors"
                     onClick={() => handleSelect(cd)}
                   >
@@ -245,35 +282,54 @@ export default function CourseDepartmentPickerModal({
                         <div className="p-1.5 bg-blue-100 rounded">
                           <BookOpen className="h-4 w-4 text-blue-600" />
                         </div>
-                        {cd.course?.codeCourse || "N/A"}
+                        {cd.codeCourse || cd.course?.codeCourse || "N/A"}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {cd.course?.nameCourse || "N/A"}
+                      {cd.nameCourse || cd.course?.nameCourse || "N/A"}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-indigo-500" />
                         <Badge variant="outline">
-                          {cd.department?.departmentName || "N/A"}
+                          {cd.departmentName ||
+                            cd.department?.departmentName ||
+                            "N/A"}
                         </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {cd.className || cd.classes?.name || "N/A"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-green-600" />
+                        <span className="text-sm">
+                          {cd.lecturerName || cd.lecturer?.name || "N/A"}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-purple-500" />
                         <span className="text-sm">
-                          {cd.examSession?.name || "N/A"}
+                          {examSessions.find(
+                            (s) => s.id.toString() === selectedExamSession
+                          )?.name ||
+                            cd.examSession?.name ||
+                            "N/A"}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">
-                        {cd.course?.credits || 0} TC
+                        {cd.credits || cd.course?.credits || 0} TC
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {cd.isCompulsory ? (
+                      {cd.isCompulsory ?? cd.is_compulsory ?? false ? (
                         <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
                           Bắt buộc
                         </Badge>
