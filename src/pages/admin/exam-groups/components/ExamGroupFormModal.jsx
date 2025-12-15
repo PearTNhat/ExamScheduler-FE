@@ -84,6 +84,7 @@ export default function ExamGroupFormModal({
       ...formData,
       course_department_id: courseDepartment.id,
       exam_session_id: courseDepartment.examSession?.id || null,
+      required_room_type: courseDepartment.roomType || "LT",
     });
     const courseName = courseDepartment.course?.nameCourse || "";
     const className = courseDepartment.classes?.name || "";
@@ -226,38 +227,25 @@ export default function ExamGroupFormModal({
               />
             </div>
 
-            {/* Loại phòng */}
+            {/* Loại phòng - Auto-filled from CourseDepartment */}
             <div className="space-y-2">
               <Label
                 htmlFor="required_room_type"
                 className="text-sm font-medium"
               >
-                Loại phòng <span className="text-red-500">*</span>
+                Loại phòng
               </Label>
-              <Select
-                value={formData.required_room_type}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, required_room_type: value })
+              <Input
+                id="required_room_type"
+                value={
+                  formData.required_room_type === "Lab"
+                    ? "Phòng máy (Lab)"
+                    : "Lý thuyết (LT)"
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn loại phòng" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="LT">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      Lý thuyết (LT)
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="TH">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      Thực hành (TH)
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                readOnly
+                placeholder="Tự động theo đăng ký học phần"
+                className="bg-gray-50"
+              />
             </div>
           </form>
 

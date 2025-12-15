@@ -54,9 +54,8 @@ export default function ExamGroupPickerModal({ open, onOpenChange, onSelect }) {
       showToastError(error.message || "Lỗi khi tải danh sách kỳ thi");
     }
   };
-
   // Fetch exam groups
-  const fetchExamGroups = async (page = 1) => {
+  const fetchExamGroups = async (page = 1, selectedExamSession) => {
     try {
       setLoading(true);
       const params = {
@@ -64,10 +63,10 @@ export default function ExamGroupPickerModal({ open, onOpenChange, onSelect }) {
         limit: 10,
       };
 
-      if (selectedExamSession) {
+      if (selectedExamSession && selectedExamSession !== "all") {
         params.examSessionId = parseInt(selectedExamSession);
       }
-
+      console.log("praamse", params);
       const response = await apiGetExamGroups({
         accessToken,
         params,
@@ -93,21 +92,29 @@ export default function ExamGroupPickerModal({ open, onOpenChange, onSelect }) {
   useEffect(() => {
     if (open && accessToken) {
       fetchExamSessions();
-      fetchExamGroups(1);
       setSearchTerm("");
       setSelectedExamSession("");
+      setExamGroups([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, accessToken]);
 
+  // Fetch exam groups when selected exam session changes
+  useEffect(() => {
+    if (selectedExamSession !== "") {
+      fetchExamGroups(1, selectedExamSession);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedExamSession]);
+
   // Handle exam session change
   const handleExamSessionChange = (sessionId) => {
     setSelectedExamSession(sessionId);
-    fetchExamGroups(1);
+    fetchExamGroups(1, sessionId);
   };
 
   const handlePageChange = (page) => {
-    fetchExamGroups(page);
+    fetchExamGroups(page, selectedExamSession);
   };
 
   const handleSelect = (examGroup) => {
@@ -261,7 +268,7 @@ export default function ExamGroupPickerModal({ open, onOpenChange, onSelect }) {
                       <div className="flex items-center gap-2">
                         <Users2 className="h-4 w-4 text-amber-500" />
                         <span className="font-medium">
-                          {eg.expected_student_count || 0}
+                          {eg.actual_student_count || 0}
                         </span>
                       </div>
                     </TableCell>

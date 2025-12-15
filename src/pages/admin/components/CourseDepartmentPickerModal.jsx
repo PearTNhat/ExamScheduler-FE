@@ -170,6 +170,7 @@ export default function CourseDepartmentPickerModal({
         id: pickedSession?.id || item.examSession?.id,
         name: pickedSession?.name || item.examSession?.name,
       },
+      roomType: item.roomType || item.room_type || "LT",
     };
 
     onSelect(normalized);

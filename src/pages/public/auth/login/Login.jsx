@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { apiLogin } from "~/apis/authApi";
 import { Eye, EyeOff, Mail, Lock, LogIn } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showToastError, showToastSuccess } from "~/utils/alert";
 import { userActions } from "~/stores/slice/userSlice";
@@ -31,7 +31,6 @@ function Login() {
             userData: d.profile,
           })
         );
-        console.log("dssss", d);
         if (d.profile.roles.includes("ADMIN")) {
           navigate("/admin");
           return;
@@ -199,12 +198,12 @@ function Login() {
             <div className="text-center">
               <span className="text-sm text-gray-600">
                 Chưa có tài khoản?{" "}
-                <a
-                  href="/register"
+                <Link
+                  to="/register"
                   className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors"
                 >
                   Đăng ký ngay →
-                </a>
+                </Link>
               </span>
             </div>
           </form>
