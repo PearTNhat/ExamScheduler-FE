@@ -36,7 +36,7 @@ const LocationSelectionModal = ({ open, onOpenChange, onSelectLocation }) => {
     [searchParams]
   );
 
-  const fetchLocations = async () => {
+  const fetchLocations = async ({ currentParams }) => {
     setLoading(true);
     try {
       const response = await apiGetLocations({
@@ -62,7 +62,7 @@ const LocationSelectionModal = ({ open, onOpenChange, onSelectLocation }) => {
   };
 
   useEffect(() => {
-    fetchLocations();
+    fetchLocations({ currentParams });
   }, [currentParams]);
 
   // Hàm quan trọng: xử lý khi người dùng chọn một dòng
