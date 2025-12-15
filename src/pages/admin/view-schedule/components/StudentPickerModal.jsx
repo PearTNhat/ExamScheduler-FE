@@ -50,7 +50,7 @@ export default function StudentPickerModal({
         params: {
           page,
           limit: 20,
-          fullName: fullName.trim() || undefined,
+          search: fullName.trim() || undefined,
         },
       });
       if (response.code === 200) {

@@ -43,7 +43,7 @@ export default function CoursePickerModal({ open, onOpenChange, onSelect }) {
         params: {
           page,
           limit: 10,
-          nameCourse: name.trim() || undefined,
+          search: name.trim() || undefined,
         },
       });
 

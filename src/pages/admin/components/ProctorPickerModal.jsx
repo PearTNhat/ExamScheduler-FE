@@ -51,7 +51,7 @@ export default function ProctorPickerModal({
         params: {
           page,
           limit: 10,
-          fullName: fullName.trim() || undefined,
+          search: fullName.trim() || undefined,
         },
       });
       if (response.data.data) {

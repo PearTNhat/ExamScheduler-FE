@@ -27,6 +27,7 @@ import {
   apiDeleteStudent,
   apiUpdateStudent,
   apiCreateStudent,
+  apiGetStudentById,
 } from "~/apis/studentsApi";
 import {
   showToastSuccess,
@@ -65,7 +66,6 @@ const StudentManager = () => {
       if (!accessToken) return;
       try {
         setLoading(true);
-        console.log("currentParams", currentParams);
         const params = {
           page: currentParams.page,
           limit: 10,
@@ -99,9 +99,21 @@ const StudentManager = () => {
     setEditingStudent(null);
     setIsModalOpen(true);
   };
-  const handleOpenEditModal = (student) => {
-    setEditingStudent(student);
-    setIsModalOpen(true);
+  const handleOpenEditModal = async (student) => {
+    try {
+      const response = await apiGetStudentById({
+        id: student.id,
+        accessToken,
+      });
+      if (response.code === 200) {
+        setEditingStudent(response.data);
+        setIsModalOpen(true);
+      } else {
+        showToastError(response.message || "Lỗi khi tải thông tin sinh viên");
+      }
+    } catch (error) {
+      showToastError(error.message || "Lỗi khi tải thông tin sinh viên");
+    }
   };
   const handleFormSubmit = async (data) => {
     setIsSubmitting(true);
@@ -110,7 +122,7 @@ const StudentManager = () => {
       if (editingStudent) {
         response = await apiUpdateStudent({
           id: editingStudent.id,
-          data,
+          body: data,
           accessToken,
         });
         if (response.code === 200) {
@@ -127,7 +139,7 @@ const StudentManager = () => {
       } else {
         setIsModalOpen(false);
         setEditingStudent(null);
-        fetchStudents({ accessToken });
+        fetchStudents({ currentParams });
       }
     } catch (error) {
       showToastError(error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
@@ -163,7 +175,7 @@ const StudentManager = () => {
         });
         if (response.code === 200) {
           showToastSuccess("Xóa sinh viên thành công");
-          fetchStudents();
+          fetchStudents({ currentParams });
         } else {
           showToastError(response.message || "Lỗi khi xóa sinh viên");
         }
@@ -397,7 +409,7 @@ const StudentManager = () => {
       <StudentUploadModal
         open={isUploadModalOpen}
         onOpenChange={setIsUploadModalOpen}
-        onUploadSuccess={fetchStudents}
+        onUploadSuccess={() => fetchStudents({ currentParams })}
       />
     </div>
   );

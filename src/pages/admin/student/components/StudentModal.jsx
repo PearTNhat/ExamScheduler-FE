@@ -60,10 +60,8 @@ const StudentFormModal = ({
       classId: null,
     },
   });
-
   const gender = watch("gender");
   const classId = watch("classId");
-
   useEffect(() => {
     if (editingStudent) {
       // Format date for the input type="date"

@@ -29,11 +29,10 @@ export default function ExamGroupFormModal({
   isSubmitting,
 }) {
   const [formData, setFormData] = useState({
-    expected_student_count: "",
+    actual_student_count: "",
     course_department_id: null,
     exam_session_id: null,
     required_room_type: "LT",
-    status: "not_scheduled",
   });
   const [courseDepartmentName, setCourseDepartmentName] = useState("");
   const [sessionName, setSessionName] = useState("");
@@ -46,12 +45,11 @@ export default function ExamGroupFormModal({
   useEffect(() => {
     if (editingGroup) {
       setFormData({
-        expected_student_count:
-          editingGroup.expected_student_count?.toString() || "",
+        actual_student_count:
+          editingGroup.actual_student_count?.toString() || "",
         course_department_id: editingGroup.courseDepartment?.id || null,
         exam_session_id: editingGroup.examSession?.id || null,
         required_room_type: editingGroup.required_room_type || "LT",
-        status: editingGroup.status || "not_scheduled",
       });
 
       // Set course department display name
@@ -70,11 +68,10 @@ export default function ExamGroupFormModal({
       setSessionName(editingGroup.examSession?.name || "");
     } else {
       setFormData({
-        expected_student_count: "",
+        actual_student_count: "",
         course_department_id: null,
         exam_session_id: null,
         required_room_type: "LT",
-        status: "not_scheduled",
       });
       setCourseDepartmentName("");
       setSessionName("");
@@ -100,11 +97,10 @@ export default function ExamGroupFormModal({
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.expected_student_count) {
-      newErrors.expected_student_count =
-        "Số lượng sinh viên không được để trống";
-    } else if (parseInt(formData.expected_student_count) <= 0) {
-      newErrors.expected_student_count = "Số lượng sinh viên phải lớn hơn 0";
+    if (!formData.actual_student_count) {
+      newErrors.actual_student_count = "Số lượng sinh viên không được để trống";
+    } else if (parseInt(formData.actual_student_count) <= 0) {
+      newErrors.actual_student_count = "Số lượng sinh viên phải lớn hơn 0";
     }
 
     if (!formData.course_department_id) {
@@ -122,21 +118,14 @@ export default function ExamGroupFormModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
-      // Convert expected_student_count to number
+      // Convert actual_student_count to number
       const submitData = {
         ...formData,
-        expected_student_count: parseInt(formData.expected_student_count),
+        actual_student_count: parseInt(formData.actual_student_count),
       };
       onSubmit(submitData);
     }
   };
-
-  const statusOptions = [
-    { value: "not_scheduled", label: "Chưa lên lịch" },
-    { value: "scheduled", label: "Đã lên lịch" },
-    { value: "completed", label: "Hoàn thành" },
-    { value: "cancelled", label: "Đã hủy" },
-  ];
 
   return (
     <>
@@ -158,35 +147,32 @@ export default function ExamGroupFormModal({
             {/* Số lượng sinh viên dự kiến */}
             <div className="space-y-2">
               <Label
-                htmlFor="expected_student_count"
+                htmlFor="actual_student_count"
                 className="text-sm font-medium"
               >
                 Số lượng sinh viên dự kiến{" "}
                 <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="expected_student_count"
+                id="actual_student_count"
                 type="number"
                 min="1"
                 placeholder="VD: 50"
-                value={formData.expected_student_count}
+                value={formData.actual_student_count}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    expected_student_count: e.target.value,
+                    actual_student_count: e.target.value,
                   })
                 }
-                className={
-                  errors.expected_student_count ? "border-red-500" : ""
-                }
+                className={errors.actual_student_count ? "border-red-500" : ""}
               />
-              {errors.expected_student_count && (
+              {errors.actual_student_count && (
                 <p className="text-sm text-red-500">
-                  {errors.expected_student_count}
+                  {errors.actual_student_count}
                 </p>
               )}
             </div>
-
             {/* Đăng ký học phần - CourseDepartment Picker */}
             <div className="space-y-2">
               <Label
@@ -294,30 +280,6 @@ export default function ExamGroupFormModal({
                       Thực hành (TH)
                     </div>
                   </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Trạng thái */}
-            <div className="space-y-2">
-              <Label htmlFor="status" className="text-sm font-medium">
-                Trạng thái
-              </Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, status: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
                 </SelectContent>
               </Select>
             </div>

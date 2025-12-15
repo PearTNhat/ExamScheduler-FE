@@ -65,13 +65,13 @@ const LecturesManager = () => {
   // Fetch lecturers
 
   const fetchLecturers = useCallback(
-    async ({ accessToken }) => {
+    async ({ accessToken, currentParams }) => {
       try {
         setLoading(true);
         const params = {
           page: currentParams.page,
           limit: 10,
-          name: currentParams.name,
+          search: currentParams.code,
         };
         const response = await apiGetLecturers({ accessToken, params });
         if (response.code === 200) {
@@ -95,7 +95,7 @@ const LecturesManager = () => {
   );
 
   useEffect(() => {
-    fetchLecturers({ accessToken });
+    fetchLecturers({ accessToken, currentParams });
   }, [accessToken, currentParams]);
 
   // Modal handlers
@@ -104,9 +104,26 @@ const LecturesManager = () => {
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (lecturer) => {
-    setEditingLecturer(lecturer);
-    setIsModalOpen(true);
+  const handleOpenEditModal = async (lecturer) => {
+    try {
+      setLoadingDetail(true);
+      const response = await apiGetLecturerById({
+        id: lecturer.id,
+        accessToken,
+      });
+
+      if (response.code === 200) {
+        const detail = response.data;
+        setEditingLecturer(detail);
+        setIsModalOpen(true);
+      } else {
+        showToastError(response.message || "Lỗi khi tải thông tin giảng viên");
+      }
+    } catch (error) {
+      showToastError(error.message || "Lỗi khi tải thông tin giảng viên");
+    } finally {
+      setLoadingDetail(false);
+    }
   };
 
   // View detail handler
@@ -156,7 +173,7 @@ const LecturesManager = () => {
             : "Thêm giảng viên mới thành công!"
         );
         setIsModalOpen(false);
-        fetchLecturers({ accessToken });
+        fetchLecturers({ accessToken, currentParams });
       } else {
         showToastError(response.message || "Có lỗi xảy ra");
       }
@@ -180,7 +197,7 @@ const LecturesManager = () => {
         });
         if (response.code === 200) {
           showToastSuccess("Xóa giảng viên thành công");
-          fetchLecturers({ accessToken });
+          fetchLecturers({ accessToken, currentParams });
         } else {
           showToastError(response.message || "Lỗi khi xóa giảng viên");
         }
@@ -381,7 +398,7 @@ const LecturesManager = () => {
       <LecturerUploadModal
         open={isUploadModalOpen}
         onOpenChange={setIsUploadModalOpen}
-        onUploadSuccess={() => fetchLecturers({ accessToken })}
+        onUploadSuccess={() => fetchLecturers({ accessToken, currentParams })}
       />
     </div>
   );

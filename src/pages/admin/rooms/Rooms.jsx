@@ -51,7 +51,7 @@ const Rooms = () => {
       const response = await apiGetRooms({
         params: {
           page: currentParams.page,
-          limit: 1000,
+          limit: 10,
           code: currentParams.code,
         },
       });

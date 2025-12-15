@@ -59,27 +59,27 @@ const LecturerFormModal = ({
       gender: "male",
       address: "",
       phoneNumber: "",
-      isSupervisor: false,
       departmentId: "",
     },
   });
 
-  const isSupervisor = watch("isSupervisor");
   const gender = watch("gender");
 
   useEffect(() => {
     if (editingLecturer) {
-      console.log("editing lecture ;", editingLecturer);
+      // Format date to yyyy-MM-dd for input type="date"
+      const formattedDate = editingLecturer.dateOfBirth
+        ? new Date(editingLecturer.dateOfBirth).toISOString().split("T")[0]
+        : "";
       reset({
         lecturerCode: editingLecturer.lecturerCode || "",
         firstName: editingLecturer.firstName || "",
         lastName: editingLecturer.lastName || "",
-        dateOfBirth: editingLecturer.dateOfBirth || "",
+        dateOfBirth: formattedDate,
         gender: editingLecturer.gender || "male",
         address: editingLecturer.address || "",
         phoneNumber: editingLecturer.phoneNumber || "",
-        isSupervisor: editingLecturer.isSupervisor || false,
-        departmentId: editingLecturer.departmentId || "",
+        departmentId: editingLecturer.department.id || "",
       });
       if (editingLecturer.department) {
         setSelectedDepartment(editingLecturer.department);
@@ -93,7 +93,6 @@ const LecturerFormModal = ({
         gender: "male",
         address: "",
         phoneNumber: "",
-        isSupervisor: false,
         departmentId: "",
       });
       setSelectedDepartment(null);
@@ -108,9 +107,10 @@ const LecturerFormModal = ({
 
   const handleFormSubmit = (data) => {
     // Chuyển đổi ID sang số nguyên trước khi gửi đi
+    // const formattedDate = data.dateOfBirth ? new Date(data.dateOfBirth) : "";
     const formattedData = {
       ...data,
-      departmentId: parseInt(data.departmentId, 10),
+      // dateOfBirth: formattedDate,
     };
     onSubmit(formattedData);
   };
@@ -331,30 +331,6 @@ const LecturerFormModal = ({
                   {errors.departmentId.message}
                 </p>
               )}
-            </div>
-
-            {/* Vai trò giám thị */}
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border-2 border-indigo-100">
-              <div className="space-y-1">
-                <Label
-                  htmlFor="isSupervisor"
-                  className="text-sm font-semibold text-gray-900 flex items-center gap-2"
-                >
-                  <UserCheck className="h-4 w-4" />
-                  Vai trò giám thị
-                </Label>
-                <p className="text-sm text-gray-600">
-                  {isSupervisor
-                    ? "Giảng viên này có thể làm giám thị coi thi."
-                    : "Giảng viên này không có vai trò giám thị."}
-                </p>
-              </div>
-              <Switch
-                id="isSupervisor"
-                checked={isSupervisor}
-                onCheckedChange={(checked) => setValue("isSupervisor", checked)}
-                className="data-[state=checked]:bg-indigo-600"
-              />
             </div>
           </div>
         </form>

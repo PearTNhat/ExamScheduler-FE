@@ -91,7 +91,7 @@ const ExamSessionSelector = ({ selectedSessionId, onSessionChange }) => {
                 <div className="font-medium text-blue-900">
                   {selectedSession.name}
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+                {/* <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="text-blue-700">
                     <Calendar className="inline h-3 w-3 mr-1" />
                     Bắt đầu:{" "}
@@ -110,7 +110,7 @@ const ExamSessionSelector = ({ selectedSessionId, onSessionChange }) => {
                         )
                       : "N/A"}
                   </div>
-                </div>
+                </div> */}
                 {selectedSession.description && (
                   <div className="text-xs text-blue-600 border-t border-blue-200 pt-2">
                     {selectedSession.description}

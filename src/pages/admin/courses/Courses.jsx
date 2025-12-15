@@ -55,13 +55,13 @@ const Courses = () => {
     [searchParams]
   );
   // Fetch courses
-  const fetchCourses = async ({ accessToken }) => {
+  const fetchCourses = async ({ accessToken, currentParams }) => {
     try {
       setLoading(true);
       const params = {
         page: currentParams.page,
         limit: 10,
-        codeCourse: currentParams.code,
+        search: currentParams.code,
       };
       const response = await apiGetCourses({ accessToken, params });
       if (response.code === 200) {
@@ -83,7 +83,7 @@ const Courses = () => {
 
   useEffect(() => {
     if (accessToken) {
-      fetchCourses({ accessToken });
+      fetchCourses({ accessToken, currentParams });
     }
   }, [accessToken, currentParams]);
 
@@ -127,7 +127,7 @@ const Courses = () => {
             : "Thêm môn học thành công"
         );
         setShowModal(false);
-        fetchCourses({ accessToken });
+        fetchCourses({ accessToken, currentParams });
       } else {
         showToastError(response.message || "Có lỗi xảy ra");
       }
@@ -169,7 +169,7 @@ const Courses = () => {
 
         if (response.code === 200) {
           showToastSuccess("Xóa môn học thành công");
-          fetchCourses({ accessToken });
+          fetchCourses({ accessToken, currentParams });
         } else {
           showToastError(response.message || "Có lỗi xảy ra khi xóa môn học");
         }

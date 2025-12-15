@@ -230,35 +230,6 @@ const ExamGroupsManager = () => {
     }
   };
 
-  // Status badge helper
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      not_scheduled: {
-        label: "Chưa lên lịch",
-        className: "bg-gray-100 text-gray-700 hover:bg-gray-100",
-      },
-      scheduled: {
-        label: "Đã lên lịch",
-        className: "bg-blue-100 text-blue-700 hover:bg-blue-100",
-      },
-      completed: {
-        label: "Hoàn thành",
-        className: "bg-green-100 text-green-700 hover:bg-green-100",
-      },
-      cancelled: {
-        label: "Đã hủy",
-        className: "bg-red-100 text-red-700 hover:bg-red-100",
-      },
-    };
-
-    const config = statusConfig[status] || statusConfig.not_scheduled;
-    return (
-      <Badge variant="secondary" className={config.className}>
-        {config.label}
-      </Badge>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       {/* Header */}

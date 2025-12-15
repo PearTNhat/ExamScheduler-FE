@@ -22,15 +22,14 @@ const ExamCard = ({ exam, onViewDetail, onEdit, onDelete }) => {
           <div className="flex items-center gap-1">
             <Users2 className="h-3 w-3 text-gray-400 flex-shrink-0" />
             <span className="text-gray-700">
-              <span className="font-medium">
-                {exam?.examGroup.expected_student_count}
-              </span>{" "}
-              SV
+              <span className="font-medium">{exam?.studentCount}</span> SV
             </span>
           </div>
           <div className="flex items-center gap-1 text-gray-600">
             <span>Phòng:</span>
-            <span className="text-gray-900 font-medium">{exam?.room.code}</span>
+            <span className="text-gray-900 font-medium">
+              {exam?.room.code} ({exam?.room.capacity})
+            </span>
           </div>
         </div>
 

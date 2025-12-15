@@ -376,12 +376,14 @@ const ExamCardModal = ({
             <div className="flex items-center gap-2 text-sm">
               <MapPin className="h-4 w-4 text-gray-400" />
               <div>
-                <span className="text-gray-900 font-medium">{roomCode}</span>
-                {locationName && (
+                <span className="text-gray-900 font-medium">
+                  {roomCode} ({exam.room?.capacity})
+                </span>
+                {/* {locationName && (
                   <span className="text-gray-500 text-xs ml-1">
                     ({locationName})
                   </span>
-                )}
+                )} */}
               </div>
             </div>
           </div>
