@@ -338,13 +338,13 @@ const ExamCardModal = ({
 }) => {
   const courseName = exam.courseCode || "N/A";
   const roomCode = exam.room?.code || exam.roomName || "N/A";
-  const locationName = exam.room?.location?.name || exam.location || "";
   const studentCount =
     exam.examGroup?.expectedStudentCount || exam.studentCount || 0;
   const slot = exam.examSlot || exam.slot;
   const startTime = slot?.startTime || "";
   const endTime = slot?.endTime || "";
   const slotName = slot?.slotName || "";
+  console.log("year", exam.academicYear, "course", courseName);
   return (
     <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-4">
@@ -357,6 +357,18 @@ const ExamCardModal = ({
               <h4 className="font-semibold text-gray-900 text-base">
                 {courseName}
               </h4>
+              <div className="flex items-center gap-2 mt-1 text-xs text-gray-600">
+                {exam.academicYear && (
+                  <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                    {exam.academicYear}
+                  </span>
+                )}
+                {exam.proctorName && (
+                  <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                    GV: {exam.proctorName}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 mt-3">

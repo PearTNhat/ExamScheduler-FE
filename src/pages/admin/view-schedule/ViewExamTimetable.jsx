@@ -33,6 +33,8 @@ import CreateExamModal from "./components/CreateExamModal";
 import TimetableGrid from "./components/TimetableGrid";
 import CalendarMonthView from "./components/CalendarMonthView";
 import ClassPickerModal from "../components/ClassPickerModal";
+import DepartmentPickerModal from "../lectures/components/DepartmentPickerModal";
+import CoursePickerModal from "../components/CoursePickerModal";
 import ConflictCheckModal from "./components/ConflictCheckModal";
 import { getInitialDateRange } from "./utils/helper";
 
@@ -62,6 +64,10 @@ const ViewExamTimetable = () => {
   const [viewMode, setViewMode] = useState("timetable"); // "timetable", "calendar-month"
   const [selectedClass, setSelectedClass] = useState(null);
   const [isClassPickerOpen, setIsClassPickerOpen] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [isDepartmentPickerOpen, setIsDepartmentPickerOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [isCoursePickerOpen, setIsCoursePickerOpen] = useState(false);
 
   const [selectedExamId, setSelectedExamId] = useState(null);
   const [selectedExam, setSelectedExam] = useState(null);
@@ -124,6 +130,12 @@ const ViewExamTimetable = () => {
       if (selectedClass) {
         params.classId = selectedClass.id;
       }
+      if (selectedDepartment?.id) {
+        params.departmentId = selectedDepartment.id;
+      }
+      if (selectedCourse?.id) {
+        params.courseId = selectedCourse.id;
+      }
 
       const response = await apiViewTimetableExams({ accessToken, params });
       if (response.code === 200) {
@@ -147,6 +159,8 @@ const ViewExamTimetable = () => {
     setEndDate(initialEndDate);
     setSelectedSession("all");
     setSelectedClass(null);
+    setSelectedDepartment(null);
+    setSelectedCourse(null);
     fetchTimetable();
   };
 
@@ -157,6 +171,24 @@ const ViewExamTimetable = () => {
 
   const handleRemoveClass = () => {
     setSelectedClass(null);
+  };
+
+  const handleDepartmentSelect = (dept) => {
+    setSelectedDepartment(dept);
+    setIsDepartmentPickerOpen(false);
+  };
+
+  const handleRemoveDepartment = () => {
+    setSelectedDepartment(null);
+  };
+
+  const handleCourseSelect = (course) => {
+    setSelectedCourse(course);
+    setIsCoursePickerOpen(false);
+  };
+
+  const handleRemoveCourse = () => {
+    setSelectedCourse(null);
   };
 
   const handleViewExamDetail = (examId) => {
@@ -360,6 +392,67 @@ const ViewExamTimetable = () => {
               </Button>
             )}
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Khoa
+            </label>
+            {selectedDepartment ? (
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className="flex-1 justify-between py-2 px-3"
+                >
+                  <span className="truncate">
+                    {selectedDepartment.departmentName} (ID:{" "}
+                    {selectedDepartment.id})
+                  </span>
+                  <X
+                    className="h-4 w-4 cursor-pointer hover:text-red-600 ml-2"
+                    onClick={handleRemoveDepartment}
+                  />
+                </Badge>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsDepartmentPickerOpen(true)}
+              >
+                Chọn khoa/viện
+              </Button>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Môn học
+            </label>
+            {selectedCourse ? (
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className="flex-1 justify-between py-2 px-3"
+                >
+                  <span className="truncate">
+                    {selectedCourse.nameCourse} (ID: {selectedCourse.id})
+                  </span>
+                  <X
+                    className="h-4 w-4 cursor-pointer hover:text-red-600 ml-2"
+                    onClick={handleRemoveCourse}
+                  />
+                </Badge>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsCoursePickerOpen(true)}
+              >
+                Chọn môn học
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-end gap-2 mt-4">
@@ -473,6 +566,18 @@ const ViewExamTimetable = () => {
         open={isClassPickerOpen}
         onOpenChange={setIsClassPickerOpen}
         onSelect={handleClassSelect}
+      />
+
+      <DepartmentPickerModal
+        open={isDepartmentPickerOpen}
+        onOpenChange={setIsDepartmentPickerOpen}
+        onSelect={handleDepartmentSelect}
+      />
+
+      <CoursePickerModal
+        open={isCoursePickerOpen}
+        onOpenChange={setIsCoursePickerOpen}
+        onSelect={handleCourseSelect}
       />
 
       <ConflictCheckModal

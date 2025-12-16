@@ -36,8 +36,6 @@ const ExamFormModal = ({
     duration: "",
     status: "oke",
   });
-  console.log("s------", editingExam);
-
   const [errors, setErrors] = useState({});
   const [rooms, setRooms] = useState([]);
   const [examSlots, setExamSlots] = useState([]);

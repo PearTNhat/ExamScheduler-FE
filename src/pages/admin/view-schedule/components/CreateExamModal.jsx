@@ -325,7 +325,6 @@ export default function CreateExamModal({ open, onOpenChange, onExamCreated }) {
               </Select>
             </div>
           </div>
-
           <DialogFooter>
             <Button
               type="button"

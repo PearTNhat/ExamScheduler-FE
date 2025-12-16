@@ -47,7 +47,7 @@ export default function DepartmentPickerModal({
         params: {
           page,
           limit: 10,
-          name: name.trim() || undefined,
+          departmentName: name.trim() || undefined,
         },
       });
 
@@ -188,7 +188,7 @@ export default function DepartmentPickerModal({
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {department.departmentCode}
+                      {department.departmentName}
                     </TableCell>
                   </TableRow>
                 ))
